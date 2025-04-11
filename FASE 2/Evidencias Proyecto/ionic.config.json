@@ -1,0 +1,8 @@
+{
+    "name": "gestor_flota",
+    "integrations": {
+      "capacitor": {}
+    },
+    "type": "custom",
+    "root": "src"
+  }
