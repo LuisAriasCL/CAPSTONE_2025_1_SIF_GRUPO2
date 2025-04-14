@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Mi Aplicación Ionic Vanilla</title>
-  
-  <!-- Vincula tus estilos globales -->
-  <link rel="stylesheet" href="assets/css/style.css">
-  
-  <!-- Iconos o fuentes adicionales (si es necesario) -->
-  <link rel="icon" href="assets/img/favicon.ico">
+  <!-- Meta y enlaces previos -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIF - Sistema Integral de Flota</title>
+  <link rel="icon" type="image/x-icon" href="src/assets/img/favicon.ico">
+  <link rel="stylesheet" href="src/temas/global.scss" />
+  <!-- Ionic Core (ESM y nomodule) -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
-  <!-- Aquí va el contenido de tu aplicación -->
-  
-  <!-- Contenedor para la app -->
-  <div id="app"></div>
+  <ion-app>
+    <!-- Encabezado -->
+    <encabezado-app></encabezado-app>
 
-  <!-- Vincula el archivo JS -->
-  <script src="assets/js/main.js"></script>
+    <!-- Menú lateral -->
+    <menu-lateral-app></menu-lateral-app>
+    
+      <!-- Contenido principal -->
+      <section id="main-content">
+        <!-- Aquí se carga el contenido dinámico -->
+      </section>
+
+  </ion-app>
+    
+  <!-- Tu lógica adicional -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,0 +1,377 @@
+// filepath: c:\xampp\htdocs\gestor_flota\frontend\src\assets\estilos\menu-lateral.scss
+:root {
+  --color-menu-background: #015498; /* Azul para el menú */
+  --color-icon: white; /* Color blanco para los íconos */
+  --color-title: white; /* Blanco para los títulos */
+  --color-text: white; /* Texto por defecto */
+  --color-item-background: #015498; /* Azul para los items del menú */
+  --menu-width-desktop: 17.5%; /* Ancho porcentual para escritorio */
+  --menu-width-mobile: 280px; /* Ancho fijo para móvil */
+  --menu-z-index: 1000;
+}
+
+html, body {
+  overflow-x: hidden; // Previene scroll horizontal en toda la página
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// Asegurar que todos los elementos respeten el box-sizing
+* {
+  box-sizing: border-box;
+}
+
+/* -------------------------------------------------- */
+/* Estilos base para el componente menu-lateral-app */
+/* -------------------------------------------------- */
+menu-lateral-app {
+  display: block;
+  
+  /* Versión móvil (menú deslizable) */
+  ion-menu {
+    --width: var(--menu-width-mobile);
+    --ion-transition-duration: 0.3s;
+    
+    &::part(backdrop) {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    &::part(container) {
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  /* Versión escritorio (sidebar estático) */
+  .sidebar-static {
+    display: none; /* Oculto por defecto */
+  }
+}
+
+/* -------------------------------------------------- */
+/* Estilos compartidos para ambas versiones */
+/* -------------------------------------------------- */
+.menu-blue {
+  &-header {
+    --height: 72px; /* Incrementar el alto del encabezado */
+    height: var(--height);
+    display: flex;
+    align-items: center; /* Alinear verticalmente los elementos */
+    justify-content: space-between; /* Espaciado entre el título/subtítulo y la foto */
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  &-content {
+    --background: var(--color-menu-background);
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+  }
+
+  &-list {
+    padding: 0;
+  }
+
+  &-item {
+    --background: var(--color-item-background);
+    --color: var(--color-text);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --min-height: 48px;
+    
+    &:hover {
+      --background: lighten(#015498, 5%);
+    }
+  }
+
+  &-icon {
+    color: var(--color-icon);
+    font-size: 20px;
+    margin-right: 12px;
+  }
+
+  &-label {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+
+  &-title {
+    color: var(--color-title);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+/* -------------------------------------------------- */
+/* Estilos específicos para escritorio (> 768px) */
+/* -------------------------------------------------- */
+@media (min-width: 768px) {
+  menu-lateral-app {
+    /* Ocultar el menú deslizable */
+    ion-menu {
+      display: none;
+    }
+    
+    /* Mostrar el sidebar estático */
+    .sidebar-static {
+      display: block;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--menu-width-desktop); /* Usar el valor porcentual */
+      height: 100%;
+      background: var(--color-menu-background);
+      z-index: var(--menu-z-index);
+      overflow-y: hidden; /* Cambiar de auto a hidden para eliminar el scroll */
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      
+      ion-header, ion-content {
+        background: var(--color-menu-background);
+      }
+      
+      ion-toolbar {
+        --background: var(--color-menu-background);
+      }
+
+      /* Ocultar la barra de scroll pero mantener la funcionalidad */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* Internet Explorer/Edge */
+      
+      /* Ocultar la barra de scroll en Chrome/Safari/Opera */
+      &::-webkit-scrollbar {
+        display: none;
+        width: 0;
+      }
+    }
+  }
+
+  /* Ajustar el contenido principal */
+  #main-content {
+    margin-left: var(--menu-width-desktop); /* Usar el valor porcentual */
+    width: calc(100% - var(--menu-width-desktop)); /* Calcular el ancho restante */
+    max-width: calc(100% - var(--menu-width-desktop)); // Limitar el ancho máximo
+    overflow-x: hidden; /* Prevenir scroll horizontal */
+    position: relative; // Asegurar que se posicione correctamente
+  }
+  
+  /* Ajustar el encabezado */
+  ion-header.encabezado {
+    width: calc(100% - var(--menu-width-desktop));
+    max-width: calc(100% - var(--menu-width-desktop));
+    margin-left: var(--menu-width-desktop);
+    overflow: hidden; // Evitar que el contenido del header cause overflow
+  }
+  
+  /* Asegurar que el ion-app contenga todo correctamente */
+  ion-app {
+    overflow-x: hidden;
+    display: block; // Cambiar de flex a block si es necesario
+    width: 100%;
+  }
+}
+
+/* -------------------------------------------------- */
+/* Estilos específicos para móvil (< 768px) */
+/* -------------------------------------------------- */
+@media (max-width: 767px) {
+  menu-lateral-app {
+    /* Ocultar el sidebar estático */
+    .sidebar-static {
+      display: none !important;
+    }
+    
+    /* Mostrar el menú deslizable */
+    ion-menu {
+      display: block;
+    }
+  }
+
+  /* Ajustar el contenido principal */
+  #main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  ion-menu::part(scroll) {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+    }
+  }
+}
+
+/* -------------------------------------------------- */
+/* Ajustes generales para listas */
+/* -------------------------------------------------- */
+.list-md {
+  padding: 0;
+  
+  ion-item {
+    --inner-padding-end: 0;
+    --inner-border-width: 0;
+  }
+}
+
+/* -------------------------------------------------- */
+/* Estilos para el estado activo/selected */
+/* -------------------------------------------------- */
+.menu-blue-item.active {
+  --background: lighten(#015498, 10%);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: white;
+  }
+}
+
+/* -------------------------------------------------- */
+/* Estilos para el encabezado del menú azul */
+/* -------------------------------------------------- */
+.menu-blue-header {
+  --height: 72px; /* Incrementar el alto del encabezado */
+  height: var(--height);
+  display: flex;
+  align-items: center; /* Alinear verticalmente los elementos */
+  justify-content: space-between; /* Espaciado entre el título/subtítulo y la foto */
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.menu-profile {
+  display: flex;
+  justify-content: flex-end; /* Alinear la imagen a la izquierda */
+  align-items: center;
+}
+
+.menu-profile-img {
+  width: 35px; /* Tamaño de la imagen */
+  height: 35px;
+  border-radius: 50%; /* Hacer la imagen circular */
+  margin-left: 16px; /* Espaciado entre la imagen y el borde derecho */
+  object-fit: cover; /* Asegurar que la imagen se ajuste al contenedor */
+  border: 2px solid white; /* Borde blanco para destacar */
+  transform: translateY(-24px); /* Subir la imagen 15 píxeles */
+}
+
+.menu-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-title);
+  text-align: left; /* Alinear el título a la derecha */
+  flex-grow: 1; /* Hacer que el título ocupe el espacio restante */
+  margin-right: 16px; /* Espaciado entre el título y el borde derecho */
+  margin-left: -10px; /* Mover un poco más a la izquierda */
+
+}
+
+/* -------------------------------------------------- */
+/* Estilos para el contenedor del título del menú */
+/* -------------------------------------------------- */
+.menu-title-container {
+  display: flex;
+  flex-direction: column; /* Alinear el título y el subtítulo en columna */
+  align-items: flex-start; /* Alinear los elementos al inicio */
+  gap: 2px; /* Espaciado entre el título y el subtítulo */
+  transform: translateY(12px); /* Bajar el contenedor 6 píxeles */
+}
+
+.menu-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-title);
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Espaciado entre el texto y la flecha */
+}
+
+.menu-title .arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.menu-subtitle {
+  font-size: 0.8rem; /* Tamaño más pequeño para el subtítulo */
+  font-weight: 400;
+  color: var(--color-text); /* Color consistente con el texto del menú */
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  color: var(--color-title);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%; /* Mostrar el menú debajo del botón */
+  left: 0; /* Alinear el menú con el contenedor */
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 1000;
+  width: max-content; /* Ajustar el ancho al contenido */
+}
+
+.dropdown-menu li {
+  padding: 8px 16px;
+}
+
+.dropdown-menu li a {
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-menu li:hover {
+  background: #f0f0f0;
+}
+
+.menu-title-container:hover .dropdown-menu {
+  display: block; /* Mostrar el menú al pasar el cursor */
+}
+
+// Dropdown menu
+
+.menu-title-dropdown {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 14px; /* Tamaño de fuente consistente */
+  color: var(--color-title);
+}
+
+.menu-title {
+  font-weight: 500;
+  color: var(--color-title);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.menu-title .arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+

@@ -1,0 +1,114 @@
+.vehicle-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #ccc;
+  
+    .vehicle-image {
+      width: 100px;
+      height: auto;
+      margin-right: 1rem;
+      border-radius: 8px;
+    }
+  
+    .vehicle-info {
+      flex: 1;
+  
+      h2 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+  
+      p {
+        margin: 0.25rem 0;
+        color: #666;
+      }
+  
+      .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+  
+        .status-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          display: inline-block;
+  
+          &.active {
+            background-color: #2dd36f;
+          }
+        }
+      }
+    }
+  }
+  
+  .details-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  
+    .details-box, .cost-section {
+      flex: 1 1 300px;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  
+      h3 {
+        margin-bottom: 0.75rem;
+      }
+  
+      ul {
+        list-style: none;
+        padding: 0;
+  
+        li {
+          margin-bottom: 0.5rem;
+  
+          a {
+            color: #3880ff;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  
+    .cost-info {
+      margin-bottom: 1rem;
+  
+      p {
+        margin: 0.25rem 0;
+      }
+    }
+  
+    .cost-breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+  
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+  
+        &.fuel {
+          background-color: #00bcd4;
+        }
+  
+        &.service {
+          background-color: #ffca28;
+        }
+  
+        &.other {
+          background-color: #9c27b0;
+        }
+      }
+    }
+  }
+  
