@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar color="primary">
+     <ion-buttons slot="start">
+       <ion-menu-button></ion-menu-button>
+     </ion-buttons>
+     <div class="header-container">
+         <div class="header-left">
+             <ion-title>Dashboard</ion-title>
+             </div>
+         <div class="header-right">
+            </div>
+     </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-grid id="dashboard-grid">
+     <ion-row id="fila1" #fila1>
+       <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Camiones en Mantenimiento</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+              <canvas #chartMaintenanceCanvas id="chartMaintenance"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+       <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Rendimiento Promedio (Km/l)</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+             <canvas #chartFuelEfficiencyCanvas id="chartFuelEfficiency"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+       <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Kilometraje Promedio</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+              <canvas #chartAvgMileageCanvas id="chartAvgMileage"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+     </ion-row>
+
+     <ion-row id="fila2" #fila2>
+       <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Costo Promedio Mantenimiento</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+             <canvas #chartMaintenanceCostCanvas id="chartMaintenanceCost"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+       <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Disponibilidad Vehículos</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+             <canvas #chartVehicleAvailabilityCanvas id="chartVehicleAvailability"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+        <ion-col size="12" size-md="4">
+         <ion-card>
+           <ion-card-header class="card-handle">
+             <ion-card-title>Eficiencia Mantenimiento</ion-card-title>
+           </ion-card-header>
+           <ion-card-content>
+             <canvas #chartExtraMetricCanvas id="chartExtraMetric"></canvas>
+           </ion-card-content>
+         </ion-card>
+       </ion-col>
+     </ion-row>
+   </ion-grid>
+</ion-content>

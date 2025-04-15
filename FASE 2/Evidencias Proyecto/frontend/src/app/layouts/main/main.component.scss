@@ -1,0 +1,39 @@
+// Evitar que el ion-menu reserve espacio en blanco por --side-width o --width
+ion-menu {
+    --side-width: 0px !important;
+    --width: 0px !important;
+  }
+  
+  ion-menu::part(container) {
+    width: 280px !important;
+  }
+  
+  // Estilo para el ítem de menú seleccionado (si usas la variable selectedIndex)
+  ion-item.selected {
+    --background: rgba(var(--ion-color-primary-rgb), 0.14);
+    --color: var(--ion-color-primary);
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+    }
+  }
+  
+  // Ajustes generales para los ítems del menú
+  ion-menu ion-item {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+  }
+  
+  ion-menu ion-item ion-icon {
+    margin-right: 15px;
+  }
+  
+  // Estilo para la lista de logout para que quede abajo
+  #logout-list {
+    position: absolute;
+    bottom: 10px; // Ajusta el espacio desde abajo
+    width: 100%;
+  }
+  

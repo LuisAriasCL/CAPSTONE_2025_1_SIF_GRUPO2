@@ -1,0 +1,24 @@
+#mapId {
+ 
+  height: 80vh;  
+  width: 100%;
+  position: relative;
+  z-index: 0;
+  background-color: #f0f0f0;
+}
+
+/* Mantenemos las otras reglas que teníamos */
+ion-content {
+   --padding-start: 0px;
+   --padding-end: 0px;
+   --padding-top: 0px;
+   --padding-bottom: 0px;
+ }
+.leaflet-tile {
+   visibility: visible !important;
+   opacity: 1 !important;
+}
+.leaflet-tile-pane {
+    visibility: visible !important;
+    opacity: 1 !important;
+ }
