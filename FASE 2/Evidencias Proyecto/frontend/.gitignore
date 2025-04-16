@@ -1,8 +1,19 @@
 node_modules
 node_modules/
 # Angular / TypeScript cache and build files
+
+.env
+# Angular y TypeScript
 .angular/
+*.tsbuildinfo
 *.db
 *.db-lock
-*.tsbuildinfo
-.env
+
+# Archivos de Vite cache dentro de .angular
+.angular/cache/
+.angular/cache/**
+
+# Por si acaso, evitar deps y vite específicamente
+**/vite/
+**/vite/deps/
+**/vite/deps_ssr/
