@@ -19,7 +19,7 @@ export const routes: Routes = [
   {
     path: '', // Ruta raíz para la sección autenticada
     component: sidebarComponent, // Carga el contenido con menú
-    canActivate: [authGuard], // Protegido por el guardián
+    canActivate: [authGuard], // Protegido por el guardián 
     children: [
       // Rutas hijas que se renderizan DENTRO de MainComponent
       {

@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 
 import { RouterLink } from '@angular/router'; 
 
+// recorridos
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';

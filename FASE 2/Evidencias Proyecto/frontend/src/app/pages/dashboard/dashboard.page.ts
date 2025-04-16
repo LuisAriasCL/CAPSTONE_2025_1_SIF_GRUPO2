@@ -15,7 +15,7 @@ import Sortable from 'sortablejs';
   imports: [IonicModule, CommonModule, FormsModule] 
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
-
+ 
 
   @ViewChild('chartMaintenanceCanvas') chartMaintenanceCanvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('chartFuelEfficiencyCanvas') chartFuelEfficiencyCanvasRef!: ElementRef<HTMLCanvasElement>;

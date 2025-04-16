@@ -16,7 +16,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [
     CommonModule, RouterLink, // RouterOutlet es importante aquí
 IonSplitPane, IonMenu, IonContent, IonList, IonNote, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet, IonHeader, IonToolbar, IonTitle,
-   ],
+   ], 
 })
 export class sidebarComponent { 
   private authService = inject(AuthService);
