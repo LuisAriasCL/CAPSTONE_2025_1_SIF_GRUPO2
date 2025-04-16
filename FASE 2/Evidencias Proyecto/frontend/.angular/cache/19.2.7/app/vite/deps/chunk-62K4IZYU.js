@@ -1,9 +1,9 @@
 import {
-  win
-} from "./chunk-ACUVEYEP.js";
-import {
   config
 } from "./chunk-K3X5R6EL.js";
+import {
+  win
+} from "./chunk-ACUVEYEP.js";
 import {
   __async
 } from "./chunk-4JBP2UX7.js";
@@ -99,4 +99,4 @@ export {
    * (C) Ionic http://ionicframework.com - MIT License
    *)
 */
-//# sourceMappingURL=chunk-ERBHRL27.js.map
+//# sourceMappingURL=chunk-62K4IZYU.js.map

@@ -2,7 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard'; 
 
-import { MainComponent } from './layouts/main/main.component';
+import { sidebarComponent } from './componentes/sidebar/sidebar.component';
 
 export const routes: Routes = [
   // --- Rutas Públicas (fuera del layout principal) ---
@@ -15,10 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register.page').then( m => m.RegisterPage)
   },
 
-  // --- Rutas Privadas (dentro del layout principal con menú) ---
+  // --- Rutas Privadas (dentro del contendio principal con menú) ---
   {
     path: '', // Ruta raíz para la sección autenticada
-    component: MainComponent, // Carga el layout con menú
+    component: sidebarComponent, // Carga el contenido con menú
     canActivate: [authGuard], // Protegido por el guardián
     children: [
       // Rutas hijas que se renderizan DENTRO de MainComponent
@@ -27,8 +27,8 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/dashboard.page').then( m => m.DashboardPage)
       },
       {
-        path: 'home', // Ruta: /home (mapa)
-        loadComponent: () => import('./home/home.page').then((m) => m.HomePage)
+        path: 'recorridos', // Ruta: /home (mapa)
+        loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage)
       },
       // --- Añadir aquí las otras rutas del menú ---
       // {

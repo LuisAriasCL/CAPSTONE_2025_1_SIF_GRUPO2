@@ -4,10 +4,10 @@ import { IonicModule, ViewDidEnter } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import * as L from 'leaflet'; 
 import { ViewChild, ElementRef } from '@angular/core';
-import { AuthService } from '../services/auth.service'; // 
+import { AuthService } from '../../services/auth.service'; // 
 
-import { ApiService, Vehicle } from '../services/api.service';
-import { SocketService } from '../services/socket.service';
+import { ApiService, Vehicle } from '../../services/api.service';
+import { SocketService } from '../../services/socket.service';
 import { Router } from '@angular/router';
 
 import { RouterLink } from '@angular/router'; 
@@ -31,15 +31,13 @@ L.Marker.prototype.options.icon = iconDefault;
 
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  selector: 'app-recorridos',
+  templateUrl: 'recorridos.page.html',
+  styleUrls: ['recorridos.page.scss'],
   standalone: true, 
   imports: [
     IonicModule, 
-    CommonModule,
-    RouterLink
-    
+    CommonModule    
   ]
 })
 export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
@@ -77,7 +75,7 @@ export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
 
   ngOnDestroy() {
     
-    console.log("ngOnDestroy: Limpiando HomePage...");
+    console.log("ngOnDestroy: Limpiando recorridos");
     // 1. Desuscribirse de TODOS los observables para evitar fugas de memoria
     this.subscriptions.unsubscribe();
     // 2. Desconectar del servidor Socket.IO

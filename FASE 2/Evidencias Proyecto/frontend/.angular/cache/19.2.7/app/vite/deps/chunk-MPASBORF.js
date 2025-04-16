@@ -1,7 +1,7 @@
 import {
   createAnimation,
   getIonPageElement
-} from "./chunk-L3RXU6B3.js";
+} from "./chunk-BLKCWSCZ.js";
 
 // node_modules/@ionic/core/components/ios.transition.js
 var DURATION = 540;
@@ -509,4 +509,4 @@ export {
    * (C) Ionic http://ionicframework.com - MIT License
    *)
 */
-//# sourceMappingURL=chunk-QE6GLGTG.js.map
+//# sourceMappingURL=chunk-MPASBORF.js.map
