@@ -6,7 +6,7 @@ const cors = require('cors');
 const { Server } = require("socket.io"); 
 const sequelize = require('./config/database'); 
 
-const vehicleRoutes = require('./routes/vehicles');
+const vehicleRoutes = require('./routes/vehiculos');
 
 const authRoutes = require('./routes/auth'); 
 

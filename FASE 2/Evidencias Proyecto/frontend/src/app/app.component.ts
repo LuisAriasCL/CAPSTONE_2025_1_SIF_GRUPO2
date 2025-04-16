@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { HeaderComponent } from './componentes/header/header.component';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
   imports: [
       IonApp,
       IonRouterOutlet,
-      
+      HeaderComponent,
   ],
 })
 export class AppComponent {

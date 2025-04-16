@@ -1,0 +1,45 @@
+/* filepath: c:\capstone\CAPSTONE_2025_1_SIF_GRUPO2\FASE 2\Evidencias Proyecto\frontend\src\app\componentes\header\header.component.scss */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 10px;
+}
+
+/* Columna izquierda: Logo y título con separación */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Columna derecha: Usuario (dropdown) */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.header-logo {
+  height: 40px; /* Un poco menor que la altura del header */
+}
+
+.header-title {
+  font-weight: bold;
+  font-size: 1.2rem; /* Ajusta el tamaño según necesites */
+}
+
+.username-text {
+  color: var(--ion-color-light);
+  margin-right: 4px;
+}
+
+/* Estilos para la foto de perfil */
+.profile-picture {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
