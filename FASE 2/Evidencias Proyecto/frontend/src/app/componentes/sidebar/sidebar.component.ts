@@ -2,7 +2,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'; 
-import { IonApp, IonSplitPane, IonMenu, IonContent, IonList, IonListHeader, IonNote, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/angular/standalone';
+import {  IonSplitPane, IonMenu, IonContent, IonList, IonListHeader, IonNote, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { gridOutline, carOutline, logOutOutline, documentsOutline, peopleOutline, mapOutline, constructOutline, settingsOutline, warningOutline, listOutline, buildOutline, newspaperOutline, checkboxOutline, exitOutline, readerOutline, flameOutline, briefcaseOutline, documentOutline, alarmOutline } from 'ionicons/icons';
 
@@ -15,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [
     CommonModule, RouterLink, // RouterOutlet es importante aquí
-IonSplitPane, IonMenu, IonContent, IonList, IonNote, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet, IonHeader, IonToolbar, IonTitle,
+IonSplitPane, IonMenu, IonContent, IonList, IonMenuToggle, IonItem, IonIcon, IonLabel, IonRouterOutlet, IonHeader, IonToolbar, IonTitle,
    ], 
 })
 export class sidebarComponent { 
