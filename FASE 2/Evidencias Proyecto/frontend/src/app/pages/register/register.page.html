@@ -1,82 +1,62 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/"></ion-back-button> </ion-buttons>
+      <ion-back-button defaultHref="/"></ion-back-button> <!-- Botón de regreso -->
+    </ion-buttons>
     <ion-title>Registro de Usuario</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form [formGroup]="registerForm" (ngSubmit)="register()" novalidate>
-
-    <ion-item lines="full">
-      <ion-label position="floating">Nombre Completo</ion-label>
-      <ion-input type="text" formControlName="name" required></ion-input>
-    </ion-item>
-    <div *ngIf="isSubmitted && registerForm.controls['name']?.errors" class="error-message ion-padding-start">
-      <ion-text color="danger" *ngIf="registerForm.controls['name'].errors?.['required']">
-        El nombre es requerido.
-      </ion-text>
+  <div class="center-wrapper">
+    <!-- Imagen centrada arriba del formulario -->
+    <div class="logo-container">
+      <img src="assets/icon/favicon.ico" alt="Logo" class="logo">
     </div>
 
-    <ion-item lines="full">
-      <ion-label position="floating">Email</ion-label>
-      <ion-input type="email" formControlName="email" required inputmode="email"></ion-input>
-    </ion-item>
-    <div *ngIf="isSubmitted && registerForm.controls['email']?.errors" class="error-message ion-padding-start">
-      <ion-text color="danger" *ngIf="registerForm.controls['email'].errors?.['required']">
-        El email es requerido.
-      </ion-text>
-      <ion-text color="danger" *ngIf="registerForm.controls['email'].errors?.['email']">
-        Introduce un email válido.
-      </ion-text>
-    </div>
-    <ion-item lines="full">
-      <ion-label position="floating">Rol</ion-label>
-      <ion-select formControlName="role" interface="popover" required>
-        <ion-select-option *ngFor="let roleOption of availableRoles" [value]="roleOption">
-          {{ roleOption.charAt(0).toUpperCase() + roleOption.slice(1) }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-    <div *ngIf="isSubmitted && registerForm.controls['role']?.errors?.['required']" class="error-message ion-padding-start">
-      <ion-text color="danger">
-        Seleccionar un rol es requerido.
-      </ion-text>
-    </div>
-  
-    <ion-item lines="full">
-      <ion-label position="floating">Contraseña</ion-label>
-      <ion-input type="password" formControlName="password" required></ion-input>
-    </ion-item>
-    <div *ngIf="isSubmitted && registerForm.controls['password']?.errors" class="error-message ion-padding-start">
-      <ion-text color="danger" *ngIf="registerForm.controls['password'].errors?.['required']">
-        La contraseña es requerida.
-      </ion-text>
-       <ion-text color="danger" *ngIf="registerForm.controls['password'].errors?.['minlength']">
-        La contraseña debe tener al menos 6 caracteres.
-      </ion-text>
-    </div>
+    <form [formGroup]="registerForm" (ngSubmit)="register()" novalidate>
+      <!-- Nombre Completo -->
+      <ion-item lines="full">
+        <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+        <ion-label position="floating">Nombre Completo</ion-label>
+        <ion-input type="text" formControlName="name" required></ion-input>
+      </ion-item>
 
-    <ion-item lines="full">
-      <ion-label position="floating">Confirmar Contraseña</ion-label>
-      <ion-input type="password" formControlName="confirmPassword" required></ion-input>
-    </ion-item>
-     <div *ngIf="isSubmitted && registerForm.controls['confirmPassword']?.errors?.['required']" class="error-message ion-padding-start">
-       <ion-text color="danger">
-         Confirmar la contraseña es requerido.
-       </ion-text>
-     </div>
-     <div *ngIf="isSubmitted && registerForm.errors?.['passwordMismatch'] && registerForm.controls['confirmPassword']?.touched" class="error-message ion-padding-start">
-       <ion-text color="danger">
-         Las contraseñas no coinciden.
-       </ion-text>
-     </div>
+      <!-- Email -->
+      <ion-item lines="full">
+        <ion-icon slot="start" name="mail-outline"></ion-icon>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input type="email" formControlName="email" required inputmode="email"></ion-input>
+      </ion-item>
 
-    <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="registerForm.invalid">
-      Registrarse
-    </ion-button>
+      <!-- Rol -->
+      <ion-item lines="full">
+        <ion-icon slot="start" name="settings-outline"></ion-icon>
+        <ion-label position="floating">Rol</ion-label>
+        <ion-select formControlName="role" interface="popover" required>
+          <ion-select-option *ngFor="let roleOption of availableRoles" [value]="roleOption">
+            {{ roleOption.charAt(0).toUpperCase() + roleOption.slice(1) }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
 
-  </form>
+      <!-- Contraseña -->
+      <ion-item lines="full">
+        <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input type="password" formControlName="password" required></ion-input>
+      </ion-item>
 
+      <!-- Confirmar Contraseña -->
+      <ion-item lines="full">
+        <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+        <ion-label position="floating">Confirmar Contraseña</ion-label>
+        <ion-input type="password" formControlName="confirmPassword" required></ion-input>
+      </ion-item>
+
+      <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="registerForm.invalid">
+        Registrarse
+      </ion-button>
+    </form>
+  </div>
 </ion-content>

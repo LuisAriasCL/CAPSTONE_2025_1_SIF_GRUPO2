@@ -1,0 +1,103 @@
+:host {
+    ion-content {
+      --background: #ffffff;
+      position: relative;
+    }
+  
+    .center-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      padding: 16px;
+      box-sizing: border-box;
+      animation: fadeInUp 0.6s ease-out;
+    }
+  
+    /* Estilos para la imagen */
+    .logo-container {
+      text-align: center; /* Centra la imagen */
+      margin-bottom: 30px; /* Separa la imagen del formulario */
+    }
+  
+    .logo {
+      width: 120px; /* Ajusta el tamaño de la imagen */
+      height: auto; /* Mantén la proporción */
+    }
+  
+    form {
+      display: flex;
+      flex-direction: column;
+  
+      ion-item {
+        margin-bottom: 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center; /* Asegura que todo esté alineado verticalmente */
+      }
+  
+      /* Imagen dentro del campo de email */
+      .email-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px; /* Tamaño adecuado para la imagen */
+        height: 24px;
+        margin-right: 10px; /* Espacio entre la imagen y el texto del label */
+      }
+  
+      .logo-img {
+        width: 100%; /* La imagen ocupa todo el contenedor */
+        height: 100%; /* Mantiene la proporción */
+        object-fit: contain; /* Mantiene la imagen dentro de su contenedor sin distorsión */
+      }
+  
+      ion-label {
+        flex-grow: 1; /* Para que el label ocupe el espacio disponible */
+      }
+  
+      ion-button[type='submit'] {
+        margin-top: 16px;
+        font-weight: bold;
+        border-radius: 10px;
+        --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        --background-hover: linear-gradient(45deg, #1e3c72, #0a70b1);
+        background: linear-gradient(45deg, #0a70b1, #1e3c72);
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+  
+      ion-button[type='submit']:hover {
+        transform: scale(1.05);
+      }
+    }
+  
+    .ion-text-center {
+      margin-top: 20px;
+  
+      ion-button {
+        --color: var(--ion-color-primary);
+        font-size: 14px;
+      }
+    }
+  
+    ion-toolbar {
+      --background: var(--ion-color-primary);
+      color: white;
+    }
+  
+    ion-title {
+      text-align: center;
+      font-weight: bold;
+      font-family: 'Roboto', sans-serif;
+      font-size: 24px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+  
+    @keyframes fadeInUp {
+      /* Animación opcional */
+    }
+  }
+  
