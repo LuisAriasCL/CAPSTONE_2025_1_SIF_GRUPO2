@@ -1,4 +1,8 @@
 node_modules/      
 node_modules/
-.angular
+# Angular / TypeScript cache and build files
+.angular/
+*.db
+*.db-lock
+*.tsbuildinfo
 .env
