@@ -1,7 +1,7 @@
-// Ajuste del color de fondo del contenido del sidebar
+/* Ajuste del color de fondo del menú lateral */
 ion-menu {
-  background-color: var(--ion-color-tertiary); /* Aplica el color terciario al fondo del sidebar */
-  border-right: 1px solid var(--ion-color-medium); /* Línea divisoria con color de los iconos y labels */
+  background-color: var(--ion-color-tertiary);
+  border-right: 1px solid var(--ion-color-medium);
   --side-width: 0px !important;
   --width: 0px !important;
 }
@@ -10,21 +10,22 @@ ion-menu::part(container) {
   width: 280px !important;
 }
 
+/* Color del contenido del menú */
 ion-menu ion-content {
-  background-color: var(--ion-color-tertiary); /* Asegura que el contenido del sidebar también use el color terciario */
+  background-color: var(--ion-color-tertiary);
 }
 
-// Estilo para el ítem de menú seleccionado (si usas la variable selectedIndex)
+/* Ítem de menú seleccionado */
 ion-item.selected {
   --background: rgba(var(--ion-color-primary-rgb), 0.14);
   --color: var(--ion-color-primary);
-  
+
   ion-icon {
-    color: var(--ion-color-primary); 
+    color: var(--ion-color-primary);
   }
 }
 
-// Ajustes generales para los ítems del menú
+/* Ajustes generales para ítems del menú */
 ion-menu ion-item {
   --padding-start: 10px;
   --padding-end: 10px;
@@ -36,22 +37,22 @@ ion-menu ion-item ion-icon {
   margin-right: 15px;
 }
 
-// Estilo para la lista de logout para que quede abajo
+/* Sección de logout al final del menú */
 #logout-list {
   position: absolute;
-  bottom: 10px; // Ajusta el espacio desde abajo
+  bottom: 10px;
   width: 90%;
 }
 
 #logout-list ion-item {
-  background-color: #e74c3c; /* Fondo rojo para el botón de logout */
-  color: white; /* Texto blanco para contraste */
-  border: 2px solid #e74c3c; /* Contorno rojo */
-  border-radius: 3px; /* Bordes redondeados */
-  margin: 5px; /* Espaciado alrededor del botón */
+  background-color: #e74c3c;
+  color: white;
+  border: 2px solid #e74c3c;
+  border-radius: 3px;
+  margin: 5px;
 }
 
 #logout-list ion-item:hover {
-  background-color: #c0392b; /* Fondo rojo más oscuro al pasar el mouse */
-  border-color: #c0392b; /* Contorno rojo más oscuro al pasar el mouse */
+  background-color: #c0392b;
+  border-color: #c0392b;
 }

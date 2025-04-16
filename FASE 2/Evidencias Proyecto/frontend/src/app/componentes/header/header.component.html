@@ -1,8 +1,20 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>SIF - Sistema Integral de Flota</ion-title>
+  <ion-toolbar color="primary">
+    <div class="header-container">
+      <!-- Columna izquierda: Logo y título fijo -->
+      <div class="header-left">
+        <img src="assets/icon/favicon.ico" alt="Logo Vehículo" class="header-logo" />
+        <ion-title class="header-title">Sistema Integral de Flota</ion-title>
+      </div>
+      <!-- Columna derecha: Usuario (dropdown) -->
+      <div class="header-right">
+        <ion-button fill="clear" id="user-menu-button">
+          <!-- Foto de perfil en forma circular y más pequeña -->
+          <img src="assets/foto_perfil/perfil_ejemplo.jpg" alt="Foto de perfil" class="profile-picture" />
+          <span class="username-text">{{ currentUserName }}</span>
+          <ion-icon name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>

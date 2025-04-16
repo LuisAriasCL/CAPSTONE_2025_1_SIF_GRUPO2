@@ -2,10 +2,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard'; 
 
-import { sidebarComponent } from './componentes/sidebar/sidebar.component';
+import { SidebarComponent } from './componentes/sidebar/sidebar.component';
 
 export const routes: Routes = [
-  // --- Rutas Públicas (fuera del layout principal) ---
+  // --- Rutas Públicas (fuera del sidebar principal) ---
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
@@ -18,7 +18,7 @@ export const routes: Routes = [
   // --- Rutas Privadas (dentro del contendio principal con menú) ---
   {
     path: '', // Ruta raíz para la sección autenticada
-    component: sidebarComponent, // Carga el contenido con menú
+    component: SidebarComponent, // Carga el contenido con menú
     canActivate: [authGuard], // Protegido por el guardián 
     children: [
       // Rutas hijas que se renderizan DENTRO de MainComponent
@@ -41,7 +41,7 @@ export const routes: Routes = [
       // },
       // ... etc ...
 
-      // Redirección por defecto DENTRO del layout autenticado
+      // Redirección por defecto DENTRO del sidebar autenticado
       // Si el usuario va a "/" (después de login), redirige a "/dashboard"
       {
         path: '',
