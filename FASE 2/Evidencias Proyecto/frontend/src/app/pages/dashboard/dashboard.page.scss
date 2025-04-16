@@ -1,0 +1,26 @@
+ion-card-header.card-handle {
+    cursor: move; // Indica que se puede arrastrar
+    // background-color: #f9f9f9; 
+}
+
+ion-card-content {
+    
+    min-height: 200px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+}
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}

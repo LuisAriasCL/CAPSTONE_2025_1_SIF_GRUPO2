@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Iniciar Sesión</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" formControlName="email" required inputmode="email"></ion-input>
+    </ion-item>
+    <div *ngIf="isSubmitted && loginForm.controls['email']?.errors" class="error-message ion-padding-start">
+      <ion-text color="danger" *ngIf="loginForm.controls['email'].errors?.['required']">
+        El email es requerido.
+      </ion-text>
+      <ion-text color="danger" *ngIf="loginForm.controls['email'].errors?.['email']">
+        Introduce un email válido.
+      </ion-text>
+    </div>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Contraseña</ion-label>
+      <ion-input type="password" formControlName="password" required></ion-input>
+    </ion-item>
+    <div *ngIf="isSubmitted && loginForm.controls['password']?.errors?.['required']" class="error-message ion-padding-start">
+      <ion-text color="danger">
+        La contraseña es requerida.
+      </ion-text>
+    </div>
+
+    <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="loginForm.invalid">
+      Entrar
+    </ion-button>
+
+  </form>
+
+  <div class="ion-text-center ion-margin-top">
+    <ion-button fill="clear" size="small" routerLink="/register">
+      ¿No tienes cuenta? Regístrate
+    </ion-button>
+  </div>
+
+</ion-content>

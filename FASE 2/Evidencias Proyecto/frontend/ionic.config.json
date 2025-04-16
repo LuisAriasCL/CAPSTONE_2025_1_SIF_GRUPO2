@@ -1,8 +1,7 @@
 {
-    "name": "gestor_flota",
-    "integrations": {
-      "capacitor": {}
-    },
-    "type": "custom",
-    "root": "src"
-  }
+  "name": "frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
