@@ -33,7 +33,7 @@ app.use((req, res, next) => {
     next(); 
 });
 
-
+//hola
 async function testDbConnection() {
     try {
         await sequelize.authenticate(); 
