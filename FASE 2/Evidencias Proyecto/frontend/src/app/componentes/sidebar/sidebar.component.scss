@@ -4,6 +4,7 @@ ion-menu {
   border-right: 1px solid var(--ion-color-medium);
   --side-width: 0px !important;
   --width: 0px !important;
+  padding-top: 0px;
 }
 
 ion-menu::part(container) {
@@ -28,7 +29,7 @@ ion-item.selected {
 /* Ajustes generales para ítems del menú */
 ion-menu ion-item {
   --padding-start: 10px;
-  --padding-end: 10px;
+  --padding-end: 0px; // se quita el padding de la derecha
   border-radius: 4px;
   margin-bottom: 2px;
 }
@@ -37,22 +38,12 @@ ion-menu ion-item ion-icon {
   margin-right: 15px;
 }
 
-/* Sección de logout al final del menú */
-#logout-list {
-  position: absolute;
-  bottom: 10px;
-  width: 90%;
+ion-list ion-item {
+  display: flex;
+  align-items: center;
 }
 
-#logout-list ion-item {
-  background-color: #e74c3c;
-  color: white;
-  border: 2px solid #e74c3c;
-  border-radius: 3px;
-  margin: 5px;
-}
-
-#logout-list ion-item:hover {
-  background-color: #c0392b;
-  border-color: #c0392b;
+ion-list ion-label {
+  flex-grow: 1; /* Hace que el label ocupe todo el espacio disponible */
+  text-align: left; /* Asegura que el texto esté alineado a la izquierda */
 }

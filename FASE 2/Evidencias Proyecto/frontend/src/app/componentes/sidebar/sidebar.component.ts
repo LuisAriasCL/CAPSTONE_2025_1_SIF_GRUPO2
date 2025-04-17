@@ -116,12 +116,4 @@ export class SidebarComponent {
       alarmOutline
     });
   }
-
-  /**
-   * Llama al servicio de autenticación para cerrar sesión.
-   */
-  logout(): void {
-    console.log('SidebarComponent: logout() invocado');
-    this.authService.logout();
-  }
 }

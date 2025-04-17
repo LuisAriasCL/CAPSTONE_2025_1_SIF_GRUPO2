@@ -1,11 +1,6 @@
 <ion-split-pane contentId="main-content" when="md">
   <!-- Menú lateral -->
   <ion-menu contentId="main-content" type="overlay" style="border-right: 1px solid var(--ion-border-color);">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>Gestión Flota</ion-title>
-      </ion-toolbar>
-    </ion-header>
 
     <ion-content>
       <!-- Lista de navegación principal -->
@@ -26,16 +21,6 @@
               [name]="page.icon + '-outline'"
             ></ion-icon>
             <ion-label>{{ page.title }}</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-      </ion-list>
-
-      <!-- Sección de cierre de sesión -->
-      <ion-list id="logout-list" lines="none">
-        <ion-menu-toggle auto-hide="false">
-          <ion-item button (click)="logout()" detail="false">
-            <ion-icon slot="start" name="log-out-outline" color="danger"></ion-icon>
-            <ion-label color="danger">Cerrar Sesión</ion-label>
           </ion-item>
         </ion-menu-toggle>
       </ion-list>

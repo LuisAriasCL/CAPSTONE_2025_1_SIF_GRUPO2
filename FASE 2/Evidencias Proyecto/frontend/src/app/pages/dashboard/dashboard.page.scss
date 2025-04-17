@@ -1,13 +1,26 @@
-
 ion-card-content {
     min-height: 200px; 
     display: flex;
     justify-content: center;
     align-items: center;
+    
+}
+
+ion-content {
+    background-color: #a5a5a8 !important;
+
 }
 
 .header-left, .header-right {
     display: flex;
     align-items: center;
     gap: 10px; 
+}
+
+ion-content{
+        background-color: #a5a5a8 !important;
+}
+
+ion-grid {
+    background-color: #a5a5a8 !important;
 }

@@ -64,3 +64,118 @@ ion-header,
 ion-menu {
   background-color: var(--ion-color-primary); /* Asegura que el header y sidebar mantengan el color primario */
 }
+
+ion-router-outlet {
+  margin-top: 60px; // Ajusta este valor a la altura real de tu header
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos para personalizar los botones de las alertas */
+/* -------------------------------------------------------------------------- */
+
+/* Alerta de confirmación de logout */
+.alert-logout-confirm {
+  .alert-button.button-cancel {
+    color: white !important;
+    background-color: var(--ion-color-primary) !important; /* Azul */
+  }
+  
+  .alert-button.button-logout {
+    color: white !important;
+    background-color: var(--ion-color-danger) !important; /* Rojo */
+  }
+}
+
+/* Alerta de éxito de logout */
+.alert-logout-success {
+  .alert-button.button-accept {
+    color: white !important;
+    background-color: var(--ion-color-primary) !important; /* Azul */
+  }
+}
+
+/* Estilos generales para los botones de alerta */
+ion-alert {
+  .alert-button-inner {
+    justify-content: center !important; /* Centrar texto */
+  }
+  
+  .alert-button {
+    border-radius: 4px !important; /* Bordes redondeados */
+    margin: 0 4px !important; /* Margen entre botones */
+    min-width: 80px !important; /* Ancho mínimo */
+    padding: 0 16px !important; /* Padding horizontal */
+  }
+
+  --width: 320px !important; /* Aumentar ancho de la alerta */
+  --max-width: 90% !important; /* Asegurar que no sea demasiado grande en móviles */
+
+  .alert-wrapper {
+    padding: 15px !important; /* Más padding general */
+  }
+  
+  .alert-head {
+    padding-bottom: 15px !important; /* Más espacio bajo el título */
+    h2 {
+      font-size: 1.2rem !important; /* Título un poco más grande */
+      font-weight: 600 !important;
+    }
+  }
+  
+  .alert-message {
+    padding-bottom: 20px !important; /* Más espacio bajo el mensaje */
+    font-size: 1.05rem !important; /* Texto un poco más grande */
+  }
+
+  /* Centrar y mejorar el contenedor de botones */
+  .alert-button-group {
+    justify-content: center !important; /* Centrar los botones */
+    padding: 5px 0 !important; /* Padding vertical */
+    display: flex !important;
+    flex-wrap: wrap !important; /* Para pantallas pequeñas */
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos personalizados para el modal de alerta */
+/* -------------------------------------------------------------------------- */
+.custom-alert-modal-wrapper {
+  --backdrop-opacity: 0.4;
+
+  .modal-wrapper {
+    // --- Centrado con Flexbox ---
+    display: flex !important;
+    align-items: center !important; // Centrar verticalmente el contenido (nuestro ion-content)
+    justify-content: center !important; // Centrar horizontalmente
+
+    // --- Forzar altura automática y quitar mínimos ---
+    height: auto !important;
+    min-height: 20 !important; // ¡Importante! Quitar altura mínima por defecto
+    max-height: 90vh !important; // Limitar altura máxima por si el contenido es muy largo
+
+    // --- Asegurar que el wrapper no ocupe espacio innecesario ---
+    // Podría no ser necesario, pero asegura que el wrapper se ajuste
+    width: fit-content !important; // Ajustar ancho al contenido (puede afectar el centrado si no se maneja bien)
+    max-width: 90vw !important; // Limitar ancho máximo
+  }
+
+  // --- Estilos para nuestro ion-content dentro del wrapper ---
+  ion-content.custom-modal-content {
+     height: auto !important; // Altura basada en su propio contenido
+     max-height: none !important; // Sin altura máxima propia
+     flex-shrink: 0 !important; // No encoger
+     overflow: auto !important; // Scroll interno si es necesario
+     // Aseguramos que el ancho se ajuste al contenedor padre (--max-width del componente)
+     width: 200% !important;
+  }
+}
+
+/* Estilo específico para el modal de éxito de logout (si aún se necesita) */
+.logout-success-modal-wrapper {
+  ion-content.custom-modal-content {
+    --max-width: 500px !important; // Ancho específico para este modal
+  }
+  // El .modal-wrapper heredará los estilos de altura automática de arriba
+}
+
+
