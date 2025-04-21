@@ -30,19 +30,23 @@ export const routes: Routes = [
         path: 'recorridos', // Ruta: /home (mapa)
         loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage)
       },
-      // --- Añadir aquí las otras rutas del menú ---
-      // {
-      //   path: 'vehiculos', // Ruta: /vehicles (ejemplo)
-      //   loadComponent: () => import('./pages/vehicles/vehicles.page').then( m => m.VehiclesPage)
-      // },
-      // {
-      //   path: 'conductores', // Ruta: /drivers (ejemplo)
-      //   loadComponent: () => import('./pages/drivers/drivers.page').then( m => m.DriversPage)
-      // },
-      // ... etc ...
-
-      // Redirección por defecto DENTRO del sidebar autenticado
-      // Si el usuario va a "/" (después de login), redirige a "/dashboard"
+      {
+        path: 'rutas', // Lista de rutas (ya existe)
+        data: { title: 'Gestión de Rutas' },
+        loadComponent: () => import('./pages/route-list/route-list.page').then( m => m.RouteListPage)
+      },
+      // --- AÑADIR RUTAS PARA CREAR Y EDITAR ---
+      {
+        path: 'rutas/new', // Ruta para crear
+        data: { title: 'Nueva Ruta' }, // Título para el header
+        loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+      },
+      {
+        path: 'rutas/edit/:id', // Ruta para editar (con parámetro id)
+        data: { title: 'Editar Ruta' }, // Título para el header
+        loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+      },
+      
       {
         path: '',
         redirectTo: 'dashboard',
@@ -50,6 +54,12 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'route-form',
+    loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+  },
+  
+    
 
   // --- Ruta Wildcard (opcional, para 404) ---
   // Debe ir al final

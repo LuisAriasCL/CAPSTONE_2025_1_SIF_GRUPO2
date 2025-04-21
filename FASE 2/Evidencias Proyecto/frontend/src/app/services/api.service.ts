@@ -5,6 +5,14 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 
+export interface Route {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  puntos: Array<[number, number]>; // Array de tuplas [lat, lon]
+  createdAt?: string;
+  updatedAt?: string;
+}
 export interface Vehicle {
   id: number;
   name: string;
@@ -28,7 +36,37 @@ export class ApiService {
 
   // Métodos CRUD 
 
-  
+  // GET /api/rutas
+  getRoutes(): Observable<Route[]> {
+    return this.http.get<Route[]>(`${this.apiUrl}/rutas`) // <-- URL en español
+      .pipe(catchError(this.handleError));
+  }
+
+  // GET /api/rutas/:id (Lo necesitaremos para editar)
+  getRoute(id: number): Observable<Route> {
+    return this.http.get<Route>(`${this.apiUrl}/rutas/${id}`)
+       .pipe(catchError(this.handleError));
+  }
+
+  // POST /api/rutas (Lo necesitaremos para crear)
+  createRoute(routeData: Partial<Route>): Observable<Route> {
+     // Asegurarse de enviar los campos correctos (nombre, puntos, descripcion?)
+    return this.http.post<Route>(`${this.apiUrl}/rutas`, routeData)
+       .pipe(catchError(this.handleError));
+  }
+
+  updateRoute(id: number, routeData: Partial<Route>): Observable<Route> {
+    // CORREGIDO:
+    return this.http.put<Route>(`${this.apiUrl}/rutas/${id}`, routeData)
+       .pipe(catchError(this.handleError));
+  }
+ 
+  // DELETE /api/rutas/:id (Este ya estaba bien en tu último código)
+  deleteRoute(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/rutas/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+ 
   getVehicles(): Observable<Vehicle[]> {
     return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles`)
       .pipe(catchError(this.handleError)); // Manejo de errores

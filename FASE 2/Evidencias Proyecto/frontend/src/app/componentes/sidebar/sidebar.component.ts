@@ -60,10 +60,7 @@ import { AuthService } from '../../services/auth.service';
     IonItem,
     IonIcon,
     IonLabel,
-    IonRouterOutlet,
-    IonHeader,
-    IonToolbar,
-    IonTitle
+    IonRouterOutlet
   ],
 })
 export class SidebarComponent {
@@ -88,6 +85,7 @@ export class SidebarComponent {
     { title: 'Documentos',     url: '/documentos',    icon: 'document' },
     { title: 'Recordatorios',  url: '/recordatorios', icon: 'alarm' },
     { title: 'Siniestros',     url: '/siniestros',    icon: 'warning' },
+    { title: 'Gestión de Rutas', url: '/rutas', icon: 'navigate' }, 
   ];
 
   private authService = inject(AuthService);

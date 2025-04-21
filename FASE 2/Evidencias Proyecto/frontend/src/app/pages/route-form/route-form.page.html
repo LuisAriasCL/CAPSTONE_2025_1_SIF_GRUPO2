@@ -1,0 +1,57 @@
+
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-loading [isOpen]="isLoading" message="Cargando datos..."></ion-loading>
+
+  <form *ngIf="routeForm" [formGroup]="routeForm" (ngSubmit)="saveRoute()" novalidate>
+    <ion-item lines="full">
+      <ion-label position="floating">Nombre de la Ruta</ion-label>
+      <ion-input type="text" formControlName="nombre" required></ion-input>
+    </ion-item>
+    <div *ngIf="isSubmitted && routeForm.controls['nombre']?.errors?.['required']" class="error-message ion-padding-start">
+      <ion-text color="danger">El nombre es requerido.</ion-text>
+    </div>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Descripción (Opcional)</ion-label>
+      <ion-textarea formControlName="descripcion" rows="3"></ion-textarea>
+    </ion-item>
+
+    <ion-item lines="full">
+       <ion-label position="floating">Puntos (Formato JSON)</ion-label>
+      <ion-textarea
+        formControlName="puntos"
+        required
+        rows="8"
+        placeholder="[[lat1, lon1], [lat2, lon2], ...]"
+        inputmode="text"
+        style="font-family: monospace; font-size: 0.9em;"
+        aria-label="Puntos de la ruta en formato JSON">
+      </ion-textarea>
+    </ion-item>
+    <div *ngIf="isSubmitted && routeForm.controls['puntos']?.errors" class="error-message ion-padding-start">
+       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['required']">
+         Los puntos son requeridos.
+       </ion-text>
+       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['invalidJson']">
+         El formato JSON no es válido. Revisa corchetes, comas, etc.
+       </ion-text>
+        <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['notAnArray'] || routeForm.controls['puntos'].errors?.['isEmptyArray']">
+         Debe ser un array JSON que no esté vacío.
+       </ion-text>
+       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['invalidPointFormat']">
+         Cada punto debe ser un array con dos números: [latitud, longitud].
+       </ion-text>
+     </div>
+     <ion-note class="ion-padding-start">
+         <small>Pega o escribe un array de arrays, ej: [[-35.8, -71.5], [-35.9, -71.6]]</small>
+     </ion-note>
+
+
+    <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="routeForm.invalid">
+      <ion-icon slot="start" name="save"></ion-icon>
+      {{ isEditMode ? 'Actualizar Ruta' : 'Crear Ruta' }}
+    </ion-button>
+
+  </form>
+</ion-content>
