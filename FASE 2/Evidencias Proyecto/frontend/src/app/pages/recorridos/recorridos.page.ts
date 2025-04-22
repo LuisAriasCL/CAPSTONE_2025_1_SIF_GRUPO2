@@ -62,31 +62,43 @@ export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
   // --- Ciclo de Vida del Componente ---
 
   ngOnInit() {
-   
-    this.socketService.connect();
-    
+    // QUITAR de aquí: this.socketService.connect();
+    // QUITAR de aquí: this.listenToSocketEvents();
+    console.log("[Mapa] ngOnInit ejecutado.");
+}
+
+ionViewWillEnter() {
+    console.log("[Mapa] ionViewWillEnter: Configurando listeners de Socket...");
+    // Configurar listeners CADA VEZ que la página va a entrar
     this.listenToSocketEvents();
-  }
+}
 
-  ionViewDidEnter() {
-    console.log("ionViewDidEnter: Inicializando mapa (si no existe)...");
-    this.initMap(); 
-  }
-  
+ionViewDidEnter() {
+    console.log("[Mapa] ionViewDidEnter: Inicializando mapa (si no existe)...");
+    this.initMap();
+}
 
-  ngOnDestroy() {
-    
-    console.log("ngOnDestroy: Limpiando recorridos");
-    // 1. Desuscribirse de TODOS los observables para evitar fugas de memoria
+ionViewWillLeave() {
+    console.log("[Mapa] ionViewWillLeave: Limpiando suscripciones de Socket...");
+    // Desuscribirse de los eventos al salir de la página para evitar duplicados
     this.subscriptions.unsubscribe();
-    // 2. Desconectar del servidor Socket.IO
-    this.socketService.disconnect();
-    // 3. Eliminar la instancia del mapa Leaflet si existe
-    if (this.map) {
-      this.map.remove();
-      console.log("Instancia del mapa Leaflet eliminada.");
+    // Crear una nueva instancia para futuras suscripciones si se vuelve a entrar
+    this.subscriptions = new Subscription();
+}
+
+ngOnDestroy() {
+    console.log("[Mapa] ngOnDestroy: Limpieza final.");
+    // Limpieza final si el componente se destruye completamente
+    if (!this.subscriptions.closed) {
+        this.subscriptions.unsubscribe();
     }
-  }
+    // Ya no desconectamos el socket aquí, lo maneja AuthService
+    // this.socketService.disconnect();
+    if (this.map) {
+        this.map.remove();
+        console.log("[Mapa] Instancia del mapa Leaflet eliminada.");
+    }
+}
 
   // --- Inicialización del Mapa ---
 

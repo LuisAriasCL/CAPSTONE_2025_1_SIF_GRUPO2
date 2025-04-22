@@ -71,7 +71,6 @@ io.on('connection', (socket) => {
 
     // --- Listener para iniciar simulación BAJO DEMANDA ---
     socket.on('startSimulation', async (data) => {
-        // data debería contener { routeId: number, vehicleId?: number }
         const routeId = data?.routeId;
         const vehicleId = data?.vehicleId || 1; // Usar ID 1 por defecto
 
@@ -79,59 +78,87 @@ io.on('connection', (socket) => {
 
         if (!routeId) {
             console.error("[Simulación] Error: No se proporcionó routeId.");
-            socket.emit('simulationError', { message: 'Falta ID de la ruta.' }); // Informar al cliente
+            socket.emit('simulationError', { message: 'Falta ID de la ruta.' });
             return;
         }
 
-        // Variable para guardar el ID del intervalo de esta simulación específica
-        let simulationIntervalId = null;
+        let simulationIntervalId = null; // ID del intervalo para esta simulación específica
 
         try {
             const ruta = await Route.findByPk(routeId);
-            if (!ruta || !ruta.puntos || !Array.isArray(ruta.puntos) || ruta.puntos.length === 0) {
-                console.error(`[Simulación] Ruta ID ${routeId} no encontrada o sin puntos válidos.`);
-                socket.emit('simulationError', { message: `Ruta ${routeId} no encontrada o inválida.` });
-                return;
+    
+            // --- LOGS DE DEPURACIÓN ---
+            console.log(`[Sim Debug] Ruta encontrada para ID ${routeId}:`, JSON.stringify(ruta, null, 2)); // Log 2: ¿Cómo es el objeto ruta?
+            if (ruta) {
+                console.log(`[Sim Debug] Tipo de ruta.puntos: ${typeof ruta.puntos}`);                // Log 3: ¿Qué tipo es ruta.puntos?
+                console.log(`[Sim Debug] Valor de ruta.puntos:`, ruta.puntos);                     // Log 4: ¿Cuál es su valor?
+                console.log(`[Sim Debug] ¿Es ruta.puntos un Array?: ${Array.isArray(ruta.puntos)}`); // Log 5: ¿Es array antes de parsear?
+            } else {
+                 console.log(`[Sim Debug] ¡Ruta con ID ${routeId} NO encontrada por findByPk!`);      // Log 6: ¿No se encontró?
+            }
+            // --- FIN LOGS DE DEPURACIÓN ---
+    
+            let puntosArray = null;
+            if (ruta && ruta.puntos) {
+                 try {
+                     puntosArray = typeof ruta.puntos === 'string' ? JSON.parse(ruta.puntos) : ruta.puntos;
+                     // --- LOGS DE DEPURACIÓN ---
+                     console.log(`[Sim Debug] 'puntos' parseado/obtenido como tipo: ${typeof puntosArray}, ¿es array?: ${Array.isArray(puntosArray)}`); // Log 7: ¿Tipo y array después de parsear?
+                     console.log(`[Sim Debug] Longitud de puntosArray: ${Array.isArray(puntosArray) ? puntosArray.length : 'N/A'}`); // Log 8: ¿Longitud?
+                     // --- FIN LOGS DE DEPURACIÓN ---
+                 } catch (parseError) {
+                     // --- LOG DE DEPURACIÓN ---
+                     console.error(`[Sim Debug] ¡ERROR AL PARSEAR JSON!`, parseError); // Log 9: ¿Falló el parseo?
+                     // --- FIN LOG DE DEPURACIÓN ---
+                     puntosArray = null;
+                 }
             }
 
+            // 1.2. Validar el array parseado (puntosArray)
+            if (!puntosArray || !Array.isArray(puntosArray) || puntosArray.length === 0) {
+                console.error(`[Simulación] Ruta ID ${routeId} no encontrada o sin puntos válidos tras parsear/verificar.`);
+                socket.emit('simulationError', { message: `Ruta ${routeId} no contiene puntos válidos.` });
+                return;
+            }
+             // Aquí podrías añadir validación extra para asegurar que cada punto interno sea [lat, lon] si quieres más robustez
+            // --- FIN: Parsear y Validar 'puntos' ---
+
+
+            // 2. Iniciar el intervalo de simulación (usa puntosArray)
             let puntoIndex = 0;
-            const puntosRuta = ruta.puntos;
+            const puntosRuta = puntosArray; // <--- Usar el array parseado
             const nombreRuta = ruta.nombre;
-            const intervaloSimulacion = 3000; // Intervalo para esta simulación (3 seg)
+            const intervaloSimulacion = 3000; // 3 segundos
 
             console.log(`[Simulación] Iniciando para Ruta "${nombreRuta}" (ID ${routeId}) con Vehículo ${vehicleId}`);
-            socket.emit('simulationStarted', { routeId, vehicleId }); // Notificar inicio al cliente
+            socket.emit('simulationStarted', { routeId, vehicleId });
 
-            // Función que se ejecutará en cada paso del intervalo
             const simulationStep = () => {
                 if (puntoIndex >= puntosRuta.length) {
                     console.log(`[Simulación] Fin para Ruta "${nombreRuta}" (ID ${routeId}), Vehículo ${vehicleId}`);
-                    if (simulationIntervalId) clearInterval(simulationIntervalId); // Detener intervalo
-                    io.emit('simulationEnded', { routeId, vehicleId }); // Notificar fin a TODOS (o solo al socket)
+                    if (simulationIntervalId) clearInterval(simulationIntervalId);
+                    io.emit('simulationEnded', { routeId, vehicleId });
                     return;
                 }
 
-                const [newLat, newLon] = puntosRuta[puntoIndex];
+                const [newLat, newLon] = puntosRuta[puntoIndex]; // Usa puntosRuta
                 const updateData = { id: vehicleId, latitude: newLat, longitude: newLon };
 
                 console.log(`[Simulación] Ruta "${nombreRuta}" [${puntoIndex + 1}/${puntosRuta.length}]: Vehículo ${vehicleId} a [${newLat}, ${newLon}]`);
-                io.emit('vehicleUpdated', updateData); // Emitir a TODOS
+                io.emit('vehicleUpdated', updateData);
 
                 puntoIndex++;
             };
 
-            // Ejecutar el primer paso inmediatamente y luego iniciar intervalo
-            simulationStep();
+            simulationStep(); // Primer paso inmediato
             simulationIntervalId = setInterval(simulationStep, intervaloSimulacion);
 
-            // Guardar ID del intervalo asociado al socket para poder detenerlo si se desconecta
-            // Necesitarías una forma de manejar esto si múltiples simulaciones pueden correr
-            // (socket as any).currentSimulationInterval = simulationIntervalId; // Ejemplo simple
+            // (Manejo opcional para detener si se desconecta, etc.)
 
         } catch (error) {
             console.error(`[Simulación] Error procesando ruta ID ${routeId}:`, error);
             socket.emit('simulationError', { message: `Error al procesar ruta ${routeId}.` });
-            if (simulationIntervalId) clearInterval(simulationIntervalId); // Asegurar detener intervalo si hay error
+            if (simulationIntervalId) clearInterval(simulationIntervalId);
         }
     });
     // --- Fin Listener 'startSimulation' ---
