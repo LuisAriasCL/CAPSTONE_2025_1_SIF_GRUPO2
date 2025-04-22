@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
             let puntoIndex = 0;
             const puntosRuta = puntosArray; // <--- Usar el array parseado
             const nombreRuta = ruta.nombre;
-            const intervaloSimulacion = 3000; // 3 segundos
+            const intervaloSimulacion = 1000; // 3 segundos
 
             console.log(`[Simulación] Iniciando para Ruta "${nombreRuta}" (ID ${routeId}) con Vehículo ${vehicleId}`);
             socket.emit('simulationStarted', { routeId, vehicleId });

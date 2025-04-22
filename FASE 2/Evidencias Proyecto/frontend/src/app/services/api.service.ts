@@ -3,7 +3,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
+import { of } from 'rxjs'; // Asegúrate de importar 'of' de rxjs
+import { map } from 'rxjs/operators';
 
 export interface Route {
   id: number;
@@ -35,7 +36,33 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   // Métodos CRUD 
+  getRoutePath(start: L.LatLngTuple, end: L.LatLngTuple): Observable<L.LatLngTuple[] | null> {
+    const lonLatStart = `${start[1]},${start[0]}`; // Invertir a Lon, Lat
+  const lonLatEnd = `${end[1]},${end[0]}`;     // Invertir a Lon, Lat
 
+  // --- URL CORREGIDA usando backticks y ${} ---
+  const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lonLatStart};${lonLatEnd}?overview=full&geometries=geojson`;
+  // --- FIN CORRECCIÓN ---
+    console.log("Llamando a OSRM:", osrmUrl);
+    return this.http.get<any>(osrmUrl)
+      .pipe(
+        map(response => {
+          if (response?.routes?.[0]?.geometry?.coordinates) {
+            const coordinates = response.routes[0].geometry.coordinates;
+            const latLngPoints: L.LatLngTuple[] = coordinates.map((coord: [number, number]) => [coord[1], coord[0]]); // Invertir a [lat, lon]
+            console.log(`Ruta OSRM recibida con ${latLngPoints.length} puntos.`);
+            return latLngPoints;
+          } else {
+            console.error("Respuesta inválida de OSRM:", response);
+            return null;
+          }
+        }),
+        catchError(error => {
+           console.error('Error en la llamada a OSRM:', error);
+           return of(null); // Devuelve observable con null
+        })
+      );
+  }
   // GET /api/rutas
   getRoutes(): Observable<Route[]> {
     return this.http.get<Route[]>(`${this.apiUrl}/rutas`) // <-- URL en español

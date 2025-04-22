@@ -1,4 +1,10 @@
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-loading [isOpen]="isLoading" message="Cargando datos..."></ion-loading>
@@ -14,44 +20,57 @@
 
     <ion-item lines="full">
       <ion-label position="floating">Descripción (Opcional)</ion-label>
-      <ion-textarea formControlName="descripcion" rows="3"></ion-textarea>
+      <ion-textarea formControlName="descripcion" rows="2"></ion-textarea>
     </ion-item>
 
-    <ion-item lines="full">
-       <ion-label position="floating">Puntos (Formato JSON)</ion-label>
-      <ion-textarea
-        formControlName="puntos"
-        required
-        rows="8"
-        placeholder="[[lat1, lon1], [lat2, lon2], ...]"
-        inputmode="text"
-        style="font-family: monospace; font-size: 0.9em;"
-        aria-label="Puntos de la ruta en formato JSON">
-      </ion-textarea>
-    </ion-item>
-    <div *ngIf="isSubmitted && routeForm.controls['puntos']?.errors" class="error-message ion-padding-start">
-       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['required']">
-         Los puntos son requeridos.
-       </ion-text>
-       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['invalidJson']">
-         El formato JSON no es válido. Revisa corchetes, comas, etc.
-       </ion-text>
-        <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['notAnArray'] || routeForm.controls['puntos'].errors?.['isEmptyArray']">
-         Debe ser un array JSON que no esté vacío.
-       </ion-text>
-       <ion-text color="danger" *ngIf="routeForm.controls['puntos'].errors?.['invalidPointFormat']">
-         Cada punto debe ser un array con dos números: [latitud, longitud].
-       </ion-text>
-     </div>
-     <ion-note class="ion-padding-start">
-         <small>Pega o escribe un array de arrays, ej: [[-35.8, -71.5], [-35.9, -71.6]]</small>
-     </ion-note>
+    <ion-item-divider class="ion-margin-top">
+      <ion-label>Definir Ruta en Mapa</ion-label>
+       <ion-button fill="clear" size="small" (click)="clearMapSelection()" slot="end" *ngIf="origenCoords || destinoCoords" color="warning">
+           <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+           Limpiar Puntos
+       </ion-button>
+    </ion-item-divider>
+    <p class="ion-padding-start ion-padding-end"><small>Haz clic en el mapa para marcar el Origen y luego el Destino.</small></p>
 
+    <div id="routeFormMap" #routeMap></div>
 
-    <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="routeForm.invalid">
+    <ion-list lines="none">
+       <ion-item *ngIf="origenCoords">
+           <ion-icon name="navigate-circle-outline" slot="start" color="success"></ion-icon>
+           <ion-label>Origen:</ion-label>
+           <ion-note slot="end">{{ origenCoords[0] | number:'1.5-5' }}, {{ origenCoords[1] | number:'1.5-5' }}</ion-note>
+       </ion-item>
+        <ion-item *ngIf="destinoCoords">
+           <ion-icon name="location-outline" slot="start" color="danger"></ion-icon>
+           <ion-label>Destino:</ion-label>
+           <ion-note slot="end">{{ destinoCoords[0] | number:'1.5-5' }}, {{ destinoCoords[1] | number:'1.5-5' }}</ion-note>
+        </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" (click)="calculateRoute()" [disabled]="!origenCoords || !destinoCoords" color="secondary" class="ion-margin-top">
+        <ion-icon slot="start" name="calculator-outline"></ion-icon>
+       Calcular Ruta Vía OSRM
+     </ion-button>
+     <ion-loading [isOpen]="isCalculatingRoute" message="Calculando ruta..."></ion-loading>
+     <ion-text color="danger" *ngIf="routeCalculationError" class="ion-padding">
+         <small>{{ routeCalculationError }}</small>
+     </ion-text>
+     
+    
+  <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="routeForm.invalid || !calculatedPoints">
       <ion-icon slot="start" name="save"></ion-icon>
       {{ isEditMode ? 'Actualizar Ruta' : 'Crear Ruta' }}
-    </ion-button>
+  </ion-button>
+     <div *ngIf="isSubmitted && !calculatedPoints && origenCoords && destinoCoords" class="error-message ion-padding-start ion-text-center">
+        <ion-text color="warning">Debes presionar "Calcular Ruta" antes de guardar.</ion-text>
+    </div>
+     <div *ngIf="isSubmitted && !origenCoords" class="error-message ion-padding-start ion-text-center">
+         <ion-text color="warning">Debes seleccionar un punto de Origen en el mapa.</ion-text>
+     </div>
+     <div *ngIf="isSubmitted && !destinoCoords" class="error-message ion-padding-start ion-text-center">
+         <ion-text color="warning">Debes seleccionar un punto de Destino en el mapa.</ion-text>
+     </div>
+
 
   </form>
 </ion-content>
