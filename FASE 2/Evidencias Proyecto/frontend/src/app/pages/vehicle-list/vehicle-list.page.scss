@@ -1,0 +1,84 @@
+// Estilos para la tabla/rejilla de vehículos
+
+.header-row {
+    font-weight: bold;
+    background-color: var(--ion-color-light-shade); // Fondo ligero para cabecera
+    border-bottom: 1px solid var(--ion-color-medium-shade);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.9em;
+  }
+  
+  .data-row {
+    border-bottom: 1px solid var(--ion-color-light-tint);
+    align-items: center; // Centrar verticalmente contenido de celda
+  
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  ion-col {
+    padding: 8px 5px; // Padding para celdas
+    overflow: hidden;
+    text-overflow: ellipsis; // Evitar desbordamiento
+    white-space: nowrap; // Evitar saltos de línea en celdas
+  }
+  
+  .actions-col {
+      display: flex;
+      justify-content: flex-end; // Alinear botones a la derecha
+      white-space: normal; // Permitir que los botones se ajusten
+      ion-button {
+          --padding-start: 5px;
+          --padding-end: 5px;
+          height: 28px; // Botones más pequeños
+      }
+  }
+  
+  // --- Estilos específicos para Móvil (cuando las columnas se apilan) ---
+  // Usamos media query para aplicar solo en pantallas pequeñas (inferior a md)
+  @media (max-width: 767px) {
+      // Ocultar cabecera de tabla en móvil
+      .header-row {
+          display: none;
+      }
+  
+      // Estilo para las filas de datos en móvil
+      .data-row {
+          border-bottom: 1px solid var(--ion-color-medium-shade);
+          margin-bottom: 10px; // Espacio entre "cartas"
+          padding-bottom: 5px;
+  
+           ion-col {
+                padding: 4px 0; // Menos padding vertical
+                white-space: normal; // Permitir saltos de línea
+                text-overflow: initial;
+                overflow: visible;
+                border-bottom: 1px dashed var(--ion-color-light-shade); // Separador ligero
+                &:last-child {
+                     border-bottom: none;
+                }
+           }
+      }
+  
+       // Mostrar etiquetas antes del valor en móvil
+       .label-sm {
+            display: inline-block; // O block si prefieres en línea separada
+            font-weight: bold;
+            color: var(--ion-color-medium-shade);
+            margin-right: 8px;
+            min-width: 70px; // Ancho mínimo para alinear un poco
+       }
+  
+       // Alinear acciones al centro o inicio en móvil
+       .actions-col {
+           justify-content: flex-start; // O center
+           padding-top: 10px;
+       }
+  }
+  
+  // Estilo por defecto para las etiquetas de móvil (ocultas en escritorio)
+  .label-sm {
+      display: none;
+  }

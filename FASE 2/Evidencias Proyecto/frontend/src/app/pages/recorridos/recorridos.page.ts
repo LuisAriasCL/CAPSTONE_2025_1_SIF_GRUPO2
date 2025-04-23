@@ -42,12 +42,12 @@ L.Marker.prototype.options.icon = iconDefault;
   ]
 })
 export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
-  @ViewChild('mapContainer') mapContainerRef!: ElementRef<HTMLDivElement>; // <-- Selector cambiado a 'mapContainer'
+  @ViewChild('mapContainer') mapContainerRef!: ElementRef<HTMLDivElement>; 
 
   private map!: L.Map; 
   
   private vehicleMarkers: { [vehicleId: number]: L.Marker } = {};
-  private subscriptions = new Subscription(); // Para gestionar suscripciones RxJS
+  private subscriptions = new Subscription(); 
 
  
 
@@ -62,14 +62,13 @@ export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
   // --- Ciclo de Vida del Componente ---
 
   ngOnInit() {
-    // QUITAR de aquí: this.socketService.connect();
-    // QUITAR de aquí: this.listenToSocketEvents();
+
     console.log("[Mapa] ngOnInit ejecutado.");
 }
 
 ionViewWillEnter() {
     console.log("[Mapa] ionViewWillEnter: Configurando listeners de Socket...");
-    // Configurar listeners CADA VEZ que la página va a entrar
+    
     this.listenToSocketEvents();
 }
 
@@ -92,8 +91,8 @@ ngOnDestroy() {
     if (!this.subscriptions.closed) {
         this.subscriptions.unsubscribe();
     }
-    // Ya no desconectamos el socket aquí, lo maneja AuthService
-    // this.socketService.disconnect();
+  
+   
     if (this.map) {
         this.map.remove();
         console.log("[Mapa] Instancia del mapa Leaflet eliminada.");
@@ -268,8 +267,6 @@ ngOnDestroy() {
  
   private createPopupContent(vehicle: Vehicle): string {
     const updated = vehicle.updatedAt ? new Date(vehicle.updatedAt).toLocaleString() : 'N/A';
-  
-    
     const latString = vehicle.latitude != null ? parseFloat(String(vehicle.latitude)).toFixed(6) : 'N/A';
     const lonString = vehicle.longitude != null ? parseFloat(String(vehicle.longitude)).toFixed(6) : 'N/A';
   

@@ -1,48 +1,82 @@
 // backend/models/Vehicle.js
-
-// 1. Importar los tipos de datos de Sequelize y la instancia de conexión
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Importamos la conexión configurada
+const sequelize = require('../config/database');
 
-// 2. Definir el modelo 'Vehicle' usando sequelize.define()
-// El primer argumento es el nombre del modelo (usualmente en singular y capitalizado)
-// El segundo argumento es un objeto que define las columnas de la tabla
-const Vehicle = sequelize.define('Vehicle', {
-    // Sequelize añade automáticamente una columna 'id' como clave primaria (INT AUTO_INCREMENT)
-    // a menos que definamos explícitamente otra clave primaria.
+// Definimos los ESTADOS en español para el ENUM
+const ESTADOS_VEHICULO = ['activo', 'inactivo', 'mantenimiento', 'taller'];
 
-    name: {
-        type: DataTypes.STRING, // Tipo de dato: Cadena de texto (VARCHAR(255) por defecto)
-        allowNull: false       // No puede ser nulo (NOT NULL)
+const Vehicle = sequelize.define('Vehicle', { // Nombre del Modelo sigue siendo 'Vehicle'
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        allowNull: false
     },
-    plate: {
-        type: DataTypes.STRING(50), // VARCHAR con longitud máxima de 50
+    
+    name: { 
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true             // Debe ser único en la tabla
+        trim: true
+    },
+    plate: { // Patente
+        type: DataTypes.STRING(50), 
+        allowNull: false,
+        unique: true,
+        trim: true
     },
     latitude: {
-        type: DataTypes.DECIMAL(10, 8), // Número decimal con precisión total de 10 y 8 decimales
-        allowNull: true,              // Puede ser nulo
-        defaultValue: 0.0            // Valor por defecto si no se especifica
+        type: DataTypes.DECIMAL(10, 8),
+        defaultValue: 0
     },
     longitude: {
-        type: DataTypes.DECIMAL(11, 8), // Precisión total de 11 y 8 decimales
-        allowNull: true,
-        defaultValue: 0.0
+        type: DataTypes.DECIMAL(11, 8),
+        defaultValue: 0
     },
-    status: {
-        type: DataTypes.ENUM('active', 'inactive', 'maintenance'), // Solo permite estos valores
-        defaultValue: 'active'    // Valor por defecto
-    }
-    // Las columnas 'createdAt' y 'updatedAt' (tipo DATETIME) son añadidas y gestionadas
-    // automáticamente por Sequelize si no se deshabilita la opción 'timestamps'.
+    status: { 
+        type: DataTypes.ENUM(ESTADOS_VEHICULO), 
+        defaultValue: 'activo',
+        allowNull: false,
+        comment: 'Estado actual del vehículo'
+    },
+   
+    anio: { 
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    marca: { 
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    modelo: { 
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    chasis: { 
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true // VIN debería ser único
+    },
+    tipoVehiculo: { 
+         type: DataTypes.STRING,
+         allowNull: true
+    },
+    proyecto: { 
+         type: DataTypes.STRING,
+         allowNull: true
+    },
+    kilometraje: { 
+         type: DataTypes.INTEGER,
+         allowNull: true,
+         defaultValue: 0
+    },
+   
+    createdAt: { type: DataTypes.DATE },
+    updatedAt: { type: DataTypes.DATE }
 }, {
-    // 3. Opciones adicionales del modelo
-    tableName: 'vehicles', // Nombre exacto de la tabla en la base de datos
-                           // Si no se especifica, Sequelize intentaría usar 'Vehicles' (pluralizado)
-    timestamps: true       // Habilita las columnas createdAt y updatedAt (activado por defecto)
-                           // Sequelize las llenará automáticamente al crear/actualizar registros
+    tableName: 'vehicles', 
+    timestamps: true,
+    comment: 'Tabla para almacenar información de los vehículos de la flota'
 });
 
-// 4. Exportar el modelo para que pueda ser usado en otras partes (ej. en las rutas)
-module.exports = Vehicle;
+
+module.exports = Vehicle; 

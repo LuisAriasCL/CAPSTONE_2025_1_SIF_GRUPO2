@@ -19,23 +19,23 @@ const User = sequelize.define('User', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true, // El email debe ser único
+        unique: true, 
         validate: {
-            isEmail: true // Validación incorporada de Sequelize
+            isEmail: true 
         }
     },
     password: {
-        type: DataTypes.STRING, // Guardará el HASH de la contraseña, no el texto plano
+        type: DataTypes.STRING, 
         allowNull: false
     },
     role: {
         type: DataTypes.ENUM(ROLES),
         allowNull: false,
-        defaultValue: 'driver' // Establece un rol por defecto (ajusta según tu lógica)
+        defaultValue: 'driver' 
     }
-    // createdAt y updatedAt se añaden automáticamente por defecto (timestamps: true)
+
 }, {
-    tableName: 'users', // Nombre de la tabla en la base de datos
+    tableName: 'users', 
     timestamps: true
 });
 

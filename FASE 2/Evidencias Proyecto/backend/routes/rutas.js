@@ -1,9 +1,9 @@
-// backend/routes/rutas.js
+
 const express = require('express');
-const Route = require('../models/Route'); // Importar el modelo Route (con campos en español)
+const Route = require('../models/Route'); 
 const router = express.Router();
 
-// --- Aquí definiremos los endpoints ---
+
 // --- Crear una Nueva Ruta ---
 // POST /api/rutas
 router.post('/', async (req, res) => {
@@ -40,11 +40,11 @@ router.post('/', async (req, res) => {
 
 
     try {
-        // Crear la nueva ruta en la BD usando los nombres de campo en español
+       
         const nuevaRuta = await Route.create({
             nombre: nombre,
-            descripcion: descripcion, // Será null si no se envía
-            puntos: puntos // Guardar el array de puntos directamente (Sequelize/MySQL maneja JSON)
+            descripcion: descripcion, 
+            puntos: puntos 
         });
 
         res.status(201).json(nuevaRuta); // Devolver la ruta creada
@@ -160,9 +160,9 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Ruta no encontrada para eliminar.' });
         }
 
-        // Éxito al eliminar
+        
         res.status(200).json({ message: 'Ruta eliminada exitosamente.' });
-        // Alternativa: res.status(204).send(); // 204 No Content (sin cuerpo de respuesta)
+      
 
     } catch (error) {
         console.error(`Error al eliminar ruta ${req.params.id}:`, error);

@@ -20,9 +20,16 @@ export interface Vehicle {
   plate: string;
   latitude: number;
   longitude: number;
-  status: 'active' | 'inactive' | 'maintenance'; 
-  createdAt?: string; 
-  updatedAt?: string; 
+  status: 'activo' | 'inactivo' | 'mantenimiento' | 'taller'; 
+  createdAt?: string;
+  updatedAt?: string;
+  anio?: number | null;
+  marca?: string | null;
+  modelo?: string | null;
+  chasis?: string | null;
+  tipoVehiculo?: string | null;
+  proyecto?: string | null;
+  kilometraje?: number | null;
 }
 
 @Injectable({
@@ -101,7 +108,7 @@ export class ApiService {
 
   
   getVehicle(id: number): Observable<Vehicle> {
-    return this.http.get<Vehicle>(`<span class="math-inline">\{this\.apiUrl\}/vehicles/</span>{id}`)
+    return this.http.get<Vehicle>(`${this.apiUrl}/vehicles/${id}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -113,13 +120,13 @@ export class ApiService {
 
   
   updateVehicle(id: number, vehicleData: Partial<Vehicle>): Observable<Vehicle> {
-    return this.http.put<Vehicle>(`<span class="math-inline">\{this\.apiUrl\}/vehicles/</span>{id}`, vehicleData)
+    return this.http.put<Vehicle>(`${this.apiUrl}/vehicles/${id}`, vehicleData)
       .pipe(catchError(this.handleError));
   }
 
 
   deleteVehicle(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`<span class="math-inline">\{this\.apiUrl\}/vehicles/</span>{id}`)
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/vehicles/${id}`)
       .pipe(catchError(this.handleError));
   }
 

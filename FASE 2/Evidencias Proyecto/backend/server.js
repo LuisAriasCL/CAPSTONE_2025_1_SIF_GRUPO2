@@ -1,34 +1,31 @@
-// backend/server.js
 
-// --- 1. Importaciones ---
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require("socket.io");
 const sequelize = require('./config/database');
-const Route = require('./models/Route'); // <-- IMPORTANTE: Importar modelo Route
-const Vehicle = require('./models/Vehicle'); // <-- Importar si lo usas (ej. para actualizar BD en simulación opcional)
+const Route = require('./models/Route'); 
+const Vehicle = require('./models/Vehicle'); 
 const vehicleRoutes = require('./routes/vehiculos');
 const authRoutes = require('./routes/auth');
-const routeRoutes = require('./routes/rutas'); // <-- Router para /api/rutas
+const routeRoutes = require('./routes/rutas'); 
 
-// --- (Ya no necesitamos RUTA_SIMULADA global aquí) ---
-// const RUTA_SIMULADA = [ ... ];
+
 
 // --- 2. Inicialización ---
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Ajustar en producción
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
 
 // --- 3. Middlewares de Express ---
-app.use(cors({ origin: "*" })); // Habilitar CORS
-app.use(express.json()); // Parsear JSON bodies
+app.use(cors({ origin: "*" })); 
+app.use(express.json()); 
 
 // Middleware para inyectar io
 app.use((req, res, next) => {
@@ -41,8 +38,7 @@ async function testDbConnection() {
     try {
         await sequelize.authenticate();
         console.log('✅ Conexión a la Base de Datos (Sequelize) establecida correctamente.');
-        // NOTA: No usar sync en producción
-        // await sequelize.sync({ alter: true });
+   
     } catch (error) {
         console.error('❌ Error al conectar a la Base de Datos:', error);
     }
@@ -120,15 +116,15 @@ io.on('connection', (socket) => {
                 socket.emit('simulationError', { message: `Ruta ${routeId} no contiene puntos válidos.` });
                 return;
             }
-             // Aquí podrías añadir validación extra para asegurar que cada punto interno sea [lat, lon] si quieres más robustez
+            
             // --- FIN: Parsear y Validar 'puntos' ---
 
 
             // 2. Iniciar el intervalo de simulación (usa puntosArray)
             let puntoIndex = 0;
-            const puntosRuta = puntosArray; // <--- Usar el array parseado
+            const puntosRuta = puntosArray; 
             const nombreRuta = ruta.nombre;
-            const intervaloSimulacion = 1000; // 3 segundos
+            const intervaloSimulacion = 1000; 
 
             console.log(`[Simulación] Iniciando para Ruta "${nombreRuta}" (ID ${routeId}) con Vehículo ${vehicleId}`);
             socket.emit('simulationStarted', { routeId, vehicleId });
@@ -141,7 +137,7 @@ io.on('connection', (socket) => {
                     return;
                 }
 
-                const [newLat, newLon] = puntosRuta[puntoIndex]; // Usa puntosRuta
+                const [newLat, newLon] = puntosRuta[puntoIndex]; 
                 const updateData = { id: vehicleId, latitude: newLat, longitude: newLon };
 
                 console.log(`[Simulación] Ruta "${nombreRuta}" [${puntoIndex + 1}/${puntosRuta.length}]: Vehículo ${vehicleId} a [${newLat}, ${newLon}]`);
@@ -150,10 +146,10 @@ io.on('connection', (socket) => {
                 puntoIndex++;
             };
 
-            simulationStep(); // Primer paso inmediato
+            simulationStep(); 
             simulationIntervalId = setInterval(simulationStep, intervaloSimulacion);
 
-            // (Manejo opcional para detener si se desconecta, etc.)
+          
 
         } catch (error) {
             console.error(`[Simulación] Error procesando ruta ID ${routeId}:`, error);
@@ -163,7 +159,7 @@ io.on('connection', (socket) => {
     });
     // --- Fin Listener 'startSimulation' ---
 
-    // Podrías añadir un listener para 'stopSimulation' aquí
+    //  añadir un listener para 'stopSimulation' aquí
     // socket.on('stopSimulation', (data) => {
     //    const intervalId = (socket as any).currentSimulationInterval;
     //    if (intervalId) {
@@ -175,17 +171,14 @@ io.on('connection', (socket) => {
     // });
 
 
-}); // Fin de io.on('connection', ...)
+}); 
 
-// --- BLOQUE DE SIMULACIÓN AUTOMÁTICA ELIMINADO ---
-// Ya no está el setInterval global aquí
-// --- FIN BLOQUE ELIMINADO ---
 
-// --- 7. Iniciar el Servidor ---
-const PORT = process.env.PORT || 8100; // Asegúrate que PORT en .env sea 8100 o el que uses
+
+
+const PORT = process.env.PORT || 8100; 
 server.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// --- 8. Exportar 'io' ---
 module.exports = { io };

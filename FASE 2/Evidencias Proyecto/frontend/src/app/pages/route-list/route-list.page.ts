@@ -2,12 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent } from '@ionic/angular';
-import { Router, RouterLink } from '@angular/router'; // Importar RouterLink si usas FAB
+import { Router, RouterLink } from '@angular/router'; 
 import { addIcons } from 'ionicons';
 import { navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline } from 'ionicons/icons';
-// Importar Servicios y Componentes necesarios
-import { ApiService, Route } from '../../services/api.service'; // Importar servicio API y la interfaz Route
-import { SidebarComponent } from '../../componentes/sidebar/sidebar.component'; // <-- IMPORTAR SIDEBAR// Importar header
+
+import { ApiService, Route } from '../../services/api.service'; 
+import { SidebarComponent } from '../../componentes/sidebar/sidebar.component'; 
 import { SocketService } from '../../services/socket.service'; 
 @Component({
   selector: 'app-route-list',
@@ -35,10 +35,9 @@ export class RouteListPage implements OnInit {
 }
 
   ngOnInit() {
-    // Puedes cargar aquí o en ionViewWillEnter
+    
   }
 
-  // Usamos ionViewWillEnter para recargar cada vez que se entra a la página
   ionViewWillEnter() {
     this.loadRoutes();
   }
@@ -57,8 +56,8 @@ export class RouteListPage implements OnInit {
       next: (data) => {
         this.routes = data;
         this.isLoading = false;
-        loadingIndicator?.dismiss(); // Ocultar loading si existe
-        event?.target.complete(); // Completar refresher si existe
+        loadingIndicator?.dismiss(); 
+        event?.target.complete(); 
         console.log('Rutas cargadas:', this.routes);
       },
       error: async (error) => {
@@ -87,23 +86,19 @@ export class RouteListPage implements OnInit {
   // --- Navegación ---
   goToAddRoute() {
     console.log('Navegando a /rutas/new');
-    this.router.navigateByUrl('/rutas/new'); // Navegar a la página de creación
-    // this.presentToast('Funcionalidad "Crear Ruta" no implementada aún.', 'warning'); // <--- QUITAR
+    this.router.navigateByUrl('/rutas/new'); 
   }
   
   // Este método se llama desde el ion-item-option del lápiz
   editRoute(id: number) {
     console.log('Navegando a /rutas/edit/' + id);
-    this.router.navigate(['/rutas/edit', id]); // Navegar a la página de edición con ID
-    // this.presentToast(`Funcionalidad "Editar ${id}" no implementada aún.`, 'warning'); // <--- QUITAR
+    this.router.navigate(['/rutas/edit', id]); 
   }
   startRouteSimulation(routeId: number, routeName: string) {
     console.log(`Solicitando iniciar simulación para Ruta ID: ${routeId}, Nombre: "${routeName}"`);
 
-    // Definir el ID del vehículo a simular (por ahora fijo)
-    const vehicleIdToUse = 1; // <-- O el ID que quieras usar
-
-    // Verificar si el socket está conectado (opcional)
+    // Definir el ID del vehículo a simular 
+    const vehicleIdToUse = 1; 
   
 
     // Emitir el evento 'startSimulation' al backend
@@ -116,7 +111,7 @@ export class RouteListPage implements OnInit {
     this.presentToast(`Iniciando simulación para "${routeName}" con vehículo ${vehicleIdToUse}. Ve al mapa.`, 'success');
 
     // Navegar automáticamente a la página del mapa
-    this.router.navigateByUrl('/recorridos'); // O '/recorridos' si esa es tu página del mapa
+    this.router.navigateByUrl('/recorridos'); 
   }
   // --- Fin del método a añadir ---
 
@@ -143,7 +138,7 @@ export class RouteListPage implements OnInit {
           text: 'Eliminar',
           cssClass: 'danger',
           handler: () => {
-            this.deleteRoute(id); // Llamar a la función de borrado si confirma
+            this.deleteRoute(id); 
           }
         }
       ]
@@ -160,7 +155,7 @@ export class RouteListPage implements OnInit {
         console.log('Ruta eliminada:', res.message);
         await loading.dismiss();
         this.presentToast('Ruta eliminada exitosamente.', 'success');
-        this.loadRoutes(); // Recargar la lista después de eliminar
+        this.loadRoutes(); 
       },
       error: async (error) => {
          await loading.dismiss();
@@ -175,7 +170,7 @@ export class RouteListPage implements OnInit {
     });
   }
 
-   // --- Helper para Toasts ---
+  
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
      const toast = await this.toastController.create({
        message: message,
@@ -186,4 +181,4 @@ export class RouteListPage implements OnInit {
      toast.present();
   }
 
-} // Fin de la clase
+} 

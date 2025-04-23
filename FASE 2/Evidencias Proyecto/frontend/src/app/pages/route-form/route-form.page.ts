@@ -1,34 +1,28 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef } from '@angular/core'; // Añadimos AfterViewInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef
 import { CommonModule } from '@angular/common';
-// Importamos ReactiveFormsModule para FormGroup
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-// Imports de Ionic y Angular Router
 import { IonicModule, LoadingController, AlertController, ToastController, NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
-import * as L from 'leaflet'; // Importamos Leaflet
-
-// Importar Servicios y la interfaz Route (Route se usa indirectamente)
+import * as L from 'leaflet'; 
 import { ApiService, Route } from '../../services/api.service';
-// NO importamos SharedHeaderComponent aquí, asumiendo que lo manejas globalmente
 import { addIcons } from 'ionicons';
-// Añadimos iconos nuevos para el mapa y botones
 import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline } from 'ionicons/icons';
 
-// Ya NO necesitamos el validador jsonPointsValidator
+
 
 @Component({
-  selector: 'app-route-form', // Tu selector
-  templateUrl: './route-form.page.html', // Tu template HTML (¡debe tener el div #routeMap!)
-  styleUrls: ['./route-form.page.scss'], // Tus estilos
+  selector: 'app-route-form', 
+  templateUrl: './route-form.page.html', 
+  styleUrls: ['./route-form.page.scss'], 
   standalone: true,
   imports: [
       IonicModule,
       CommonModule,
-      ReactiveFormsModule // <--- Asegúrate que esté aquí
-      // No incluimos SharedHeaderComponent
+      ReactiveFormsModule 
+     
     ]
 })
-export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Añadimos interfaces
+export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { 
 
   // --- Inyecciones ---
   private fb = inject(FormBuilder);
@@ -39,14 +33,14 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
-  private changeDetectorRef = inject(ChangeDetectorRef); // <--- Añadido para forzar detección
+  private changeDetectorRef = inject(ChangeDetectorRef); 
 
   // --- Propiedades del formulario y estado ---
   routeForm!: FormGroup;
   isEditMode = false;
   routeId: number | null = null;
   pageTitle = 'Nueva Ruta';
-  isLoading = false; // Para cargar datos
+  isLoading = false; 
   isSubmitted = false;
 
   // --- NUEVAS Propiedades para el Mapa Interactivo ---
@@ -73,7 +67,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
       descripcion: [''],
     });
 
-    // Modo Edición?
+    // Modo Edición
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam) {
       this.isEditMode = true;
@@ -111,7 +105,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
       console.log("Mapa del formulario listo.");
       setTimeout(() => this.routeMap?.invalidateSize(), 200);
 
-      // Si estamos editando y los puntos ya cargaron, mostrarlos
+      
       if (this.isEditMode && this.calculatedPoints) {
           this.displayLoadedRouteOnMap();
       }
@@ -190,7 +184,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
 
   // --- Cargar Datos para Editar ---
   async loadRouteData() {
-    // ... (código igual que en respuesta #143) ...
+    
      if (!this.routeId) return;
     this.isLoading = true;
     const loading = await this.loadingCtrl.create({ message: 'Cargando datos...' });
@@ -237,7 +231,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
           this.routeMap.fitBounds(this.routePolyline.getBounds().pad(0.1)); // Ajustar zoom
           this.presentToast("Ruta calculada.", "success");
         } else {
-          this.calculatedPoints = null; // Falló, quitar puntos
+          this.calculatedPoints = null; 
           this.routeCalculationError = 'No se pudo calcular una ruta válida.';
           this.presentToast(this.routeCalculationError, "danger");
         }
@@ -250,7 +244,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
         this.routeCalculationError = 'Error al conectar con servicio de rutas.';
         console.error("Error cálculo OSRM:", error);
         this.presentToast(this.routeCalculationError, "danger");
-        this.changeDetectorRef.detectChanges(); // <-- Forzar detección aquí también
+        this.changeDetectorRef.detectChanges(); 
       }
     });
   }
@@ -293,8 +287,8 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { // Aña
     }
   }
 
-  // --- Helpers (como estaban) ---
+
   async presentAlert(header: string, message: string) { /* ... */ }
   async presentToast(message: string, color: 'success'|'warning'|'danger'|'medium' = 'medium') { /* ... */ }
 
-} // Fin de la clase
+} 

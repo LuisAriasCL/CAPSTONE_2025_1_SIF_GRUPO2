@@ -20,7 +20,8 @@ router.get('/', async (req, res) => {
 
 // POST /api/vehicles - Crear un NUEVO vehículo
 router.post('/', async (req, res) => {
-    const { name, plate, latitude, longitude, status } = req.body;
+    const { name, plate, latitude, longitude, status, 
+        anio, marca, modelo, chasis, tipoVehiculo, proyecto, kilometraje } = req.body;
 
     if (!name || !plate) {
         return res.status(400).json({ message: 'Los campos nombre y matrícula son requeridos.' });
@@ -28,11 +29,8 @@ router.post('/', async (req, res) => {
 
     try {
         const newVehicle = await Vehicle.create({
-            name,
-            plate,
-            latitude,
-            longitude,
-            status
+            name, plate, latitude, longitude, status, 
+            anio, marca, modelo, chasis, tipoVehiculo, proyecto, kilometraje
         });
 
         req.io.emit('vehicleCreated', newVehicle.toJSON());
