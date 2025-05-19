@@ -69,10 +69,8 @@ export class SocketService {
       // Si el socket no está conectado, intentar conectar
       if (!this.socket || !this.socket.connected) {
         console.warn(`Socket no conectado al intentar escuchar '${eventName}'. Intentando conectar...`);
-        // Podríamos esperar a que conecte o simplemente empezar a escuchar,
-        // socket.io-client guarda los listeners si se añaden antes de conectar.
-        // this.connect(); // Opcional: forzar conexión si no existe
-        if (!this.socket) this.connect(); // Conectar si no hay instancia
+        
+        if (!this.socket) this.connect(); 
       }
 
       // Registrar el listener para el evento específico

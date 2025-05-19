@@ -14,7 +14,7 @@ import {
 import { addIcons } from 'ionicons'; // Necesario para los iconos
 import { chevronDownOutline, personOutline, settingsOutline, logOutOutline } from 'ionicons/icons';
 import { AlertaPersonalizadaComponent, AlertButton } from '../alerta-personalizada/alerta-personalizada.component'; // Ajusta la ruta
-
+import { AuthService } from '../../services/auth.service'; 
 @Component({
   selector: 'app-dropdown-usuario',
   templateUrl: './dropdown-usuario.component.html',
@@ -38,7 +38,8 @@ export class DropdownUsuarioComponent  {
 
   constructor(
     private modalCtrl: ModalController,
-    private router: Router
+    private router: Router,
+    private authService: AuthService // Asegúrate de tener el servicio de autenticación
   ) {
     // Registra los iconos que usarás en este componente
     addIcons({ chevronDownOutline, personOutline, settingsOutline, logOutOutline });
@@ -124,5 +125,6 @@ export class DropdownUsuarioComponent  {
 
   logout(): void {
     this.mostrarAlertaLogout();
+    this.authService.logout();
   }
 }

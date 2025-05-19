@@ -1,7 +1,7 @@
 node_modules
 node_modules/
 # Angular / TypeScript cache and build files
-
+auth.service.ts
 .env
 # Angular y TypeScript
 .angular/

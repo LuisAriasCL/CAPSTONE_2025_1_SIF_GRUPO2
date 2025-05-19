@@ -16,3 +16,4 @@ node_modules/
 **/vite/deps/
 **/vite/deps_ssr/
 .env
+auth_service.ts

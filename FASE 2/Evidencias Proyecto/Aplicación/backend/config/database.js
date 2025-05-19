@@ -1,4 +1,4 @@
-// backend/config/database.js
+
 
 
 require('dotenv').config();
@@ -15,7 +15,7 @@ const sequelize = new Sequelize(
         dialect: process.env.DB_DIALECT,// Tipo de base de datos (mysql)
         logging: false, // Desactiva los mensajes SQL en consola. Pon console.log para verlos.
                         // Muy útil para depurar, pero ensucia la consola.
-        pool: { // Opcional: Configuración del pool de conexiones
+        pool: { 
           max: 5,     // Máximo de conexiones activas
           min: 0,     // Mínimo de conexiones inactivas
           acquire: 30000, // Tiempo máximo (ms) para intentar obtener una conexión antes de lanzar error
@@ -24,6 +24,5 @@ const sequelize = new Sequelize(
     }
 );
 
-// 4. Exportar la instancia de Sequelize configurada
-// Otros archivos podrán importar esta instancia para interactuar con la BD
+
 module.exports = sequelize;

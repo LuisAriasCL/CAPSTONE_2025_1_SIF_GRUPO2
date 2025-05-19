@@ -69,10 +69,9 @@ export class LoginPage implements OnInit {
         // Navegar a la página principal (ej. /home) después del login exitoso
         // replaceUrl: true para que el usuario no pueda "volver atrás" a la pantalla de login
         // Dentro del .subscribe -> next:
- // Navegar a la raíz protegida (que redirigirá a dashboard)
+ 
  this.router.navigateByUrl('/', { replaceUrl: true });
- // O directamente a dashboard:
- // this.router.navigateByUrl('/dashboard', { replaceUrl: true });
+ 
       },
       error: async (error) => {
         // --- Error en el Login ---

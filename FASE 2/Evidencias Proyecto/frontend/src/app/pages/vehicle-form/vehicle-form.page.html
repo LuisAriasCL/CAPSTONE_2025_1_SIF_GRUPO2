@@ -1,0 +1,88 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/vehiculos"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-loading [isOpen]="isLoading" message="Cargando datos..."></ion-loading>
+
+  <form *ngIf="vehicleForm" [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()" novalidate>
+    <ion-list>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Nombre Identificador</ion-label>
+        <ion-input type="text" formControlName="name" required></ion-input>
+      </ion-item>
+      <div *ngIf="isSubmitted && vehicleForm.controls['name']?.errors?.['required']" class="error-message ion-padding-start">
+        <ion-text color="danger"><small>El nombre es requerido.</small></ion-text>
+      </div>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Patente</ion-label>
+        <ion-input type="text" formControlName="plate" required autocapitalize="characters"></ion-input>
+      </ion-item>
+       <div *ngIf="isSubmitted && vehicleForm.controls['plate']?.errors?.['required']" class="error-message ion-padding-start">
+        <ion-text color="danger"><small>La patente es requerida.</small></ion-text>
+      </div>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Año</ion-label>
+        <ion-input type="number" formControlName="anio" inputmode="numeric"></ion-input>
+      </ion-item>
+      <ion-item lines="full">
+        <ion-label position="floating">Marca</ion-label>
+        <ion-input type="text" formControlName="marca"></ion-input>
+      </ion-item>
+
+       <ion-item lines="full">
+        <ion-label position="floating">Modelo</ion-label>
+        <ion-input type="text" formControlName="modelo"></ion-input>
+      </ion-item>
+
+       <ion-item lines="full">
+        <ion-label position="floating">Chasis (VIN)</ion-label>
+        <ion-input type="text" formControlName="chasis"></ion-input>
+      </ion-item>
+
+       <ion-item lines="full">
+        <ion-label position="floating">Tipo de Vehículo</ion-label>
+        <ion-input type="text" formControlName="tipoVehiculo"></ion-input>
+         </ion-item>
+
+       <ion-item lines="full">
+        <ion-label position="floating">Proyecto Asignado</ion-label>
+        <ion-input type="text" formControlName="proyecto"></ion-input>
+         </ion-item>
+
+       <ion-item lines="full">
+        <ion-label position="floating">Kilometraje</ion-label>
+        <ion-input type="number" formControlName="kilometraje" inputmode="numeric"></ion-input>
+      </ion-item>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Estado</ion-label>
+        <ion-select formControlName="status" required interface="popover">
+          <ion-select-option value="activo">Activo</ion-select-option>
+          <ion-select-option value="inactivo">Inactivo</ion-select-option>
+          <ion-select-option value="mantenimiento">Mantenimiento</ion-select-option>
+          <ion-select-option value="taller">En Taller</ion-select-option>
+        </ion-select>
+      </ion-item>
+       <div *ngIf="isSubmitted && vehicleForm.controls['status']?.errors?.['required']" class="error-message ion-padding-start">
+        <ion-text color="danger"><small>El estado es requerido.</small></ion-text>
+      </div>
+
+    </ion-list>
+
+    <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="vehicleForm.invalid">
+      <ion-icon slot="start" name="save"></ion-icon>
+      {{ isEditMode ? 'Actualizar Vehículo' : 'Crear Vehículo' }}
+    </ion-button>
+
+  </form>
+
+</ion-content>

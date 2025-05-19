@@ -42,12 +42,12 @@ L.Marker.prototype.options.icon = iconDefault;
   ]
 })
 export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
-  @ViewChild('mapContainer') mapContainerRef!: ElementRef<HTMLDivElement>; // <-- Selector cambiado a 'mapContainer'
+  @ViewChild('mapContainer') mapContainerRef!: ElementRef<HTMLDivElement>; 
 
   private map!: L.Map; 
   
   private vehicleMarkers: { [vehicleId: number]: L.Marker } = {};
-  private subscriptions = new Subscription(); // Para gestionar suscripciones RxJS
+  private subscriptions = new Subscription(); 
 
  
 
@@ -62,31 +62,42 @@ export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
   // --- Ciclo de Vida del Componente ---
 
   ngOnInit() {
-   
-    this.socketService.connect();
+
+    console.log("[Mapa] ngOnInit ejecutado.");
+}
+
+ionViewWillEnter() {
+    console.log("[Mapa] ionViewWillEnter: Configurando listeners de Socket...");
     
     this.listenToSocketEvents();
-  }
+}
 
-  ionViewDidEnter() {
-    console.log("ionViewDidEnter: Inicializando mapa (si no existe)...");
-    this.initMap(); 
-  }
-  
+ionViewDidEnter() {
+    console.log("[Mapa] ionViewDidEnter: Inicializando mapa (si no existe)...");
+    this.initMap();
+}
 
-  ngOnDestroy() {
-    
-    console.log("ngOnDestroy: Limpiando recorridos");
-    // 1. Desuscribirse de TODOS los observables para evitar fugas de memoria
+ionViewWillLeave() {
+    console.log("[Mapa] ionViewWillLeave: Limpiando suscripciones de Socket...");
+    // Desuscribirse de los eventos al salir de la página para evitar duplicados
     this.subscriptions.unsubscribe();
-    // 2. Desconectar del servidor Socket.IO
-    this.socketService.disconnect();
-    // 3. Eliminar la instancia del mapa Leaflet si existe
-    if (this.map) {
-      this.map.remove();
-      console.log("Instancia del mapa Leaflet eliminada.");
+    // Crear una nueva instancia para futuras suscripciones si se vuelve a entrar
+    this.subscriptions = new Subscription();
+}
+
+ngOnDestroy() {
+    console.log("[Mapa] ngOnDestroy: Limpieza final.");
+    // Limpieza final si el componente se destruye completamente
+    if (!this.subscriptions.closed) {
+        this.subscriptions.unsubscribe();
     }
-  }
+  
+   
+    if (this.map) {
+        this.map.remove();
+        console.log("[Mapa] Instancia del mapa Leaflet eliminada.");
+    }
+}
 
   // --- Inicialización del Mapa ---
 
@@ -256,8 +267,6 @@ export class HomePage implements OnInit, ViewDidEnter, OnDestroy {
  
   private createPopupContent(vehicle: Vehicle): string {
     const updated = vehicle.updatedAt ? new Date(vehicle.updatedAt).toLocaleString() : 'N/A';
-  
-    
     const latString = vehicle.latitude != null ? parseFloat(String(vehicle.latitude)).toFixed(6) : 'N/A';
     const lonString = vehicle.longitude != null ? parseFloat(String(vehicle.longitude)).toFixed(6) : 'N/A';
   

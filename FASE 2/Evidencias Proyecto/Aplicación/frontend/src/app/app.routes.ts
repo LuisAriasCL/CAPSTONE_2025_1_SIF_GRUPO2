@@ -21,28 +21,46 @@ export const routes: Routes = [
     component: SidebarComponent, // Carga el contenido con menú
     canActivate: [authGuard], // Protegido por el guardián 
     children: [
-      // Rutas hijas que se renderizan DENTRO de MainComponent
+     
       {
-        path: 'dashboard', // Ruta: /dashboard
+        path: 'dashboard', 
         loadComponent: () => import('./pages/dashboard/dashboard.page').then( m => m.DashboardPage)
       },
       {
-        path: 'recorridos', // Ruta: /home (mapa)
+        path: 'recorridos', 
         loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage)
       },
-      // --- Añadir aquí las otras rutas del menú ---
-      // {
-      //   path: 'vehiculos', // Ruta: /vehicles (ejemplo)
-      //   loadComponent: () => import('./pages/vehicles/vehicles.page').then( m => m.VehiclesPage)
-      // },
-      // {
-      //   path: 'conductores', // Ruta: /drivers (ejemplo)
-      //   loadComponent: () => import('./pages/drivers/drivers.page').then( m => m.DriversPage)
-      // },
-      // ... etc ...
-
-      // Redirección por defecto DENTRO del sidebar autenticado
-      // Si el usuario va a "/" (después de login), redirige a "/dashboard"
+      {
+        path: 'rutas', 
+        data: { title: 'Gestión de Rutas' },
+        loadComponent: () => import('./pages/route-list/route-list.page').then( m => m.RouteListPage)
+      },
+      
+      {
+        path: 'rutas/new', 
+        data: { title: 'Nueva Ruta' }, 
+        loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+      },
+      {
+        path: 'rutas/edit/:id', 
+        data: { title: 'Editar Ruta' }, 
+        loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+      },
+      {
+        path: 'vehiculos', 
+        data: { title: 'Vehículos' }, 
+        loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
+      },
+      {
+        path: 'vehiculos/new', // Ruta para crear vehículo nuevo
+        data: { title: 'Nuevo Vehículo' }, 
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
+      },
+      {
+        path: 'vehiculos/edit/:id', 
+        data: { title: 'Editar Vehículo' }, 
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
+      },
       {
         path: '',
         redirectTo: 'dashboard',
@@ -50,6 +68,20 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'route-form',
+    loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+  },
+  {
+    path: 'vehicle-list',
+    loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
+  },
+  {
+    path: 'vehicle-form',
+    loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
+  },
+  
+    
 
   // --- Ruta Wildcard (opcional, para 404) ---
   // Debe ir al final
