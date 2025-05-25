@@ -1,78 +1,70 @@
 <ion-header>
   <ion-toolbar color="primary">
-     <ion-buttons slot="start">
-       <ion-menu-button></ion-menu-button> </ion-buttons>
-     <ion-title>Vehículos</ion-title>
-     <ion-buttons slot="end">
-        <ion-button (click)="goToEditVehicle()"> <ion-icon slot="start" name="pencil-outline"></ion-icon>
-         Editar Vehículo
-       </ion-button>
-       <ion-button (click)="goToAddVehicle()">
-         <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-         Añadir Vehículo
-       </ion-button>
-       <ion-button>
-          <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
-        </ion-button>
-     </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Listado de Vehículos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToAddVehicle()">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar>
-      <ion-searchbar placeholder="Buscar..." animated="true"></ion-searchbar>
-      </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-refresher slot="fixed" (ionRefresh)="loadVehicles(undefined, $event)">
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-loading [isOpen]="isLoading" message="Cargando vehículos..."></ion-loading>
+  <div *ngIf="isLoading && vehiculos.length === 0" class="ion-text-center ion-padding-top">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando vehículos...</p>
+  </div>
 
-  <ion-grid *ngIf="!isLoading">
-    <ion-row class="header-row ion-hide-md-down">
-      <ion-col size="1"><b>Patente</b></ion-col>
-      <ion-col size="1"><b>Año</b></ion-col>
-      <ion-col size="1.5"><b>Marca</b></ion-col>
-      <ion-col size="1"><b>Modelo</b></ion-col>
-      <ion-col size="2"><b>Chasis</b></ion-col>
-      <ion-col size="1"><b>Estado</b></ion-col>
-      <ion-col size="1.5"><b>Tipo</b></ion-col>
-      <ion-col size="1"><b>Km</b></ion-col>
-      <ion-col size="1"><b>Acciones</b></ion-col>
-    </ion-row>
+  <div *ngIf="!isLoading && vehiculos.length === 0" class="ion-text-center ion-padding-top">
+    <ion-icon name="car-outline" style="font-size: 4em;" color="medium"></ion-icon>
+    <p>No hay vehículos registrados.</p>
+    <ion-button expand="block" (click)="goToAddVehicle()" class="ion-margin-top">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Registrar Nuevo Vehículo
+    </ion-button>
+  </div>
 
-    <ion-row *ngIf="vehicles.length === 0" class="ion-justify-content-center ion-padding">
-        <ion-col size="12" class="ion-text-center">
-             <p>No hay vehículos registrados.</p>
-             <ion-button (click)="goToAddVehicle()">Añadir Vehículo</ion-button>
-        </ion-col>
-     </ion-row>
+  <ion-list *ngIf="vehiculos.length > 0">
+    <ion-item-divider class="list-header ion-hide-md-down" sticky>
+      <ion-label class="col-patente">Patente</ion-label>
+      <ion-label class="col-marca-modelo">Marca / Modelo</ion-label>
+      <ion-label class="col-anio ion-text-center">Año</ion-label>
+      <ion-label class="col-estado ion-text-center">Estado</ion-label>
+      <ion-label class="col-acciones ion-text-center">Acciones</ion-label>
+    </ion-item-divider>
 
-    <ion-row *ngFor="let v of vehicles" class="data-row">
-      <ion-col size="12" size-md="1"><span class="label-sm">Patente:</span> {{ v.plate }}</ion-col>
-      <ion-col size="6" size-md="1"><span class="label-sm">Año:</span> {{ v.anio || 'N/A' }}</ion-col>
-      <ion-col size="6" size-md="1.5"><span class="label-sm">Marca:</span> {{ v.marca || 'N/A' }}</ion-col>
-      <ion-col size="6" size-md="1"><span class="label-sm">Modelo:</span> {{ v.modelo || 'N/A' }}</ion-col>
-      <ion-col size="6" size-md="2"><span class="label-sm">Chasis:</span> {{ v.chasis || 'N/A' }}</ion-col>
-      <ion-col size="6" size-md="1">
-         <span class="label-sm">Estado:</span>
-         <ion-badge [color]="getStatusColor(v.status)">{{ v.status | titlecase }}</ion-badge>
-        </ion-col>
-      <ion-col size="6" size-md="1.5"><span class="label-sm">Tipo:</span> {{ v.tipoVehiculo || 'N/A' }}</ion-col>
-      <ion-col size="6" size-md="1"><span class="label-sm">Km:</span> {{ v.kilometraje | number }}</ion-col>
-      <ion-col size="12" size-md="1" class="actions-col">
-        <ion-button fill="clear" size="small" (click)="goToEditVehicle(v.id)" title="Editar">
+    <ion-item *ngFor="let vehiculo of vehiculos" lines="inset" class="vehicle-list-item">
+      <ion-icon name="car-outline" slot="start" [color]="getStatusColor(vehiculo.estadoVehi)" class="vehicle-icon"></ion-icon>
+      <ion-label class="col-patente">
+        <h2>{{ vehiculo.patente | uppercase }}</h2>
+        <p class="ion-hide-md-up">{{ vehiculo.marca | titlecase }} {{ vehiculo.modelo | titlecase }}</p>
+      </ion-label>
+      <ion-label class="col-marca-modelo ion-hide-md-down">
+        <p>{{ vehiculo.marca | titlecase }} {{ vehiculo.modelo | titlecase }}</p>
+      </ion-label>
+      <ion-label class="col-anio ion-text-center ion-hide-md-down">
+        <p>{{ vehiculo.anio }}</p>
+      </ion-label>
+      <ion-label class="col-estado ion-text-center">
+         <ion-chip [color]="getStatusColor(vehiculo.estadoVehi)" outline="false"> <ion-label>{{ vehiculo.estadoVehi | titlecase }}</ion-label>
+        </ion-chip>
+        <p class="ion-hide-md-up">Km: {{ vehiculo.kmVehi | number }}</p> </ion-label>
+
+      <div slot="end" class="action-buttons col-acciones">
+        <ion-button fill="clear" size="small" (click)="goToEditVehicle(vehiculo.idVehi)" aria-label="Editar vehículo">
           <ion-icon slot="icon-only" name="pencil-outline" color="primary"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" size="small" (click)="confirmDeleteVehicle(v.id, v.plate)" title="Eliminar">
+        <ion-button fill="clear" size="small" (click)="confirmDeleteVehicle(vehiculo.idVehi, vehiculo.patente)" aria-label="Eliminar vehículo">
           <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
         </ion-button>
-         <ion-button fill="clear" size="small" title="Ver Detalles (Próximamente)">
-            <ion-icon slot="icon-only" name="search-outline" color="medium"></ion-icon>
-          </ion-button>
-      </ion-col>
-    </ion-row>
-
-  </ion-grid>
-
+      </div>
+    </ion-item>
+  </ion-list>
 </ion-content>

@@ -1,6 +1,6 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard'; 
+import { authGuard } from './guards/auth.guard';
 
 import { SidebarComponent } from './componentes/sidebar/sidebar.component';
 
@@ -19,48 +19,61 @@ export const routes: Routes = [
   {
     path: '', // Ruta raíz para la sección autenticada
     component: SidebarComponent, // Carga el contenido con menú
-    canActivate: [authGuard], // Protegido por el guardián 
+    canActivate: [authGuard], // Protegido por el guardián
     children: [
-     
+
       {
-        path: 'dashboard', 
+        path: 'dashboard',
         loadComponent: () => import('./pages/dashboard/dashboard.page').then( m => m.DashboardPage)
       },
       {
-        path: 'recorridos', 
-        loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage)
+        path: 'recorridos',
+        loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage) // Carga HomePage para /recorridos
       },
       {
-        path: 'rutas', 
+        path: 'rutas',
         data: { title: 'Gestión de Rutas' },
         loadComponent: () => import('./pages/route-list/route-list.page').then( m => m.RouteListPage)
       },
-      
+
       {
-        path: 'rutas/new', 
-        data: { title: 'Nueva Ruta' }, 
+        path: 'rutas/new',
+        data: { title: 'Nueva Ruta' },
         loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
       },
       {
-        path: 'rutas/edit/:id', 
-        data: { title: 'Editar Ruta' }, 
+        path: 'rutas/edit/:id',
+        data: { title: 'Editar Ruta' },
         loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
       },
       {
-        path: 'vehiculos', 
-        data: { title: 'Vehículos' }, 
+        path: 'vehiculos', // Ruta para listar vehículos (debería ir a vehicle-list)
+        data: { title: 'Vehículos' },
         loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
       },
       {
         path: 'vehiculos/new', // Ruta para crear vehículo nuevo
-        data: { title: 'Nuevo Vehículo' }, 
-        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
+        data: { title: 'Nuevo Vehículo' },
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
       },
       {
-        path: 'vehiculos/edit/:id', 
-        data: { title: 'Editar Vehículo' }, 
-        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
+        path: 'vehiculos/edit/:id',
+        data: { title: 'Editar Vehículo' },
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
       },
+      {
+        path: 'route-form',
+        loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
+      },
+      {
+        path: 'vehicle-list',
+        loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
+      },
+      {
+        path: 'vehicle-form', // Esta es la ruta que causa el error JIT
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
+      },
+    
       {
         path: '',
         redirectTo: 'dashboard',
@@ -68,22 +81,12 @@ export const routes: Routes = [
       }
     ]
   },
-  {
-    path: 'route-form',
-    loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
-  },
-  {
-    path: 'vehicle-list',
-    loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
-  },
-  {
-    path: 'vehicle-form',
-    loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
-  },
+  // Estas rutas de abajo parecen duplicadas o rutas de fallback si las anidadas no se activan.
+  // Si SidebarComponent es el layout principal para usuarios autenticados,
+  // estas rutas de nivel superior para 'route-form', 'vehicle-list', 'vehicle-form'
+  // probablemente no son necesarias o deberían estar también protegidas por authGuard y/o dentro de un layout.
+  // La navegación "Navegando a /vehicle-form" que mencionaste usa esta ruta de nivel superior.
   
-    
-
   // --- Ruta Wildcard (opcional, para 404) ---
-  // Debe ir al final
   // { path: '**', redirectTo: 'login' } // O a una página 404 dedicada
 ];

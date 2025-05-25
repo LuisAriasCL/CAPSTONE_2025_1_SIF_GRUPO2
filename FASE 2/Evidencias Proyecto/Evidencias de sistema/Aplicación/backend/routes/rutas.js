@@ -1,171 +1,162 @@
-
 const express = require('express');
-const Route = require('../models/Route'); 
 const router = express.Router();
+const Ruta = require('../models/Ruta'); // CORREGIDO: Importar el nuevo modelo Ruta
 
+// GET /api/rutas - Obtener TODAS las rutas
+router.get('/', async (req, res) => {
+    try {
+        const rutas = await Ruta.findAll({
+            order: [['nombreRuta', 'ASC']] // CORREGIDO: Ordenar por 'nombreRuta'
+        });
+        // Las rutas ahora tendrán atributos como idRuta, nombreRuta, etc.
+        res.status(200).json(rutas);
+    } catch (err) {
+        console.error("Error al obtener rutas:", err);
+        res.status(500).json({ message: 'Error interno del servidor al obtener rutas.' });
+    }
+});
 
-// --- Crear una Nueva Ruta ---
-// POST /api/rutas
+// POST /api/rutas - Crear una NUEVA ruta
 router.post('/', async (req, res) => {
-    // Extraemos los campos en español del body
-    const { nombre, descripcion, puntos } = req.body;
+    // CORREGIDO: Desestructurar usando los nuevos nombres de atributos del modelo Ruta
+    const { nombreRuta, descripcionRuta, puntosRuta, kilometrosRuta } = req.body;
 
-    // --- Validación de Entrada ---
-    if (!nombre || !puntos) {
-        return res.status(400).json({ message: 'El nombre y los puntos son requeridos.' });
+    // Validación de entrada (ajustada a los nuevos nombres)
+    if (!nombreRuta || !puntosRuta) {
+        return res.status(400).json({ message: 'Los campos nombreRuta y puntosRuta son requeridos.' });
     }
 
-    // Validar que 'puntos' sea un array
-    if (!Array.isArray(puntos)) {
-         return res.status(400).json({ message: 'El campo "puntos" debe ser un array.' });
+    // Validación de la estructura de puntosRuta
+    if (!Array.isArray(puntosRuta) || !puntosRuta.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
+        return res.status(400).json({ message: 'El campo puntosRuta debe ser un array de coordenadas (array de arrays de dos números [[lat,lon],...]).' });
     }
-
-    // Validar que 'puntos' no esté vacío y que cada punto sea un array de 2 números
-    let puntosValidos = true;
-    if (puntos.length === 0) {
-        puntosValidos = false;
-    } else {
-        for (const punto of puntos) {
-            if (!Array.isArray(punto) || punto.length !== 2 || typeof punto[0] !== 'number' || typeof punto[1] !== 'number') {
-                puntosValidos = false;
-                break; // Salir del bucle si se encuentra un punto inválido
-            }
-        }
-    }
-
-    if (!puntosValidos) {
-         return res.status(400).json({ message: 'El campo "puntos" debe ser un array de arrays, donde cada sub-array contiene exactamente dos números [latitud, longitud].' });
-    }
-    // --- Fin Validación ---
-
 
     try {
-       
-        const nuevaRuta = await Route.create({
-            nombre: nombre,
-            descripcion: descripcion, 
-            puntos: puntos 
+        // CORREGIDO: Usar el modelo Ruta y los nuevos nombres de atributos
+        const nuevaRuta = await Ruta.create({
+            nombreRuta,
+            descripcionRuta,  // Puede ser null si así se define en el modelo
+            puntosRuta,       // Debe ser un objeto/array JS que Sequelize serializará a JSON
+            kilometrosRuta    // Puede ser null si así se define en el modelo
         });
 
-        res.status(201).json(nuevaRuta); // Devolver la ruta creada
+        // Emitir evento de Socket.IO si req.io está disponible
+        if (req.io) {
+            req.io.emit('routeCreated', nuevaRuta.toJSON());
+            console.log(`Evento Socket.IO emitido: routeCreated para ${nuevaRuta.nombreRuta}`);
+        }
 
-    } catch (error) {
-        console.error("Error al crear ruta:", error);
-        if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ message: 'Error de validación.', errors: error.errors.map(e => e.message) });
+        res.status(201).json(nuevaRuta); // Devuelve la ruta creada con atributos en español
+
+    } catch (err) {
+        console.error("Error al crear ruta:", err);
+        if (err.name === 'SequelizeValidationError') {
+            return res.status(400).json({ message: 'Error de validación.', errors: err.errors.map(e => e.message) });
         }
         res.status(500).json({ message: 'Error interno del servidor al crear la ruta.' });
     }
 });
 
-
-
-// --- Obtener Todas las Rutas ---
-// GET /api/rutas
-router.get('/', async (req, res) => {
+// GET /api/rutas/:id - Obtener UNA ruta por su ID
+router.get('/:idRuta', async (req, res) => { // Cambiado a :idRuta para claridad, pero req.params.idRuta se usará
     try {
-        // Buscar todas las rutas, ordenadas por nombre
-        const rutas = await Route.findAll({
-            order: [['nombre', 'ASC']] // Ordenar por el campo 'nombre'
-        });
-        res.status(200).json(rutas); // Devolver el array de rutas
-    } catch (error) {
-        console.error("Error al obtener rutas:", error);
-        res.status(500).json({ message: 'Error interno del servidor al obtener las rutas.' });
-    }
-});
-
-
-// --- NUEVO: Obtener UNA Ruta por ID ---
-// GET /api/rutas/:id
-router.get('/:id', async (req, res) => {
-    try {
-        const idRuta = parseInt(req.params.id, 10);
-        if (isNaN(idRuta)) {
+        const idRutaParam = parseInt(req.params.idRuta, 10);
+        if (isNaN(idRutaParam)) {
             return res.status(400).json({ message: 'El ID de la ruta debe ser un número.' });
         }
 
-        // Buscar por clave primaria
-        const ruta = await Route.findByPk(idRuta);
+        // CORREGIDO: Usar el modelo Ruta. findByPk buscará por la PK definida en el modelo (idRuta).
+        const ruta = await Ruta.findByPk(idRutaParam);
 
         if (!ruta) {
             return res.status(404).json({ message: 'Ruta no encontrada.' });
         }
-        res.status(200).json(ruta); // Devolver la ruta encontrada
 
-    } catch (error) {
-        console.error(`Error al obtener ruta ${req.params.id}:`, error);
+        res.status(200).json(ruta); // Devuelve la ruta con atributos en español
+
+    } catch (err) {
+        console.error(`Error al obtener ruta ${req.params.idRuta}:`, err);
         res.status(500).json({ message: 'Error interno del servidor al obtener la ruta.' });
     }
 });
 
-// --- NUEVO: Actualizar UNA Ruta por ID ---
-// PUT /api/rutas/:id
-router.put('/:id', async (req, res) => {
+// PUT /api/rutas/:idRuta - Actualizar UNA ruta existente
+router.put('/:idRuta', async (req, res) => {
     try {
-        const idRuta = parseInt(req.params.id, 10);
-        if (isNaN(idRuta)) {
+        const idRutaParam = parseInt(req.params.idRuta, 10);
+        if (isNaN(idRutaParam)) {
             return res.status(400).json({ message: 'El ID de la ruta debe ser un número.' });
         }
 
-        // Extraer datos (solo los que pueden cambiar)
-        const { nombre, descripcion, puntos } = req.body;
-
-        // Validación opcional de 'puntos' si se envían para actualizar
-        if (puntos !== undefined) { // Solo validar si 'puntos' viene en el body
-             if (!Array.isArray(puntos)) {
-                return res.status(400).json({ message: 'Si se envía "puntos", debe ser un array.' });
-             }
-             // Añadir aquí la validación detallada de la estructura de puntos (como en el POST) si es necesario
-             // ... (código de validación de puntos) ...
-        }
-
-        // Buscar la ruta existente
-        const ruta = await Route.findByPk(idRuta);
+        const ruta = await Ruta.findByPk(idRutaParam); // CORREGIDO: Usar modelo Ruta
         if (!ruta) {
             return res.status(404).json({ message: 'Ruta no encontrada para actualizar.' });
         }
 
-        // Actualizar la instancia encontrada con los nuevos datos
-        // .update solo actualiza los campos que vienen en el objeto req.body
-        await ruta.update({ nombre, descripcion, puntos });
+        // CORREGIDO: El req.body debe contener los atributos del modelo Ruta (camelCase español)
+        const { nombreRuta, descripcionRuta, puntosRuta, kilometrosRuta } = req.body;
+
+        // Validación para puntosRuta si se envía para actualizar
+        if (puntosRuta !== undefined) {
+            if (!Array.isArray(puntosRuta) || !puntosRuta.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
+                return res.status(400).json({ message: 'Si se proporciona puntosRuta, debe ser un array de coordenadas válido.' });
+            }
+        }
+
+        // Actualizar la instancia con los nuevos datos.
+        // El método 'update' de la instancia solo actualiza los campos que se le pasan.
+        // O se pueden asignar directamente y luego usar save().
+        await ruta.update({
+            nombreRuta,
+            descripcionRuta,
+            puntosRuta,
+            kilometrosRuta
+        });
+        // Alternativamente, si solo quieres actualizar los campos que vienen en req.body:
+        // await ruta.update(req.body); // Esto es más conciso si req.body solo tiene campos válidos del modelo
+
+        if (req.io) {
+            req.io.emit('routeUpdated', ruta.toJSON()); // Enviar el objeto ruta actualizado
+            console.log(`Evento Socket.IO emitido: routeUpdated para ${ruta.nombreRuta}`);
+        }
 
         res.status(200).json(ruta); // Devolver la ruta actualizada
 
-    } catch (error) {
-        console.error(`Error al actualizar ruta ${req.params.id}:`, error);
-        if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ message: 'Error de validación.', errors: error.errors.map(e => e.message) });
+    } catch (err) {
+        console.error(`Error al actualizar ruta ${req.params.idRuta}:`, err);
+        if (err.name === 'SequelizeValidationError') {
+            return res.status(400).json({ message: 'Error de validación.', errors: err.errors.map(e => e.message) });
         }
         res.status(500).json({ message: 'Error interno del servidor al actualizar la ruta.' });
     }
 });
 
-// --- NUEVO: Eliminar UNA Ruta por ID ---
-// DELETE /api/rutas/:id
-router.delete('/:id', async (req, res) => {
+// DELETE /api/rutas/:idRuta - Eliminar UNA ruta existente
+router.delete('/:idRuta', async (req, res) => {
     try {
-        const idRuta = parseInt(req.params.id, 10);
-        if (isNaN(idRuta)) {
+        const idRutaParam = parseInt(req.params.idRuta, 10);
+        if (isNaN(idRutaParam)) {
             return res.status(400).json({ message: 'El ID de la ruta debe ser un número.' });
         }
 
-        // Intentar eliminar usando destroy con 'where'
-        const numeroFilasEliminadas = await Route.destroy({
-            where: { id: idRuta }
+        // CORREGIDO: Usar el modelo Ruta y el nombre de su PK 'idRuta' en el where.
+        const numeroFilasEliminadas = await Ruta.destroy({
+            where: { idRuta: idRutaParam } // La PK en el modelo Ruta es idRuta
         });
 
-        // destroy devuelve el número de filas afectadas
         if (numeroFilasEliminadas === 0) {
             return res.status(404).json({ message: 'Ruta no encontrada para eliminar.' });
         }
 
-        
-        res.status(200).json({ message: 'Ruta eliminada exitosamente.' });
-      
+        if (req.io) {
+            req.io.emit('routeDeleted', { id: idRutaParam });
+            console.log(`Evento Socket.IO emitido: routeDeleted para ID ${idRutaParam}`);
+        }
 
-    } catch (error) {
-        console.error(`Error al eliminar ruta ${req.params.id}:`, error);
+        res.status(200).json({ message: 'Ruta eliminada exitosamente.' });
+
+    } catch (err) {
+        console.error(`Error al eliminar ruta ${req.params.idRuta}:`, err);
         res.status(500).json({ message: 'Error interno del servidor al eliminar la ruta.' });
     }
 });
