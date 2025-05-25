@@ -8,21 +8,38 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
 
-// --- Validador Custom para Password Match ---
+export function passwordMatchValidator(controlName: string, matchingControlName: string) {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
 
-function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-  const password = control.get('password')?.value;
-  const confirmPassword = control.get('confirmPassword')?.value;
+    const fg = formGroup as FormGroup;
+    const control = fg.get(controlName);
+    const matchingControl = fg.get(matchingControlName);
 
- 
-  if (!password || !confirmPassword) {
-    return null;
-  }
+    if (!control || !matchingControl) {
+      return null;
+    }
 
-  return password === confirmPassword ? null : { passwordMismatch: true };
+
+    if (matchingControl.errors && !matchingControl.errors['passwordMismatch']) {
+      return null;
+    }
+
+    if (control.value !== matchingControl.value) {
+      matchingControl.setErrors({ passwordMismatch: true });
+  
+      return { passwordMismatch: true };
+    } else {
+      if (matchingControl.errors?.['passwordMismatch']) {
+        delete matchingControl.errors['passwordMismatch'];
+     
+        if (Object.keys(matchingControl.errors).length === 0) {
+          matchingControl.setErrors(null);
+        }
+      }
+      return null;
+    }
+  };
 }
-// --- Fin Validador ---
-
 
 @Component({
   selector: 'app-register',
@@ -50,17 +67,23 @@ export class RegisterPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Inicializar el formulario reactivo
-    this.registerForm = this.formBuilder.group({
-      name: ['', [Validators.required]], 
-      email: ['', [Validators.required, Validators.email]], 
-      password: ['', [Validators.required, Validators.minLength(6)]], // Campo 'password', requerido y mínimo 6 caracteres
-      confirmPassword: ['', [Validators.required]],
-      role: ['', [Validators.required]] // Campo 'confirmPassword', requerido
-    }, {
-      validators: passwordMatchValidator // Añadir validador a nivel de grupo para verificar passwords
-    });
-  }
+   this.registerForm = this.formBuilder.group({
+  pri_nom_usu: ['', [Validators.required]],
+  seg_nom_usu: [''],
+  pri_ape_usu: ['', [Validators.required]],
+  seg_ape_usu: [''],
+  email: ['', [Validators.required, Validators.email]],
+  rut_usu: [''], // Añadir validadores si es necesario
+  celular: [''],
+  // No incluimos campos de licencia en el registro simple, se pueden añadir después
+  clave: ['', [Validators.required, Validators.minLength(6)]],
+  confirmarClave: ['', [Validators.required]], // Para la validación de coincidencia
+  rol: ['conductor', [Validators.required]] // Valor por defecto y requerido
+}, {
+  // Validador para confirmarClave debe comparar con 'clave'
+    validators: passwordMatchValidator('clave', 'confirmarClave') // <-- Pasamos los nombres de los controles
+  });
+}
 
   // --- Getters para acceso fácil a los controles en el HTML (opcional) ---
   get name() { return this.registerForm.get('name'); }
@@ -82,9 +105,11 @@ export class RegisterPage implements OnInit {
     await loading.present();
   
     
-    const { name, email, password, role } = this.registerForm.value; 
+    const {
+      pri_nom_usu, seg_nom_usu, pri_ape_usu, seg_ape_usu, email, rut_usu, celular, clave, rol
+  } = this.registerForm.value;
   
-    this.authService.register({ name, email, password, role }).subscribe({ 
+    this.authService.register({  pri_nom_usu, seg_nom_usu, pri_ape_usu, seg_ape_usu, email, rut_usu, celular, clave, rol}).subscribe({ 
       next: async (res) => {
         await loading.dismiss();
         console.log('Usuario registrado:', res);

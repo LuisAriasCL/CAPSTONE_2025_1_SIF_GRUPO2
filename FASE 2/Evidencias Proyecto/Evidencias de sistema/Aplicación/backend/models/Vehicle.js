@@ -74,7 +74,7 @@ const Vehicle = sequelize.define('Vehicle', { // Nombre del Modelo sigue siendo 
     updatedAt: { type: DataTypes.DATE }
 }, {
     tableName: 'vehicles', 
-    timestamps: true,
+    timestamps: false,
     comment: 'Tabla para almacenar información de los vehículos de la flota'
 });
 

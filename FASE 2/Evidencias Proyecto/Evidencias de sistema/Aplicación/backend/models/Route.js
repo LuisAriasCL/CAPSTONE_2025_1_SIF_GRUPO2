@@ -38,7 +38,7 @@ const Route = sequelize.define('Route', {
      }
 }, {
     tableName: 'rutas', 
-    timestamps: true, 
+    timestamps: false, 
     comment: 'Tabla para almacenar las rutas predefinidas'
 });
 

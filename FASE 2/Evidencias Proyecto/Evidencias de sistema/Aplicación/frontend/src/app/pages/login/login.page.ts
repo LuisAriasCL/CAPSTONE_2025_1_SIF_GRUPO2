@@ -36,14 +36,14 @@ export class LoginPage implements OnInit {
   ngOnInit() {
     // Inicializar el formulario de login
     this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]], // Requerido y formato email
-      password: ['', [Validators.required]] // Requerido
+      email: ['', [Validators.required, Validators.email]],
+      clave: ['', [Validators.required]] // Cambiado de 'password' a 'clave'
     });
   }
 
   // --- Getters opcionales ---
   get email() { return this.loginForm.get('email'); }
-  get password() { return this.loginForm.get('password'); }
+  get clave() { return this.loginForm.get('password'); }
   // --- Fin Getters ---
 
 
