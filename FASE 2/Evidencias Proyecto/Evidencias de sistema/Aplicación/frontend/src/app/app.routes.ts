@@ -37,7 +37,7 @@ export const routes: Routes = [
       },
 
       {
-        path: 'rutas/new',
+        path: 'rutas/nueva',
         data: { title: 'Nueva Ruta' },
         loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
       },

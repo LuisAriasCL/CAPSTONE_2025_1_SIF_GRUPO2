@@ -1,28 +1,30 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef } from '@angular/core'; // Añadimos AfterViewInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef
-import { CommonModule } from '@angular/common';
+// src/app/pages/route-form/route-form.page.ts
+
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common'; // <--- ASEGÚRATE DE IMPORTAR DecimalPipe
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
-import * as L from 'leaflet'; 
-import { ApiService, Route } from '../../services/api.service';
+import * as L from 'leaflet';
+// Importa OsrmRouteData y asegúrate que la interfaz Route incluya kilometrosRuta
+import { ApiService, Route, OsrmRouteData } from '../../services/api.service'; // <--- OsrmRouteData AÑADIDO
 import { addIcons } from 'ionicons';
-import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline } from 'ionicons/icons';
-
-
+// Añade el icono para la distancia, por ejemplo, speedometerOutline
+import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline, speedometerOutline } from 'ionicons/icons'; // <--- speedometerOutline AÑADIDO
 
 @Component({
-  selector: 'app-route-form', 
-  templateUrl: './route-form.page.html', 
-  styleUrls: ['./route-form.page.scss'], 
+  selector: 'app-route-form',
+  templateUrl: './route-form.page.html',
+  styleUrls: ['./route-form.page.scss'],
   standalone: true,
   imports: [
-      IonicModule,
-      CommonModule,
-      ReactiveFormsModule 
-     
-    ]
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    DecimalPipe // <--- DecimalPipe AÑADIDO AQUÍ
+  ]
 })
-export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy { 
+export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
 
   // --- Inyecciones ---
   private fb = inject(FormBuilder);
@@ -33,17 +35,17 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
-  private changeDetectorRef = inject(ChangeDetectorRef); 
+  private changeDetectorRef = inject(ChangeDetectorRef);
 
   // --- Propiedades del formulario y estado ---
   routeForm!: FormGroup;
   isEditMode = false;
   routeId: number | null = null;
   pageTitle = 'Nueva Ruta';
-  isLoading = false; 
+  isLoading = false;
   isSubmitted = false;
 
-  // --- NUEVAS Propiedades para el Mapa Interactivo ---
+  // --- Propiedades para el Mapa Interactivo ---
   @ViewChild('routeMap') routeMapRef!: ElementRef<HTMLDivElement>;
   private routeMap!: L.Map;
   private origenMarker: L.Marker | null = null;
@@ -51,23 +53,27 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   public origenCoords: L.LatLngTuple | null = null;
   public destinoCoords: L.LatLngTuple | null = null;
   private routePolyline: L.Polyline | null = null;
-  public calculatedPoints: L.LatLngTuple[] | null = null; // Array [lat, lon]
+  public calculatedPoints: L.LatLngTuple[] | null = null;
   public isCalculatingRoute = false;
   public routeCalculationError: string | null = null;
-  // --- FIN NUEVAS Propiedades ---
+
+  // --- NUEVAS Propiedades para Distancia y Duración ---
+  public calculatedDistance: number | null = null; // En KM
+  public calculatedDuration: number | null = null; // En segundos (opcional para mostrar)
 
   constructor() {
-    addIcons({ save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline });
+    addIcons({
+      save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline,
+      speedometerOutline // <--- Icono para la distancia añadido
+    });
   }
 
   ngOnInit() {
-    // Inicializar formulario SIN el campo 'puntos'
     this.routeForm = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
     });
 
-    // Modo Edición
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam) {
       this.isEditMode = true;
@@ -77,12 +83,10 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // --- Hook AfterViewInit para inicializar mapa ---
   ngAfterViewInit(): void {
-    setTimeout(() => this.initializeRouteMap(), 150); // Pequeño delay
+    setTimeout(() => this.initializeRouteMap(), 150);
   }
 
-  // --- Hook OnDestroy para limpiar mapa ---
   ngOnDestroy(): void {
     if (this.routeMap) {
       this.routeMap.off('click');
@@ -91,11 +95,10 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // --- Inicializar Mapa del Formulario ---
   private initializeRouteMap(): void {
     if (this.routeMap || !this.routeMapRef?.nativeElement) return;
     const mapContainer = this.routeMapRef.nativeElement;
-    const initialCoords: L.LatLngTuple = (this.isEditMode && this.calculatedPoints?.length) ? this.calculatedPoints[0] : [-35.846, -71.597]; // Linares o primer punto
+    const initialCoords: L.LatLngTuple = (this.isEditMode && this.calculatedPoints?.length) ? this.calculatedPoints[0] : [-35.846, -71.597];
     const initialZoom = this.isEditMode && this.calculatedPoints?.length ? 14 : 13;
 
     try {
@@ -105,18 +108,16 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       console.log("Mapa del formulario listo.");
       setTimeout(() => this.routeMap?.invalidateSize(), 200);
 
-      
       if (this.isEditMode && this.calculatedPoints) {
           this.displayLoadedRouteOnMap();
       }
     } catch (error) { console.error("Error inicializando mapa del formulario:", error); }
   }
 
-   // --- Mostrar ruta y marcadores (en modo edición) ---
   private displayLoadedRouteOnMap(): void {
     if (!this.routeMap || !this.calculatedPoints || this.calculatedPoints.length < 1) return;
     console.log("Mostrando ruta y marcadores de edición en mapa...");
-    this.clearMapSelection();
+    this.clearMapSelectionMarkersAndPolyline(); // Limpia solo elementos del mapa, no datos como calculatedDistance
 
     this.origenCoords = this.calculatedPoints[0];
     this.origenMarker = L.marker(this.origenCoords, { draggable: true, title: "Origen" })
@@ -133,12 +134,19 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     } else {
         this.routeMap.setView(this.origenCoords, 15);
     }
+    // La distancia (this.calculatedDistance) ya debería estar cargada por loadRouteData si es modo edición
+    // y se mostrará en el HTML gracias a *ngIf="calculatedDistance !== null"
   }
 
-  // --- Manejar Clics en Mapa ---
+   private clearMapSelectionMarkersAndPolyline(): void { // Para limpiar el mapa antes de redibujar una ruta cargada
+    if (this.origenMarker) { this.routeMap.removeLayer(this.origenMarker); this.origenMarker = null; }
+    if (this.destinoMarker) { this.routeMap.removeLayer(this.destinoMarker); this.destinoMarker = null; }
+    if (this.routePolyline) { this.routeMap.removeLayer(this.routePolyline); this.routePolyline = null; }
+  }
+
   private handleMapClick(latlng: L.LatLng): void {
     const coords: L.LatLngTuple = [latlng.lat, latlng.lng];
-    this.clearCalculatedRoute(); // Limpiar ruta calculada si se cambian puntos
+    this.clearCalculatedRouteAndDistance(); // MODIFICADO: Limpiar ruta y distancia
 
     if (!this.origenMarker) {
       this.origenCoords = coords;
@@ -153,142 +161,184 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       if (this.origenMarker) this.origenMarker.setLatLng(coords);
       if (this.destinoMarker) { this.routeMap.removeLayer(this.destinoMarker); this.destinoMarker = null; this.destinoCoords = null; }
     }
-     // Forzar detección de cambios para actualizar UI que muestra coords
      this.changeDetectorRef.detectChanges();
   }
 
-  // --- Actualizar Coordenadas al Arrastrar ---
   private handleMarkerDragEnd(event: L.DragEndEvent, type: 'origen' | 'destino'): void {
     const newCoords: L.LatLngTuple = [event.target.getLatLng().lat, event.target.getLatLng().lng];
     if (type === 'origen') this.origenCoords = newCoords;
     else this.destinoCoords = newCoords;
-    this.clearCalculatedRoute();
-    this.changeDetectorRef.detectChanges(); // Forzar detección
+    this.clearCalculatedRouteAndDistance(); // MODIFICADO: Limpiar ruta y distancia
+    this.changeDetectorRef.detectChanges();
   }
 
-  // --- Limpiar Selección Mapa ---
   clearMapSelection(): void {
-    this.clearCalculatedRoute();
+    this.clearCalculatedRouteAndDistance(); // MODIFICADO
     if (this.origenMarker) { this.routeMap.removeLayer(this.origenMarker); this.origenMarker = null; this.origenCoords = null; }
     if (this.destinoMarker) { this.routeMap.removeLayer(this.destinoMarker); this.destinoMarker = null; this.destinoCoords = null; }
-    this.changeDetectorRef.detectChanges(); // Forzar detección
+    this.changeDetectorRef.detectChanges();
   }
 
-  // --- Limpiar Ruta Calculada ---
-  clearCalculatedRoute(): void {
+  // MÉTODO RENOMBRADO Y MODIFICADO
+  clearCalculatedRouteAndDistance(): void {
     if (this.routePolyline) { this.routeMap.removeLayer(this.routePolyline); this.routePolyline = null; }
     this.calculatedPoints = null;
     this.routeCalculationError = null;
+    this.calculatedDistance = null; // <--- AÑADIDO
+    this.calculatedDuration = null; // <--- AÑADIDO
     // No forzamos detectChanges aquí, se hará al seleccionar puntos o calcular
+    // o si se llama desde un método que sí lo hace (como clearMapSelection).
   }
 
-  // --- Cargar Datos para Editar ---
   async loadRouteData() {
-    
-     if (!this.routeId) return;
+    if (!this.routeId) return;
     this.isLoading = true;
     const loading = await this.loadingCtrl.create({ message: 'Cargando datos...' });
     await loading.present();
     this.apiService.getRoute(this.routeId).subscribe({
-      next: (data) => {
+      next: (data: Route) => {
         loading.dismiss();
         this.isLoading = false;
-        this.routeForm.patchValue({ nombre: data.nombre, descripcion: data.descripcion });
-        if (Array.isArray(data.puntos)) {
-             this.calculatedPoints = data.puntos as L.LatLngTuple[];
-             if (this.routeMap) { // Si mapa ya está listo, mostrar
-                 this.displayLoadedRouteOnMap();
-             }
-        } else {
-             console.error("Los puntos recibidos de la API no son un array válido:", data.puntos);
-             this.presentToast('Error: Los datos de puntos de la ruta guardada son inválidos.', 'danger');
-             this.calculatedPoints = null;
+        this.routeForm.patchValue({
+          nombre: data.nombreRuta,
+          descripcion: data.descripcionRuta
+        });
+
+        let puntosDeserializados: any = data.puntosRuta;
+        if (typeof data.puntosRuta === 'string') {
+          try { puntosDeserializados = JSON.parse(data.puntosRuta); }
+          catch (e) { console.error('Error parseando puntosRuta', e); puntosDeserializados = null; }
         }
+
+        if (Array.isArray(puntosDeserializados) && puntosDeserializados.length > 0) {
+          this.calculatedPoints = puntosDeserializados as L.LatLngTuple[];
+          if (typeof data.kilometrosRuta === 'number') { // <--- CARGAR DISTANCIA GUARDADA
+            this.calculatedDistance = data.kilometrosRuta;
+          }
+          if (this.routeMap) { // Asegurarse que el mapa esté listo
+            this.displayLoadedRouteOnMap();
+          }
+        } else {
+          if (puntosDeserializados && puntosDeserializados.length === 0) {
+            this.calculatedPoints = [];
+          } else {
+            console.error("Los puntosRuta recibidos de la API no son un array válido:", data.puntosRuta);
+            this.presentToast('Error: Los datos de puntos de la ruta guardada son inválidos.', 'danger');
+            this.calculatedPoints = null;
+          }
+          this.calculatedDistance = null; // Si no hay puntos, no hay distancia guardada relevante
+        }
+        this.changeDetectorRef.detectChanges(); // Actualizar la UI
       },
-      error: async (err) => { /* ... como estaba ... */ }
+      error: async (err) => { /* ... tu manejo de error ... */ }
     });
   }
 
-  // --- Calcular Ruta con OSRM ---
   async calculateRoute() {
     if (!this.origenCoords || !this.destinoCoords) {
       this.presentToast("Marca Origen y Destino en el mapa.", "warning"); return;
     }
     this.isCalculatingRoute = true;
     this.routeCalculationError = null;
+    this.calculatedDistance = null; // <--- Resetear distancia
+    this.calculatedDuration = null; // <--- Resetear duración
+
     const loading = await this.loadingCtrl.create({ message: 'Calculando ruta...' });
     await loading.present();
 
+    // Ahora getRoutePath devuelve OsrmRouteData | null
     this.apiService.getRoutePath(this.origenCoords!, this.destinoCoords!).subscribe({
-      next: async (points) => {
+      next: async (osrmResponse: OsrmRouteData | null) => { // <--- TIPO DE RESPUESTA ACTUALIZADO
         await loading.dismiss();
         this.isCalculatingRoute = false;
-        if (points && points.length > 1) {
-          this.calculatedPoints = points; // GUARDAR PUNTOS
-          // Limpiar SÓLO la polilínea anterior, no los marcadores ni calculatedPoints
+        if (osrmResponse && osrmResponse.points && osrmResponse.points.length > 1) {
+          this.calculatedPoints = osrmResponse.points;
+          // ASIGNAR DISTANCIA Y DURACIÓN
+          if (typeof osrmResponse.distance === 'number') {
+            this.calculatedDistance = parseFloat((osrmResponse.distance / 1000).toFixed(2)); // Metros a KM
+          }
+          if (typeof osrmResponse.duration === 'number') {
+            this.calculatedDuration = osrmResponse.duration; // Segundos
+          }
+
           if (this.routePolyline) { this.routeMap.removeLayer(this.routePolyline); }
-          this.routePolyline = L.polyline(points, { color: 'blue' }).addTo(this.routeMap); // Dibujar nueva
-          this.routeMap.fitBounds(this.routePolyline.getBounds().pad(0.1)); // Ajustar zoom
-          this.presentToast("Ruta calculada.", "success");
+          this.routePolyline = L.polyline(osrmResponse.points, { color: 'blue' }).addTo(this.routeMap);
+          this.routeMap.fitBounds(this.routePolyline.getBounds().pad(0.1));
+          this.presentToast(`Ruta calculada: ${this.calculatedDistance !== null ? this.calculatedDistance + ' km' : ''}`, "success");
         } else {
-          this.calculatedPoints = null; 
-          this.routeCalculationError = 'No se pudo calcular una ruta válida.';
+          this.calculatedPoints = null;
+          this.calculatedDistance = null; // <--- Limpiar si falla
+          this.calculatedDuration = null; // <--- Limpiar si falla
+          this.routeCalculationError = 'No se pudo calcular una ruta válida desde OSRM.';
           this.presentToast(this.routeCalculationError, "danger");
         }
-        this.changeDetectorRef.detectChanges(); // <-- Forzar detección aquí para actualizar estado botón Guardar
+        this.changeDetectorRef.detectChanges();
       },
       error: async (error) => {
         await loading.dismiss();
         this.isCalculatingRoute = false;
-        this.calculatedPoints = null; // Falló, quitar puntos
+        this.calculatedPoints = null;
+        this.calculatedDistance = null; // <--- Limpiar en error
+        this.calculatedDuration = null; // <--- Limpiar en error
         this.routeCalculationError = 'Error al conectar con servicio de rutas.';
         console.error("Error cálculo OSRM:", error);
         this.presentToast(this.routeCalculationError, "danger");
-        this.changeDetectorRef.detectChanges(); 
+        this.changeDetectorRef.detectChanges();
       }
     });
   }
 
-  // --- Guardar Ruta (usa calculatedPoints) ---
   async saveRoute() {
-     this.isSubmitted = true; // Marcar como intento de envío
-    // Validar nombre Y que calculatedPoints exista y tenga puntos
+    this.isSubmitted = true;
     if (this.routeForm.invalid || !this.calculatedPoints || this.calculatedPoints.length === 0) {
-       this.presentToast('Asigna un nombre y calcula una ruta válida.', 'warning'); return;
+       this.presentToast('Asigna un nombre y calcula una ruta válida (con puntos).', 'warning'); return;
     }
     const loading = await this.loadingCtrl.create({ message: this.isEditMode ? 'Actualizando...' : 'Creando...' });
     await loading.present();
     try {
-        // Mapear por seguridad para asegurar formato [lat, lon]
         const puntosParaGuardar: Array<[number, number]> = this.calculatedPoints.map(p => [p[0], p[1]]);
-        const routeData = {
-            nombre: this.routeForm.value.nombre,
-            descripcion: this.routeForm.value.descripcion,
-            puntos: puntosParaGuardar
+
+        // Asegúrate que la interfaz Route en api.service.ts incluya kilometrosRuta
+        const routeData: Partial<Route> = {
+            nombreRuta: this.routeForm.value.nombre,       // Usa el nombre de propiedad de tu interfaz Route
+            descripcionRuta: this.routeForm.value.descripcion, // Usa el nombre de propiedad de tu interfaz Route
+            puntosRuta: puntosParaGuardar,                  // Usa el nombre de propiedad de tu interfaz Route
+            kilometrosRuta: this.calculatedDistance        // <--- GUARDAR LA DISTANCIA
         };
+
         const saveObservable = this.isEditMode
             ? this.apiService.updateRoute(this.routeId!, routeData)
             : this.apiService.createRoute(routeData);
+
         saveObservable.subscribe({
             next: async (savedRoute) => {
-                await this.presentToast(`Ruta ${this.isEditMode ? 'actualizada' : 'creada'}.`, 'success');
-                this.navCtrl.navigateBack('/rutas');
+                await this.presentToast(`Ruta ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
+                this.navCtrl.navigateBack('/rutas'); // O tu ruta de lista
             },
             error: async (error) => {
                 console.error("Error guardando ruta:", error);
-                await this.presentAlert('Error al Guardar', `No se pudo guardar la ruta. ${error.message || 'Error desconocido.'}`);
+                let detailMessage = 'Error desconocido.';
+                 if (error && error.message) {
+                     const match = error.message.match(/Detalle: (.*)/);
+                     detailMessage = match && match[1] ? match[1] : error.message;
+                 }
+                await this.presentAlert('Error al Guardar', `No se pudo guardar la ruta. ${detailMessage}`);
             },
-            complete: async () => { if (loading) await loading.dismiss(); } // Asegurar dismiss
+            complete: async () => { if (loading) await loading.dismiss(); }
         });
     } catch (error) {
-        if (loading) await loading.dismiss(); // Asegurar dismiss
+        if (loading) await loading.dismiss();
         console.error("Error inesperado en saveRoute:", error);
         await this.presentAlert('Error', 'Ocurrió un error inesperado al guardar.');
     }
   }
 
-
-  async presentAlert(header: string, message: string) { /* ... */ }
-  async presentToast(message: string, color: 'success'|'warning'|'danger'|'medium' = 'medium') { /* ... */ }
-
-} 
+  async presentAlert(header: string, message: string) {
+    const alert = await this.alertCtrl.create({ header, message, buttons: ['OK'] });
+    await alert.present();
+  }
+  async presentToast(message: string, color: 'success'|'warning'|'danger'|'medium' = 'medium') {
+    const toast = await this.toastCtrl.create({ message, duration: 3000, position: 'bottom', color });
+    await toast.present();
+  }
+}
