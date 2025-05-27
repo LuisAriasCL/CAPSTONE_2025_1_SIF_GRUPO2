@@ -254,7 +254,7 @@ export class AsignacionFormPage implements OnInit {
 
       // Si llegamos aquí, la operación fue exitosa (toPromise() resuelve o rechaza)
       this.presentToast(`Asignación ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
-      this.navCtrl.navigateBack('/asignacion-list');
+      this.navCtrl.navigateBack('/asignacion-lis');
 
     } catch (error: any) { // Captura errores de la promesa o de validaciones previas
       console.error('Error al guardar asignación:', error);
