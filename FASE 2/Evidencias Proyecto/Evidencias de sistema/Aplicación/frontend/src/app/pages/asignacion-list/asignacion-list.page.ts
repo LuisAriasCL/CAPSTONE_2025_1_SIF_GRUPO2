@@ -1,14 +1,15 @@
 // src/app/pages/asignacion-list/asignacion-list.page.ts
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController, RefresherCustomEvent } from '@ionic/angular'; // Importar RefresherCustomEvent
+import { IonicModule, LoadingController, AlertController, ToastController, NavController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline, checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline, personCircleOutline, mapOutline } from 'ionicons/icons';
+import { eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline, checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline, personCircleOutline, mapOutline, analyticsOutline } from 'ionicons/icons';
 
-import { ApiService, AsignacionRecorrido } from '../../services/api.service';
-
+// CORRECCIÓN AQUÍ: Cambiar 'Ruta' por 'Route'
+import { ApiService, AsignacionRecorrido, Route, Vehiculo, UsuarioConductorInfo } from '../../services/api.service'; 
+import { SocketService } from '../../services/socket.service';
 
 @Component({
   selector: 'app-asignacion-list',
@@ -20,9 +21,9 @@ import { ApiService, AsignacionRecorrido } from '../../services/api.service';
     CommonModule,
     FormsModule,
     RouterLink,
-  
     DatePipe,
-    DecimalPipe
+    DecimalPipe,
+    TitleCasePipe
   ]
 })
 export class AsignacionListPage implements OnInit {
@@ -32,33 +33,29 @@ export class AsignacionListPage implements OnInit {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private loadingCtrl = inject(LoadingController);
-  private navCtrl = inject(NavController); 
+  private socketService = inject(SocketService);
 
-  asignaciones: AsignacionRecorrido[] = [];
+  asignaciones: AsignacionRecorrido[] = []; // Esto está bien.
   isLoading = false;
   filtros = {
     estado: '',
-    fechaDesde: '',
-    fechaHasta: ''
   };
 
   constructor() {
     addIcons({
       eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline,
       checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline,
-      personCircleOutline, mapOutline
+      personCircleOutline, mapOutline, analyticsOutline
     });
   }
 
-  ngOnInit() {
-    // Carga inicial en ionViewWillEnter
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
     this.loadAsignaciones();
   }
 
-  async loadAsignaciones(event?: RefresherCustomEvent) { // Usar RefresherCustomEvent
+  async loadAsignaciones(event?: RefresherCustomEvent) {
     this.isLoading = true;
     let loadingIndicator: HTMLIonLoadingElement | undefined;
     if (!event) {
@@ -67,23 +64,23 @@ export class AsignacionListPage implements OnInit {
     }
 
     const apiFiltros: any = {};
-    if (this.filtros.estado) apiFiltros.estado = this.filtros.estado;
-    if (this.filtros.fechaDesde) apiFiltros.fechaDesde = this.filtros.fechaDesde;
-    if (this.filtros.fechaHasta) apiFiltros.fechaHasta = this.filtros.fechaHasta;
+    if (this.filtros.estado) apiFiltros.estadoAsig = this.filtros.estado;
 
+    // Usar el método existente getAsignacionesRecorrido
+    // y tipar 'data' y 'error'
     this.apiService.getAsignacionesRecorrido(apiFiltros).subscribe({
-      next: (data) => {
+      next: (data: AsignacionRecorrido[]) => { 
         this.asignaciones = data;
         this.isLoading = false;
         loadingIndicator?.dismiss();
-        event?.target?.complete(); 
+        event?.target?.complete();
       },
-      error: async (error) => {
+      error: async (error: any) => { 
         console.error('Error al cargar asignaciones:', error);
         this.isLoading = false;
         loadingIndicator?.dismiss();
-        event?.target?.complete(); 
-        const errorMsg = error.message || 'No se pudo cargar la lista de asignaciones.';
+        event?.target?.complete();
+        const errorMsg = error?.message || 'No se pudo cargar la lista de asignaciones.';
         this.presentToast(errorMsg, 'danger');
       }
     });
@@ -94,39 +91,76 @@ export class AsignacionListPage implements OnInit {
   }
 
   limpiarFiltros() {
-    this.filtros = { estado: '', fechaDesde: '', fechaHasta: '' };
+    this.filtros = { estado: '' };
     this.loadAsignaciones();
   }
 
-  handleRefresh(event: RefresherCustomEvent) { 
+  handleRefresh(event: RefresherCustomEvent) {
     this.loadAsignaciones(event);
   }
 
   goToCreateAsignacion() {
-   
     this.router.navigate(['/asignaciones-recorrido/nueva']);
   }
 
-  viewAsignacion(idAsig: number) {
-   
-    this.router.navigate(['/asignaciones-recorrido/editar', idAsig]);
+  viewOrEditAsignacion(idAsig?: number) {
+    if (idAsig === undefined) return;
+    this.router.navigate(['/asignaciones-recorrido/editar/', idAsig]);
   }
 
-  editAsignacion(idAsig: number) {
-  
-    this.router.navigate(['/asignaciones-recorrido/editar', idAsig]);
+  async iniciarSeguimientoEnMapa(asignacion: AsignacionRecorrido) {
+    const asignacionId = asignacion.idAsig;
+    // Acceder a idRuta a través de asignacion.rutaPlantilla (que es de tipo Route | undefined)
+    const rutaId = asignacion.rutaPlantilla?.idRuta; 
+    const vehiculoId = asignacion.vehiculo?.idVehi;
+
+    if (asignacionId === undefined || rutaId === undefined || vehiculoId === undefined) {
+      console.error('Datos incompletos en la asignación (idAsig, rutaPlantilla.idRuta, vehiculo.idVehi):', asignacion);
+      this.presentToast('Faltan datos de la asignación (ruta o vehículo) para iniciar el seguimiento.', 'warning');
+      return;
+    }
+
+    if (asignacion.estadoAsig !== 'en_progreso' && asignacion.estadoAsig !== 'asignado') {
+      this.presentToast(`El seguimiento solo se puede iniciar para asignaciones "En Progreso" o "Asignado". Estado actual: ${asignacion.estadoAsig}`, 'warning');
+      return;
+    }
+    
+    this.procederConInicioSimulacion(asignacionId, rutaId, vehiculoId);
+  }
+
+  private procederConInicioSimulacion(asignacionId: number, rutaId: number, vehiculoId: number) {
+    console.log(`Iniciando seguimiento para Asignación ID: ${asignacionId}, Ruta ID: ${rutaId}, Vehículo ID: ${vehiculoId}`);
+
+    this.socketService.emit('startSimulation', {
+      routeId: rutaId,
+      vehicleId: vehiculoId,
+      asignacionId: asignacionId
+    });
+
+    this.router.navigate(['/recorridos'], { 
+      queryParams: {
+        asignacionId: asignacionId,
+        vehiculoId: vehiculoId,
+        rutaId: rutaId
+      }
+    });
   }
 
   async confirmDeleteAsignacion(asignacion: AsignacionRecorrido) {
+    if (asignacion.idAsig === undefined) return;
     const alert = await this.alertCtrl.create({
       header: 'Confirmar Eliminación',
-      message: `¿Estás seguro de eliminar la asignación para la ruta "${asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'}" del vehículo "${asignacion.vehiculo?.patente || 'N/A'}"?`,
+      message: `¿Seguro de eliminar la asignación para la ruta "${asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'}"?`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Eliminar',
-          cssClass: 'danger',
-          handler: () => this.deleteAsignacion(asignacion.idAsig)
+          role: 'destructive',
+          handler: () => {
+            if (asignacion.idAsig !== undefined) {
+                 this.deleteAsignacion(asignacion.idAsig);
+            }
+          }
         }
       ]
     });
@@ -142,48 +176,56 @@ export class AsignacionListPage implements OnInit {
         this.presentToast('Asignación eliminada correctamente.', 'success');
         this.loadAsignaciones();
       },
-      error: async (error) => {
+      error: async (error: any) => {
         await loading.dismiss();
-        const errorMsg = error.message || 'No se pudo eliminar la asignación.';
+        const errorMsg = error?.message || 'No se pudo eliminar la asignación.';
         this.presentToast(errorMsg, 'danger');
       }
     });
   }
 
   async cambiarEstadoAsignacion(asignacion: AsignacionRecorrido, nuevoEstado: 'en_progreso' | 'completado' | 'cancelado') {
-    let datosParaActualizar: any = { estadoAsig: nuevoEstado };
-
-    if (nuevoEstado === 'en_progreso' && asignacion.estadoAsig === 'asignado') {
-        console.log(`Iniciando recorrido para asignación ${asignacion.idAsig}`);
-    } else if (nuevoEstado === 'completado') {
-        if (asignacion.kmFinRecor === null || asignacion.kmFinRecor === undefined) {
-            this.presentToast('Para completar, edita la asignación y registra los KM finales.', 'warning');
-            // Podrías decidir no cambiar el estado aquí y forzar la edición
-            // return;
-        }
-        datosParaActualizar.fecFinRecor = new Date().toISOString();
-    }
+    if (asignacion.idAsig === undefined) return;
 
     const loading = await this.loadingCtrl.create({ message: `Actualizando estado a ${nuevoEstado}...` });
     await loading.present();
 
+    let datosParaActualizar: Partial<AsignacionRecorrido> = { estadoAsig: nuevoEstado };
+
+    if (nuevoEstado === 'en_progreso' && asignacion.estadoAsig === 'asignado') {
+      console.log(`Iniciando recorrido para asignación ${asignacion.idAsig}.`);
+    } else if (nuevoEstado === 'completado') {
+      if (!asignacion.fecFinRecor) {
+          datosParaActualizar.fecFinRecor = new Date().toISOString();
+      }
+      if (asignacion.kmFinRecor == null) {
+          await loading.dismiss();
+          this.presentToast('Para marcar como "Completado", edita la asignación y registra los KM finales.', 'warning');
+          return;
+      }
+    }
+
     this.apiService.updateAsignacionRecorrido(asignacion.idAsig, datosParaActualizar).subscribe({
         next: async (updatedAsignacion) => {
             await loading.dismiss();
-            this.presentToast(`Estado de asignación actualizado a ${nuevoEstado}.`, 'success');
-            this.loadAsignaciones();
+            this.presentToast(`Estado de asignación actualizado a "${nuevoEstado}".`, 'success');
+            const index = this.asignaciones.findIndex(a => a.idAsig === asignacion.idAsig);
+            if (index !== -1 && updatedAsignacion) { 
+                this.asignaciones[index] = { ...this.asignaciones[index], ...updatedAsignacion };
+            } else {
+                this.loadAsignaciones();
+            }
         },
-        error: async (error) => {
+        error: async (error: any) => {
             await loading.dismiss();
-            const errorMsg = error.message || 'No se pudo actualizar el estado.';
+            const errorMsg = error?.message || 'No se pudo actualizar el estado.';
             this.presentToast(errorMsg, 'danger');
         }
     });
   }
 
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'primary', duration: number = 2500) {
-    //                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^ Tipo de color actualizado
-    const toast = await this.toastCtrl.create({ message, duration, color, position: 'bottom' });
+  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'primary', duration: number = 3000) {
+    const toast = await this.toastCtrl.create({ message, duration, color, position: 'bottom', mode: 'md' });
     toast.present();
   }
 }
