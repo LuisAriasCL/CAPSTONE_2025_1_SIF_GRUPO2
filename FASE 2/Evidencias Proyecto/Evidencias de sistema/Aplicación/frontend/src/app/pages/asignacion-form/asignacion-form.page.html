@@ -1,0 +1,135 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/asignaciones-recorrido"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="submitForm()" [disabled]="isSubmitting">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-loading [isOpen]="isLoading || isSubmitting" 
+               [message]="isLoading ? 'Cargando datos...' : 'Guardando...'"></ion-loading>
+
+  <form [formGroup]="asignacionForm" (ngSubmit)="submitForm()" novalidate>
+    <ion-list>
+      <ion-item>
+        <ion-select formControlName="usuarioIdUsu" label="Conductor" label-placement="floating" interface="action-sheet" required>
+          <ion-select-option *ngFor="let conductor of conductores" [value]="conductor.idUsu">
+            {{ conductor.priNomUsu }} {{ conductor.priApeUsu }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div *ngIf="isSubmitting && asignacionForm.controls['usuarioIdUsu']?.errors?.['required']" class="error-message">
+        <ion-text color="danger">El conductor es requerido.</ion-text>
+      </div>
+
+      <ion-item>
+        <ion-select formControlName="rutaIdRuta" label="Ruta (Plantilla)" label-placement="floating" interface="action-sheet" required>
+          <ion-select-option *ngFor="let ruta of rutasPlantilla" [value]="ruta.idRuta">
+            {{ ruta.nombreRuta }} ({{ ruta.kilometrosRuta | number:'1.1-2' }} km aprox.)
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div *ngIf="isSubmitting && asignacionForm.controls['rutaIdRuta']?.errors?.['required']" class="error-message">
+        <ion-text color="danger">La ruta es requerida.</ion-text>
+      </div>
+
+      <ion-item>
+        <ion-select formControlName="vehiculoIdVehi" label="Vehículo" label-placement="floating" interface="action-sheet" required (ionChange)="onVehiculoChange($event)">
+          <ion-select-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.idVehi">
+            {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div *ngIf="isSubmitting && asignacionForm.controls['vehiculoIdVehi']?.errors?.['required']" class="error-message">
+        <ion-text color="danger">El vehículo es requerido.</ion-text>
+      </div>
+
+      <ion-item>
+        <ion-label position="floating">Fecha y Hora de Inicio Recorrido</ion-label>
+        <ion-datetime-button datetime="fecIniRecorDatetime"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="fecIniRecorDatetime" displayFormat="DD/MM/YYYY HH:mm" pickerFormat="DD MMM YYYY HH:mm"
+                          formControlName="fecIniRecor" required></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      <div *ngIf="isSubmitting && asignacionForm.controls['fecIniRecor']?.errors?.['required']" class="error-message">
+        <ion-text color="danger">La fecha de inicio es requerida.</ion-text>
+      </div>
+      
+      <ion-item>
+        <ion-label position="floating">Kilometraje Inicial del Vehículo</ion-label>
+        <ion-input type="number" formControlName="kmIniRecor" required placeholder="Ej: 150000"></ion-input>
+      </ion-item>
+       <div *ngIf="asignacionForm.controls['kmIniRecor']?.errors?.['required'] && (asignacionForm.controls['kmIniRecor']?.touched || isSubmitting)" class="error-message">
+        <ion-text color="danger">El kilometraje inicial es requerido.</ion-text>
+      </div>
+      <div *ngIf="asignacionForm.controls['kmIniRecor']?.errors?.['min'] && (asignacionForm.controls['kmIniRecor']?.touched || isSubmitting)" class="error-message">
+        <ion-text color="danger">El kilometraje no puede ser negativo.</ion-text>
+      </div>
+
+      <ion-item-divider color="light" class="ion-margin-top">Datos de Finalización (Opcional al crear)</ion-item-divider>
+      
+      <ion-item>
+        <ion-select formControlName="estadoAsig" label="Estado de la Asignación" label-placement="floating" interface="action-sheet" required>
+          <ion-select-option *ngFor="let estado of estadosAsignacion" [value]="estado">
+            {{ estado | titlecase }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+       <div *ngIf="isSubmitting && asignacionForm.controls['estadoAsig']?.errors?.['required']" class="error-message">
+        <ion-text color="danger">El estado es requerido.</ion-text>
+      </div>
+
+      <ion-item>
+        <ion-label position="floating">Fecha y Hora de Fin Recorrido</ion-label>
+        <ion-datetime-button datetime="fecFinRecorDatetime"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="fecFinRecorDatetime" displayFormat="DD/MM/YYYY HH:mm" pickerFormat="DD MMM YYYY HH:mm"
+                          formControlName="fecFinRecor"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label position="floating">Kilometraje Final del Vehículo</ion-label>
+        <ion-input type="number" formControlName="kmFinRecor" placeholder="Ej: 150250"></ion-input>
+      </ion-item>
+       <div *ngIf="asignacionForm.controls['kmFinRecor']?.errors?.['min'] && (asignacionForm.controls['kmFinRecor']?.touched || isSubmitting)" class="error-message">
+        <ion-text color="danger">El kilometraje no puede ser negativo.</ion-text>
+      </div>
+
+      <ion-item>
+        <ion-label position="floating">Eficiencia Combustible (km/l)</ion-label>
+        <ion-input type="number" formControlName="efiCombRecor" placeholder="Ej: 10.5"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Notas Adicionales</ion-label>
+        <ion-textarea formControlName="notas" rows="3"></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-button type="submit" expand="block" class="ion-margin-top" [disabled]="isSubmitting">
+      <ion-icon slot="start" name="save-outline"></ion-icon>
+      {{ isEditMode ? 'Actualizar Asignación' : 'Crear Asignación' }}
+    </ion-button>
+  </form>
+</ion-content>
+
+<style>
+  .error-message {
+    font-size: 0.8em;
+    padding-left: 16px; /* Alineado con el input/select */
+    padding-bottom: 5px;
+  }
+</style>

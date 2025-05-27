@@ -1,0 +1,113 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Este ion-menu-button SÍ pertenece al SidebarComponent, no a esta página directamente.
+           Si esta página se muestra DENTRO del SidebarComponent, el menú se manejará allí.
+           Si esta página tiene su PROPIO menú (lo cual es raro), entonces sí iría aquí.
+           Asumiendo que es parte del layout principal con SidebarComponent: -->
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Asignaciones de Recorrido</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-select interface="popover" label="Estado" label-placement="floating" [(ngModel)]="filtros.estado" (ionChange)="aplicarFiltros()">
+        <ion-select-option value="">Todos</ion-select-option>
+        <ion-select-option value="pendiente">Pendiente</ion-select-option>
+        <ion-select-option value="asignado">Asignado</ion-select-option>
+        <ion-select-option value="en_progreso">En Progreso</ion-select-option>
+        <ion-select-option value="completado">Completado</ion-select-option>
+        <ion-select-option value="cancelado">Cancelado</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-buttons slot="end">
+      <ion-button (click)="limpiarFiltros()" fill="clear" title="Limpiar filtros">
+        <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-loading [isOpen]="isLoading" message="Cargando..."></ion-loading>
+
+  <div *ngIf="!isLoading && asignaciones.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="map-outline" style="font-size: 4em;" color="medium"></ion-icon>
+    <p>No hay asignaciones de recorrido para mostrar.</p>
+    <ion-button (click)="goToCreateAsignacion()" expand="block" fill="outline">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Crear Nueva Asignación
+    </ion-button>
+  </div>
+
+  <ion-list *ngIf="asignaciones.length > 0">
+    <ion-item *ngFor="let asignacion of asignaciones" lines="inset" button detail="false">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <ion-col size="12" size-md="4">
+            <ion-label (click)="viewAsignacion(asignacion.idAsig)" style="cursor: pointer;"> <h2>
+                <ion-icon name="map-outline" color="secondary"></ion-icon>
+                {{ asignacion.rutaPlantilla?.nombreRuta || 'Ruta no especificada' }}
+              </h2>
+              <p>
+                <ion-icon name="car-sport-outline" color="tertiary"></ion-icon>
+                Vehículo: {{ asignacion.vehiculo?.patente || (asignacion.vehiculoIdVehi || 'N/A') }}
+                <span *ngIf="asignacion.vehiculo?.marca">({{ asignacion.vehiculo?.marca }} {{ asignacion.vehiculo?.modelo }})</span>
+              </p>
+              <p>
+                <ion-icon name="person-circle-outline" color="tertiary"></ion-icon>
+                Conductor: {{ asignacion.conductor?.priNomUsu || '' }} {{ asignacion.conductor?.priApeUsu || (asignacion.usuarioIdUsu || 'N/A') }}
+              </p>
+            </ion-label>
+          </ion-col>
+          <ion-col size="12" size-md="3">
+            <ion-label>
+              <p><ion-icon name="time-outline"></ion-icon> Inicio: {{ asignacion.fecIniRecor | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p *ngIf="asignacion.fecFinRecor"><ion-icon name="time-outline"></ion-icon> Fin: {{ asignacion.fecFinRecor | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p *ngIf="asignacion.rutaPlantilla?.kilometrosRuta">
+                <ion-icon name="speedometer-outline"></ion-icon> Dist. Estimada: {{ asignacion.rutaPlantilla?.kilometrosRuta | number:'1.1-2' }} km
+              </p>
+               <p *ngIf="asignacion.kmFinRecor && asignacion.kmIniRecor">
+                <ion-icon name="speedometer-outline"></ion-icon> Dist. Real: {{ (asignacion.kmFinRecor - asignacion.kmIniRecor) | number:'1.1-2' }} km
+              </p>
+            </ion-label>
+          </ion-col>
+          <ion-col size="12" size-md="2" class="ion-text-center">
+            <ion-chip [color]="asignacion.estadoAsig === 'completado' ? 'success' : (asignacion.estadoAsig === 'en_progreso' ? 'warning' : (asignacion.estadoAsig === 'cancelado' ? 'danger' : (asignacion.estadoAsig === 'asignado' ? 'secondary' : 'medium')))">
+              <ion-label>{{ asignacion.estadoAsig | titlecase }}</ion-label>
+            </ion-chip>
+          </ion-col>
+          <ion-col size="12" size-md="3" class="ion-text-md-end ion-text-center">
+            <ion-button fill="clear" size="small" (click)="viewAsignacion(asignacion.idAsig)" title="Ver/Editar Detalles">
+              <ion-icon slot="icon-only" name="eye-outline" color="primary"></ion-icon>
+            </ion-button>
+            <ng-container [ngSwitch]="asignacion.estadoAsig">
+              <ion-button *ngSwitchCase="'asignado'" fill="clear" size="small" (click)="cambiarEstadoAsignacion(asignacion, 'en_progreso')" title="Iniciar Recorrido">
+                <ion-icon slot="icon-only" name="play-circle-outline" color="success"></ion-icon>
+              </ion-button>
+              <ion-button *ngSwitchCase="'en_progreso'" fill="clear" size="small" (click)="editAsignacion(asignacion.idAsig)" title="Registrar Fin de Recorrido">
+                <ion-icon slot="icon-only" name="checkmark-circle-outline" color="success"></ion-icon>
+              </ion-button>
+              <ion-button *ngIf="asignacion.estadoAsig === 'pendiente' || asignacion.estadoAsig === 'asignado'" fill="clear" size="small" (click)="cambiarEstadoAsignacion(asignacion, 'cancelado')" title="Cancelar Asignación">
+                <ion-icon slot="icon-only" name="close-circle-outline" color="danger"></ion-icon>
+              </ion-button>
+            </ng-container>
+            <ion-button fill="clear" size="small" (click)="confirmDeleteAsignacion(asignacion)" title="Eliminar Asignación" *ngIf="asignacion.estadoAsig === 'pendiente' || asignacion.estadoAsig === 'cancelado' || asignacion.estadoAsig === 'completado'">
+              <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="goToCreateAsignacion()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

@@ -86,6 +86,7 @@ export class SidebarComponent {
     { title: 'Recordatorios',  url: '/recordatorios', icon: 'alarm' },
     { title: 'Siniestros',     url: '/siniestros',    icon: 'warning' },
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'navigate' }, 
+    { title: 'Asignaciones Recorrido', url: '/asignacion-list', icon: 'navigate' }, 
   ];
 
   private authService = inject(AuthService);

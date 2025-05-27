@@ -1,6 +1,6 @@
 // models/Vehiculo.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Asegúrate que la ruta a tu instancia de Sequelize sea correcta
+module.exports = (sequelize, SequelizeDataTypes) => { // Asegúrate que la ruta a tu instancia de Sequelize sea correcta
 
 const Vehiculo = sequelize.define('Vehiculo', {
   idVehi: {
@@ -104,21 +104,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Última coordenada de longitud conocida del vehículo'
   }
 }, {
-  tableName: 'VEHICULO', // Nombre exacto de la tabla en la BD
-  timestamps: false,     // ¡Importante! No se usarán los campos createdAt y updatedAt automáticos de Sequelize
+  tableName: 'VEHICULO', 
+  timestamps: false,     
   comment: 'Tabla para almacenar la información detallada de los vehículos de la flota'
-  // Aquí podrías añadir índices si no están definidos directamente en la BD y quieres que Sequelize los conozca,
-  // o si quieres que Sequelize los cree (aunque es mejor definirlos en el DDL de MySQL).
-  // indexes: [
-  //   { unique: true, fields: ['patente'] }, // Sequelize puede crear índices, pero UNIQUE ya lo hace a nivel BD
-  //   { unique: true, fields: ['chasis'] },
-  //   { fields: ['estado_vehi'] }
-  // ]
+  
 });
 
-// Aquí irían las asociaciones con otros modelos, por ejemplo:
-// Vehiculo.hasMany(models.Mantenimiento, { foreignKey: 'VEHICULO_id_vehi', as: 'mantenimientos' });
-// Vehiculo.hasMany(models.Siniestro, { foreignKey: 'VEHICULO_id_vehi', as: 'siniestros' });
-// etc.
 
-module.exports = Vehiculo;
+
+return Vehiculo; 
+};

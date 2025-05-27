@@ -1,0 +1,95 @@
+// src/app/pages/asignacion-form/asignacion-form.page.scss
+
+// Estilo general para el contenido de la página para asegurar un padding consistente
+ion-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+  }
+  
+  // Añadir un poco más de margen vertical a cada ion-item dentro de la lista del formulario
+  ion-list ion-item {
+    margin-bottom: 8px; // Aumenta el espacio debajo de cada item
+  
+    // Ajuste para ion-select con label flotante si es necesario
+    ion-select[label-placement="floating"] {
+      --padding-top: 8px; // Más espacio arriba para el label cuando flota
+    }
+  }
+  
+  // Estilo para los divisores, para darles más respiro
+  ion-item-divider {
+    margin-top: 20px !important;    // Más espacio arriba del divisor
+    margin-bottom: 8px !important;  // Espacio debajo del divisor, antes del siguiente elemento
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.9em;
+    --background: rgba(var(--ion-color-step-150, 0, 0, 0), 0.05); // Un fondo sutil
+  }
+  
+  // Estilo para el contenedor del mapa
+  #routeFormMap {
+    height: 300px; // Asegúrate que esto esté definido como en tu HTML
+    width: 100%;
+    border: 1px solid var(--ion-color-medium-shade, #ccc);
+    margin-top: 8px;
+    margin-bottom: 16px; // Espacio después del mapa
+  }
+  
+  // Estilo para los mensajes de error
+  .error-message {
+    font-size: 0.8em;
+    padding-left: 16px; // Alineado con el input/select
+    padding-top: 2px;   // Pequeño espacio arriba del mensaje
+    padding-bottom: 8px; // Espacio debajo del mensaje, antes del siguiente item
+    min-height: 1.2em; // Asegura un espacio incluso si el mensaje está vacío temporalmente
+  }
+  
+  // Estilo para los botones principales de acción (Calcular Ruta, Guardar)
+  ion-button[expand="block"] {
+    margin-top: 20px; // Buen espacio arriba de los botones principales
+    margin-bottom: 10px;
+  }
+  
+  // Si tienes un ion-list específico para los puntos de origen/destino
+  // y quieres espaciarlos más:
+  ion-list[lines="none"] ion-item {
+      margin-bottom: 4px; // Espacio más pequeño para items relacionados
+  }
+  
+  // Estilo para el ion-item que muestra la distancia calculada
+  ion-item.distancia-item { // Añade esta clase al ion-item de distancia en el HTML si quieres estilos específicos
+    margin-top: 16px;
+    margin-bottom: 16px;
+    --background: var(--ion-color-light-tint); // Un fondo sutil para destacarlo
+    --border-radius: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  
+    ion-icon {
+      font-size: 1.4em; // Hacer el icono un poco más grande
+      margin-right: 12px; // Más espacio entre el icono y el label
+    }
+  
+    ion-label strong {
+      font-size: 1.1em; // Hacer el número de km un poco más grande
+    }
+  }
+  
+  // Ajustes generales para ion-label y ion-note dentro de los items
+  ion-item ion-label {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  
+  ion-item ion-note[slot="end"] {
+    font-size: 0.9em;
+  }
+  
+  // Para asegurar que los ion-datetime-button no se sientan apretados
+  ion-item containing-ion-datetime-button {
+      padding-top: 8px;
+      padding-bottom: 8px;
+  }
+  
