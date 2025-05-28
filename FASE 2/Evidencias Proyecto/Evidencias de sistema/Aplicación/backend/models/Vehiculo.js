@@ -26,7 +26,7 @@ const Vehiculo = sequelize.define('Vehiculo', {
   },
   tipoVehi: {
     type: DataTypes.STRING(20),
-    allowNull: true, // Según el DDL, es nullable. Cambiar si es requerido.
+    allowNull: true, 
     field: 'tipo_vehi',
     comment: 'Tipo del vehículo (ej: ligero, mediano, pesado, sedan, camioneta, furgon)'
   },
@@ -39,7 +39,7 @@ const Vehiculo = sequelize.define('Vehiculo', {
   },
   tipoCombVehi: {
     type: DataTypes.ENUM('gasolina_93', 'gasolina_95', 'gasolina_97', 'diesel', 'electrico', 'otro'),
-    allowNull: true, // Según el DDL, es nullable. Cambiar si es requerido.
+    allowNull: true,
     field: 'tipo_comb_vehi',
     comment: 'Tipo de combustible principal del vehículo'
   },
@@ -63,13 +63,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Modelo del vehículo (ej. Hilux)'
   },
   anio: {
-    type: DataTypes.INTEGER, // Sequelize no tiene un tipo YEAR directo, se usa INTEGER para el año (4 dígitos)
+    type: DataTypes.INTEGER,
     allowNull: false,
     field: 'anio',
-    validate: { // Opcional: validación para asegurar que sea un año razonable
+    validate: { 
       isInt: true,
       min: 1900,
-      max: new Date().getFullYear() + 5 // Un margen pequeño hacia el futuro
+      max: new Date().getFullYear() + 5 
     },
     comment: 'Año de fabricación del vehículo (ej. 2023)'
   },
@@ -80,13 +80,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Kilometraje estimado de vida útil del vehículo'
   },
   efiComb: {
-    type: DataTypes.DECIMAL(5, 2), // Coincide con DECIMAL(5,2) en MySQL
+    type: DataTypes.DECIMAL(5, 2), 
     allowNull: true,
     field: 'efi_comb',
     comment: 'Eficiencia de combustible (km/l o kWh/km para eléctricos). Ej: 12.50'
   },
   fecAdqui: {
-    type: DataTypes.DATEONLY, // Para campos DATE de MySQL (solo fecha, sin hora)
+    type: DataTypes.DATEONLY, 
     allowNull: false,
     field: 'fec_adqui',
     comment: 'Fecha de adquisición del vehículo'

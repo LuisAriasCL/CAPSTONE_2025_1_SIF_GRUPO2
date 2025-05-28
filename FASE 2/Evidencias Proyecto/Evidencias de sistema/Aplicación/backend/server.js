@@ -6,26 +6,27 @@ const cors = require('cors');
 const { Server } = require("socket.io");
 
 const db = require('./models');
-
+// ... otras importaciones de rutas
+const planificacionMantenimientoRoutes = require('./routes/planificacionMantenimiento.routes');
 // Rutas API
 const vehicleRoutes = require('./routes/vehiculos');
 const authRoutes = require('./routes/auth');
-const routeRoutes = require('./routes/rutas'); // Asegúrate que este archivo exporte las rutas de /api/rutas
+const routeRoutes = require('./routes/rutas'); 
 const asignacionRecorridoRoutes = require('./routes/asignacionesRecorrido');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Considera restringir esto en producción
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
 
-app.use(cors({ origin: "*" })); // Considera restringir esto en producción
+app.use(cors({ origin: "*" })); 
 app.use(express.json());
 
-// Middleware para pasar 'io' a las rutas API (si lo necesitas allí para emitir eventos desde las rutas)
+
 app.use((req, res, next) => {
     req.io = io;
     next();
@@ -35,8 +36,7 @@ async function testDbConnectionAndSync() {
     try {
         await db.sequelize.authenticate();
         console.log('✅ Conexión a la Base de Datos (Sequelize) establecida correctamente.');
-        // await db.sequelize.sync({ alter: true }); // Cuidado con alter:true en producción
-        // console.log('🔄 Modelos sincronizados con la Base de Datos.');
+       
     } catch (error) {
         console.error('❌ Error al conectar o sincronizar con la Base de Datos:', error);
     }
@@ -51,7 +51,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/rutas', routeRoutes);
 app.use('/api/asignaciones-recorrido', asignacionRecorridoRoutes);
-
+app.use('/api/planificaciones', planificacionMantenimientoRoutes); 
 // Lógica de Socket.IO
 io.on('connection', (socket) => {
     console.log(`🔌 Cliente conectado a Socket.IO: ${socket.id}`);
@@ -63,7 +63,7 @@ io.on('connection', (socket) => {
             console.log(`[Simulación] Intervalo de simulación detenido para socket ${socket.id} debido a desconexión.`);
             delete socket.simulationIntervalId;
         }
-        // Si te unes a rooms, aquí podrías querer limpiar la pertenencia a rooms del socket
+      
     });
 
     // (Opcional) Suscripción a un room específico de asignación
@@ -73,8 +73,7 @@ io.on('connection', (socket) => {
             const roomName = `asignacion_${asignacionId}`;
             socket.join(roomName);
             console.log(`[Socket] Cliente ${socket.id} se unió al room ${roomName}`);
-            // Podrías emitir un evento de confirmación si es necesario
-            // socket.emit('subscribedToAsignacion', { asignacionId, roomName });
+           
         } else {
             console.warn(`[Socket] Intento de suscripción sin asignacionId por cliente ${socket.id}`);
         }
@@ -93,12 +92,12 @@ io.on('connection', (socket) => {
 
     socket.on('startSimulation', async (data) => {
         const routeId = data?.routeId;
-        const vehicleNumericId = data?.vehicleId; // No pongas un valor por defecto aquí, debe venir del cliente
-        const asignacionIdSimulacion = data?.asignacionId; // NUEVO: Recibir asignacionId para el contexto
+        const vehicleNumericId = data?.vehicleId; 
+        const asignacionIdSimulacion = data?.asignacionId; 
 
         console.log(`[Socket] Recibida petición 'startSimulation': Ruta ID=${routeId}, Vehículo ID=${vehicleNumericId}, Asignación ID=${asignacionIdSimulacion}`);
 
-        if (!routeId || vehicleNumericId === undefined) { // Asegurar que vehicleId también esté presente
+        if (!routeId || vehicleNumericId === undefined) { 
             console.error("[Simulación] Error: No se proporcionó routeId o vehicleId.");
             socket.emit('simulationError', { message: 'Falta ID de la ruta o ID del vehículo para iniciar la simulación.' });
             return;
@@ -154,30 +153,27 @@ io.on('connection', (socket) => {
                     if (asignacionIdSimulacion) {
                         io.to(`asignacion_${asignacionIdSimulacion}`).emit('simulationEnded', endData);
                     } else {
-                        io.emit('simulationEnded', endData); // O a un room general si no hay asignacionId
+                        io.emit('simulationEnded', endData); 
                     }
                     return;
                 }
 
                 const [latitudActual, longitudActual] = puntosSimulacionArray[puntoActualIndex];
                 const datosActualizacionVehiculo = {
-                    idVehi: vehicleNumericId, // Asegúrate que coincida con la PK de tu modelo Vehiculo
+                    idVehi: vehicleNumericId, 
                     latitud: latitudActual,
                     longitud: longitudActual,
-                    asignacionId: asignacionIdSimulacion, // Incluir asignacionId
-                    // Podrías obtener y enviar el estado actual del vehículo desde la BD si lo necesitas
-                    // const vehiculoDB = await db.Vehiculo.findByPk(vehicleNumericId);
-                    // estadoVehi: vehiculoDB ? vehiculoDB.estadoVehi : 'desconocido',
-                    // patente: vehiculoDB ? vehiculoDB.patente : 'N/A',
+                    asignacionId: asignacionIdSimulacion, 
+                
                 };
 
                 console.log(`[Simulación] Ruta "${nombreDeLaRuta}" [${puntoActualIndex + 1}/${puntosSimulacionArray.length}]: Vehículo ID=${vehicleNumericId} -> [Lat: ${latitudActual}, Lon: ${longitudActual}], Asignación ID=${asignacionIdSimulacion}`);
                 
-                // Emitir al room específico si asignacionIdSimulacion está presente, sino a todos.
+           
                 if (asignacionIdSimulacion) {
                     io.to(`asignacion_${asignacionIdSimulacion}`).emit('vehicleUpdated', datosActualizacionVehiculo);
                 } else {
-                    io.emit('vehicleUpdated', datosActualizacionVehiculo); // Fallback si no hay asignacionId
+                    io.emit('vehicleUpdated', datosActualizacionVehiculo); 
                 }
                 puntoActualIndex++;
             }, intervaloDeSimulacionMs);
@@ -193,7 +189,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('stopSimulation', (data) => {
-        const vehicleId = data?.vehicleId; // O como identifiques la simulación a detener
+        const vehicleId = data?.vehicleId; 
         console.log(`[Socket] Recibida petición 'stopSimulation' para vehículo ${vehicleId} (o simulación de este socket)`);
         if (socket.simulationIntervalId) {
             clearInterval(socket.simulationIntervalId);
@@ -206,7 +202,7 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 8100; // Cambiado el puerto a 3000, 8100 es común para Ionic serve
+const PORT = process.env.PORT || 8100; 
 server.listen(PORT, () => {
     console.log(`🚀 Servidor Express con Socket.IO corriendo en http://localhost:${PORT}`);
 });

@@ -8,12 +8,12 @@ import { filter } from 'rxjs/operators';
 import * as L from 'leaflet'; // Importar Leaflet
 
 import { AuthService } from '../../services/auth.service';
-// Usar 'Route' como el nombre de la interfaz importada desde api.service.ts
+
 import { ApiService, Vehiculo, Route as RutaInterface } from '../../services/api.service';
 import { SocketService } from '../../services/socket.service';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 
-// Definición de íconos de Leaflet (asegúrate que las rutas a los assets sean correctas)
+
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
 const shadowUrl = 'assets/marker-shadow.png';
@@ -28,13 +28,13 @@ L.Marker.prototype.options.icon = iconDefault;
 // Interfaz para los datos que llegan del evento 'vehicleUpdated' del backend
 interface VehiculoConDatosSimulacion extends Vehiculo {
   asignacionId?: number;
-  nombreRutaSimulacion?: string; // Si el backend envía este dato contextual
+  nombreRutaSimulacion?: string;
 }
 
 @Component({
-  selector: 'app-recorridos', // Este debe coincidir con el selector en tu routing si es lazy-loaded
-  templateUrl: 'recorridos.page.html', // Asegúrate que este sea el nombre correcto de tu template
-  styleUrls: ['recorridos.page.scss'],  // Y de tu archivo de estilos
+  selector: 'app-recorridos', 
+  templateUrl: 'recorridos.page.html', 
+  styleUrls: ['recorridos.page.scss'],  
   standalone: true,
   imports: [IonicModule, CommonModule]
 })
@@ -144,8 +144,8 @@ export class HomePage implements OnInit, OnDestroy { // Implementa OnInit y OnDe
         console.log("[Mapa] ionViewDidEnter: Mapa ya existe, solo invalidando tamaño.");
         this.map.invalidateSize(true);
       }
-      // Una vez que el mapa (nuevo o existente) está listo, configurar la vista
-      if (this.map) { // Asegurarse que el mapa se inicializó correctamente
+    
+      if (this.map) { 
         await this.configurarVistaSegunQueryParams();
       } else {
         console.error("[Mapa] ionViewDidEnter: Falló la inicialización del mapa, no se puede configurar la vista.");
@@ -324,12 +324,11 @@ export class HomePage implements OnInit, OnDestroy { // Implementa OnInit y OnDe
   }
 
   private listenToSocketEvents(): void {
-    // Asegurarse que las suscripciones no se dupliquen si este método se llama varias veces
-    // El patrón actual en ionViewWillEnter/Leave con this.subscriptions = new Subscription() debería manejarlo.
+   
     console.log("[Mapa] listenToSocketEvents: (Re)configurando listeners...");
 
     // Desuscribir listeners específicos si ya existen para evitar duplicados
-    this.subscriptions.unsubscribe(); // Limpia todas las suscripciones anteriores
+    this.subscriptions.unsubscribe(); 
     this.subscriptions = new Subscription(); // Crea un nuevo contenedor de suscripciones
 
     const vehicleUpdatedSub = this.socketService.listen<VehiculoConDatosSimulacion>('vehicleUpdated').subscribe(vehiculoData => {

@@ -89,7 +89,14 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/asignacion-form/asignacion-form.page').then(m => m.AsignacionFormPage)
       },
       // Po
-    
+      {
+        path: 'planificacion-form',
+        loadComponent: () => import('./pages/maintenance/planificacion-form/planificacion-form.page').then( m => m.PlanificacionFormPage)
+      },
+      {
+        path: 'planificacion-list',
+        loadComponent: () => import('./pages/maintenance/planificacion-list/planificacion-list.page').then( m => m.PlanificacionListPage)
+      },
       {
         path: '',
         redirectTo: 'dashboard',
@@ -97,6 +104,7 @@ export const routes: Routes = [
       }
     ]
   },
+  
   
   
 ];

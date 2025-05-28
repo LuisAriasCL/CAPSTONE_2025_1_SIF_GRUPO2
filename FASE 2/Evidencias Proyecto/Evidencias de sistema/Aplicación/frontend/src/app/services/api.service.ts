@@ -40,7 +40,38 @@ export interface UsuarioConductorInfo {
   email?: string;
   // otros campos útiles
 }
+export interface TareaPlanificacionData {
+  nomTareaPlan: string;
+  descTareaPlan?: string | null;
+}
 
+export interface PlanificacionMantenimientoData {
+  descPlan: string;
+  frecuencia: number;
+  tipoFrecuencia: 'km' | 'dias' | 'semanas' | 'meses';
+  esActivoPlan: boolean;
+  esPreventivo: boolean;
+  tareas: TareaPlanificacionData[];
+  vehiculosIds: number[];
+}
+
+export interface TareaPlanificacionResumen extends TareaPlanificacionData {
+  idTareaPlan: number;
+  planificacionMantenimientoIdPlan: number;
+}
+
+export interface PlanificacionMantenimientoResumen {
+  idPlan: number;
+  descPlan: string;
+  frecuencia: number;
+  tipoFrecuencia: string;
+  esActivoPlan: boolean;
+  esPreventivo: boolean;
+  fecCrePlan?: string;
+  fecActPlan?: string;
+  tareas?: TareaPlanificacionResumen[];
+  vehiculosEnPlan?: VehiculoAsignacionInfo[];
+}
 // NUEVA INTERFAZ: ASIGNACION_RECORRIDO
 // Refleja la estructura que el backend devuelve, incluyendo datos de las relaciones
 export interface AsignacionRecorrido {
@@ -133,6 +164,35 @@ export class ApiService {
       catchError(this.handleErrorSimple) // Usar un manejador de error más simple para OSRM
     );
   }
+  crearPlanificacion(data: PlanificacionMantenimientoData): Observable<any> {
+    // HttpClient debería establecer Content-Type: application/json automáticamente si 'data' es un objeto.
+    // Si se requiere un token de autorización, un HttpInterceptor debería manejarlo.
+    return this.http.post<any>(`${this.apiUrl}/planificaciones`, data)
+      .pipe(catchError(this.handleError)); // Tu manejador de errores general
+  }
+
+  getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
+    // Siguiendo el patrón de getRoutes.
+    return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // (Aquí irían los métodos para GET by ID, PUT, DELETE de planificaciones cuando los implementes,
+  //  siguiendo el mismo patrón: sin opciones explícitas en la llamada http.)
+  getPlanificacionById(id: number): Observable<PlanificacionMantenimientoResumen> {
+    return this.http.get<PlanificacionMantenimientoResumen>(`${this.apiUrl}/planificaciones/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  updatePlanificacion(id: number, data: Partial<PlanificacionMantenimientoData>): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/planificaciones/${id}`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  deletePlanificacion(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/planificaciones/${id}`)
+      .pipe(catchError(this.handleError));
+  }
 
   getRoutes(): Observable<Route[]> {
     return this.http.get<Route[]>(`${this.apiUrl}/rutas`)
@@ -176,7 +236,10 @@ export class ApiService {
     return this.http.get<Vehiculo>(`${this.apiUrl}/vehicles/${id}`)
       .pipe(catchError(this.handleError));
   }
-
+  getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {
+    return this.http.get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`) // Asumiendo endpoint /api/vehiculos
+      .pipe(catchError(this.handleError));
+  }
   createVehicle(vehicleData: Vehiculo): Observable<Vehiculo> {
     return this.http.post<Vehiculo>(`${this.apiUrl}/vehicles`, vehicleData)
       .pipe(catchError(this.handleError));

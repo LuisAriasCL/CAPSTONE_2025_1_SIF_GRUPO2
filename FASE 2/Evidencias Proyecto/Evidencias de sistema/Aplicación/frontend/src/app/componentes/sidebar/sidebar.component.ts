@@ -75,7 +75,7 @@ export class SidebarComponent {
   public appPages = [
     { title: 'Dashboard',      url: '/dashboard',     icon: 'grid' },
     { title: 'Reportes',       url: '/reportes',      icon: 'newspaper' },
-    { title: 'Mantenimientos', url: '/mantenimiento', icon: 'build' },
+    { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
     { title: 'Combustible',    url: '/combustible',   icon: 'flame' },
     { title: 'Checklists',     url: '/checklists',    icon: 'checkbox' },
     { title: 'Vehículos',      url: '/vehiculos',     icon: 'car' },
@@ -87,6 +87,7 @@ export class SidebarComponent {
     { title: 'Siniestros',     url: '/siniestros',    icon: 'warning' },
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'navigate' }, 
     { title: 'Asignaciones Recorrido', url: '/asignacion-list', icon: 'navigate' }, 
+    
   ];
 
   private authService = inject(AuthService);

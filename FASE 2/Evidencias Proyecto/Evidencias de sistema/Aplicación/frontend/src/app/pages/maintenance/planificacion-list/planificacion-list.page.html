@@ -1,0 +1,73 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button autoHide="false"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Planes de Mantenimiento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="cargarPlanificaciones($event)">
+    <ion-refresher-content pullingIcon="chevron-down-circle-outline" refreshingSpinner="crescent" refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="isLoading && planificaciones.length === 0" class="ion-text-center ion-padding-top">
+    <ion-spinner name="dots" color="primary"></ion-spinner>
+    <p>Cargando planes de mantenimiento...</p>
+  </div>
+
+  <div *ngIf="!isLoading && planificaciones.length === 0" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="file-tray-stacked-outline" size="large" color="medium" class="empty-icon"></ion-icon>
+    <h2>No Hay Planes Creados</h2>
+    <p>Aún no se han registrado planificaciones de mantenimiento.</p>
+    <ion-button (click)="irACrearPlan()" color="primary" expand="block" class="ion-margin-top">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Crear Nueva Planificación
+    </ion-button>
+  </div>
+
+  <ion-list *ngIf="planificaciones.length > 0" [inset]="true">
+    <ion-list-header>
+      <ion-label color="dark">Planes Registrados ({{ planificaciones.length }})</ion-label>
+    </ion-list-header>
+    <ion-item-sliding *ngFor="let plan of planificaciones" #slidingItem>
+      <ion-item lines="full" (click)="verDetalle(plan)" detail="false" button>
+        <ion-icon [name]="getIconForPlanStatus(plan)" [color]="getColorForPlanStatus(plan)" slot="start" class="item-icon"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ plan.descPlan }}</h2>
+          <p>
+            <ion-icon name="sync-circle-outline" class="small-icon"></ion-icon> Frec.: {{ plan.frecuencia }} {{ plan.tipoFrecuencia }}
+          </p>
+          <p>
+            <ion-icon name="list-outline" class="small-icon"></ion-icon> Tareas: {{ plan.tareas?.length || 0 }} |
+            <ion-icon name="car-sport-outline" class="small-icon"></ion-icon> Vehículos: {{ plan.vehiculosEnPlan?.length || 0 }}
+          </p>
+        </ion-label>
+        <div slot="end" class="ion-text-right">
+            <ion-note color="medium" style="font-size: 0.8em;">{{ plan.fecCrePlan ? (plan.fecCrePlan | date:'dd/MM/yy') : 'N/A' }}</ion-note><br>
+            <ion-badge [color]="plan.esPreventivo ? 'success' : 'secondary'" class="ion-margin-top-small">{{ plan.esPreventivo ? 'Preventivo' : 'Otro' }}</ion-badge><br>
+            <ion-badge [color]="plan.esActivoPlan ? 'primary' : 'light'" class="ion-margin-top-small" style="display: inline-block;">{{ plan.esActivoPlan ? 'Activo' : 'Inactivo' }}</ion-badge>
+        </div>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="tertiary" (click)="editarPlan(plan)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          Editar
+        </ion-item-option>
+        <ion-item-option color="danger" (click)="confirmarEliminar(plan)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          Eliminar
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="irACrearPlan()" color="primary" aria-label="Crear Planificación">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
