@@ -14,20 +14,32 @@
     <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
       <!-- Email -->
       <ion-item lines="full">
-        <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+        <ion-icon slot="start" name="mail-outline"></ion-icon>
         <ion-label position="floating">Email</ion-label>
-        <ion-input type="email" formControlName="email" required inputmode="email"></ion-input>
+        <ion-input 
+          type="email" 
+          formControlName="email" 
+          required 
+          inputmode="email" 
+          placeholder="Ej: usuario@correo.com">
+        </ion-input>
       </ion-item>
 
       <!-- Contraseña -->
       <ion-item lines="full">
         <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
         <ion-label position="floating">Contraseña</ion-label>
-        <ion-input type="password" formControlName="clave" required></ion-input>
+        <ion-input 
+          type="password" 
+          formControlName="clave" 
+          required 
+          placeholder="Mínimo 6 caracteres">
+        </ion-input>
       </ion-item>
 
       <!-- Botón de Iniciar Sesión -->
       <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="loginForm.invalid">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
         Entrar
       </ion-button>
 

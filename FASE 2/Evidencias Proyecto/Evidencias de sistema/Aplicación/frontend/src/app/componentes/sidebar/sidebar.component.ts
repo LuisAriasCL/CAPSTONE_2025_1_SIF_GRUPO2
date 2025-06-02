@@ -10,32 +10,19 @@ import {
   IonIcon,
   IonLabel,
   IonRouterOutlet,
-  IonHeader,
-  IonToolbar,
-  IonTitle
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   gridOutline,
-  carOutline,
-  logOutOutline,
-  documentsOutline,
-  peopleOutline,
-  mapOutline,
-  constructOutline,
-  settingsOutline,
-  warningOutline,
-  listOutline,
-  buildOutline,
   newspaperOutline,
-  checkboxOutline,
-  exitOutline,
-  readerOutline,
+  buildOutline,
   flameOutline,
-  briefcaseOutline,
-  documentOutline,
-  alarmOutline
+  carOutline,
+  peopleOutline,
+  navigateOutline,
+  warningOutline,
+  mapOutline,
 } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
@@ -60,7 +47,7 @@ import { AuthService } from '../../services/auth.service';
     IonItem,
     IonIcon,
     IonLabel,
-    IonRouterOutlet
+    IonRouterOutlet,
   ],
 })
 export class SidebarComponent {
@@ -73,21 +60,15 @@ export class SidebarComponent {
    * Opciones de navegación para la aplicación.
    */
   public appPages = [
-    { title: 'Dashboard',      url: '/dashboard',     icon: 'grid' },
-    { title: 'Reportes',       url: '/reportes',      icon: 'newspaper' },
+    { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
+    { title: 'Reportes', url: '/reportes', icon: 'newspaper' },
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
-    { title: 'Combustible',    url: '/combustible',   icon: 'flame' },
-    { title: 'Checklists',     url: '/checklists',    icon: 'checkbox' },
-    { title: 'Vehículos',      url: '/vehiculos',     icon: 'car' },
-    { title: 'Proyectos',      url: '/proyectos',     icon: 'briefcase' },
-    { title: 'Conductores',    url: '/conductores',   icon: 'people' },
-    { title: 'Recorridos',     url: '/recorridos',    icon: 'map' },
-    { title: 'Documentos',     url: '/documentos',    icon: 'document' },
-    { title: 'Recordatorios',  url: '/recordatorios', icon: 'alarm' },
-    { title: 'Siniestros',     url: '/siniestros',    icon: 'warning' },
-    { title: 'Gestión de Rutas', url: '/rutas', icon: 'navigate' }, 
-    { title: 'Asignaciones Recorrido', url: '/asignacion-list', icon: 'navigate' }, 
-    
+    { title: 'Combustible', url: '/combustible', icon: 'flame' },
+    { title: 'Vehículos', url: '/vehiculos', icon: 'car' },
+    { title: 'Conductores', url: '/conductores', icon: 'people' },
+    { title: 'Asignación de recorridos', url: '/asignacion-list', icon: 'navigate' },
+    { title: 'Incidentes', url: '/siniestros', icon: 'warning' },
+    { title: 'Gestión de Rutas', url: '/rutas', icon: 'map' },
   ];
 
   private authService = inject(AuthService);
@@ -96,24 +77,14 @@ export class SidebarComponent {
     // Registro de íconos Ionicons personalizados
     addIcons({
       gridOutline,
-      carOutline,
-      logOutOutline,
-      documentsOutline,
-      peopleOutline,
-      mapOutline,
-      constructOutline,
-      settingsOutline,
-      warningOutline,
-      listOutline,
-      buildOutline,
       newspaperOutline,
-      checkboxOutline,
-      exitOutline,
-      readerOutline,
+      buildOutline,
       flameOutline,
-      briefcaseOutline,
-      documentOutline,
-      alarmOutline
+      carOutline,
+      peopleOutline,
+      navigateOutline,
+      warningOutline,
+      mapOutline,
     });
   }
 }
