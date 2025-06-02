@@ -12,12 +12,15 @@ import { save, arrowBackOutline as ionArrowBackOutline } from 'ionicons/icons';
 import { ApiService, Vehiculo, EstadoVehiculo, TipoCombustibleVehiculo } from '../../services/api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
+// Importamos el componente DataTable y sus interfaces
+import { DataTableComponent, Column, PageEvent } from '../../componentes/data-table/data-table.component';
+
 @Component({
   selector: 'app-vehicle-form',
   templateUrl: './vehicle-form.page.html',
   styleUrls: ['./vehicle-form.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule]
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, DataTableComponent]
 })
 export class VehicleFormPage implements OnInit {
 
@@ -46,6 +49,16 @@ export class VehicleFormPage implements OnInit {
     null, 'gasolina_93', 'gasolina_95', 'gasolina_97', 'diesel', 'electrico', 'otro'
   ];
 
+  // Variables para el DataTable de historial de mantenimiento
+  mantenimientos: any[] = [];
+  historialColumns: Column[] = [
+    { header: 'Fecha', field: 'fecha', sortable: true },
+    { header: 'Tipo', field: 'tipo', sortable: true },
+    { header: 'Descripción', field: 'descripcion', sortable: false },
+    { header: 'Kilometraje', field: 'kilometraje', sortable: true },
+    { header: 'Costo', field: 'costo', sortable: true }
+  ];
+  
   constructor() {
     // Registramos los iconos para que Ionic los reconozca por nombre
     addIcons({ save, 'arrow-back-outline': ionArrowBackOutline });
@@ -125,6 +138,7 @@ export class VehicleFormPage implements OnInit {
           longitud: data.longitud
         });
         console.log('Datos cargados para edición:', this.vehicleForm.value);
+        this.cargarHistorialMantenimiento(this.vehicleId); // Cargar historial al editar
       },
       error: async (err: HttpErrorResponse | Error) => { // Tipar err
         this.isLoading = false;
@@ -135,6 +149,57 @@ export class VehicleFormPage implements OnInit {
         this.navCtrl.navigateBack('/vehicle-list'); // Usar navigateBack con la ruta correcta
       }
     });
+  }
+  // Datos de ejemplo para el historial (en un caso real vendrían de la API)
+  cargarHistorialMantenimiento(idVehiculo?: number | null) {
+    // Datos de ejemplo - en una aplicación real estos datos vendrían de una API
+    if (idVehiculo) {
+      this.mantenimientos = [
+        { 
+          id: 1, 
+          fecha: '2025-05-15', 
+          tipo: 'Preventivo', 
+          descripcion: 'Cambio de aceite y filtros', 
+          kilometraje: 15000, 
+          costo: 45000 
+        },
+        { 
+          id: 2, 
+          fecha: '2025-04-10', 
+          tipo: 'Correctivo', 
+          descripcion: 'Reparación de frenos', 
+          kilometraje: 14500, 
+          costo: 85000 
+        },
+        { 
+          id: 3, 
+          fecha: '2025-03-05', 
+          tipo: 'Preventivo', 
+          descripcion: 'Rotación de neumáticos', 
+          kilometraje: 13000, 
+          costo: 20000 
+        }
+      ];
+    } else {
+      this.mantenimientos = []; // Sin historial para vehículos nuevos
+    }
+  }
+  
+  // Métodos para el DataTable
+  onHistorialPageChange(event: PageEvent) {
+    console.log('Cambio de página en historial:', event);
+  }
+  
+  onHistorialRowClick(row: any) {
+    console.log('Fila de historial seleccionada:', row);
+  }
+  
+  onHistorialSortColumn(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar historial por:', event);
+  }
+  
+  onHistorialExport(format: string) {
+    console.log('Exportar historial en formato:', format);
   }
 
   async saveVehicle() {

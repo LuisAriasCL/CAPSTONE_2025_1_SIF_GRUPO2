@@ -136,11 +136,16 @@ export interface Vehiculo {
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:8100/api'; // URL base de API
 
-  private http = inject(HttpClient);
+  // private apiUrl = 'http://localhost:8100/api'; // Ya lo tenías así.
+  // Si usas environment.ts (como en mi propuesta anterior), sería:
+  // import { environment } from '../../environments/environment';
+  // private apiUrl = environment.apiUrl;
+  // Por ahora, mantendré tu definición directa:
+  private apiUrl = 'http://localhost:8101/api';
 
-  constructor() { }
+
+  constructor(private http: HttpClient) { }
 
   // --- Métodos para Rutas (plantillas) ---
   getRoutePath(start: L.LatLngTuple, end: L.LatLngTuple): Observable<OsrmRouteData | null> {

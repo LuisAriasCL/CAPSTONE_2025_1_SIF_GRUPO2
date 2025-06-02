@@ -178,4 +178,28 @@ ion-alert {
   // El .modal-wrapper heredará los estilos de altura automática de arriba
 }
 
+/* -------------------------------------------------------------------------- */
+/* Estilos Adicionales */
+/* -------------------------------------------------------------------------- */
+
+/* Eliminar espacios del split-pane */
+ion-split-pane {
+  --border: none;
+}
+
+ion-menu {
+  --ion-safe-area-left: 0;
+}
+
+// Si hay un header, asegurar que no tenga margen
+ion-header {
+  margin: 0;
+}
+
+// Eliminar cualquier padding o margin del contenido principal
+#main-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 
