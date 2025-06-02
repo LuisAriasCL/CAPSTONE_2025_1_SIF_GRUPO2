@@ -1,27 +1,40 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Listado de Vehículos</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="goToAddVehicle()">
-        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+
 
 <ion-content class="ion-padding">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+  <!-- Integración del componente DataTable reemplazando el listado actual -->
+  <div class="data-table-container ion-padding-top" *ngIf="vehiculos.length > 0">
+    <div class="ion-padding-bottom ion-text-end">
+      <ion-button  (click)="goToAddVehicle()" fill="solid" class="add-button">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Registrar Nuevo Vehículo
+      </ion-button>
+    </div>
+      <app-data-table 
+      [columns]="tableColumns"
+      [data]="vehiculos"
+      [pageSize]="pageSize"
+      [totalItems]="vehiculos.length"
+      [showPagination]="true"
+      [showExport]="true"
+      [showImport]="true"
+      [actionButtons]="actionButtons"
+      (page)="onPageChange($event)"
+      (rowClick)="onRowClick($event)"
+      (sort)="onSortColumn($event)"
+      (export)="onExport($event)"
+      (import)="onImport($event)">
+    </app-data-table>
+  </div>
+
+
 
   <div *ngIf="isLoading && vehiculos.length === 0" class="ion-text-center ion-padding-top">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Cargando vehículos...</p>
   </div>
-
   <div *ngIf="!isLoading && vehiculos.length === 0" class="ion-text-center ion-padding-top">
     <ion-icon name="car-outline" style="font-size: 4em;" color="medium"></ion-icon>
     <p>No hay vehículos registrados.</p>
@@ -30,41 +43,4 @@
       Registrar Nuevo Vehículo
     </ion-button>
   </div>
-
-  <ion-list *ngIf="vehiculos.length > 0">
-    <ion-item-divider class="list-header ion-hide-md-down" sticky>
-      <ion-label class="col-patente">Patente</ion-label>
-      <ion-label class="col-marca-modelo">Marca / Modelo</ion-label>
-      <ion-label class="col-anio ion-text-center">Año</ion-label>
-      <ion-label class="col-estado ion-text-center">Estado</ion-label>
-      <ion-label class="col-acciones ion-text-center">Acciones</ion-label>
-    </ion-item-divider>
-
-    <ion-item *ngFor="let vehiculo of vehiculos" lines="inset" class="vehicle-list-item">
-      <ion-icon name="car-outline" slot="start" [color]="getStatusColor(vehiculo.estadoVehi)" class="vehicle-icon"></ion-icon>
-      <ion-label class="col-patente">
-        <h2>{{ vehiculo.patente | uppercase }}</h2>
-        <p class="ion-hide-md-up">{{ vehiculo.marca | titlecase }} {{ vehiculo.modelo | titlecase }}</p>
-      </ion-label>
-      <ion-label class="col-marca-modelo ion-hide-md-down">
-        <p>{{ vehiculo.marca | titlecase }} {{ vehiculo.modelo | titlecase }}</p>
-      </ion-label>
-      <ion-label class="col-anio ion-text-center ion-hide-md-down">
-        <p>{{ vehiculo.anio }}</p>
-      </ion-label>
-      <ion-label class="col-estado ion-text-center">
-         <ion-chip [color]="getStatusColor(vehiculo.estadoVehi)" outline="false"> <ion-label>{{ vehiculo.estadoVehi | titlecase }}</ion-label>
-        </ion-chip>
-        <p class="ion-hide-md-up">Km: {{ vehiculo.kmVehi | number }}</p> </ion-label>
-
-      <div slot="end" class="action-buttons col-acciones">
-        <ion-button fill="clear" size="small" (click)="goToEditVehicle(vehiculo.idVehi)" aria-label="Editar vehículo">
-          <ion-icon slot="icon-only" name="pencil-outline" color="primary"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" (click)="confirmDeleteVehicle(vehiculo.idVehi, vehiculo.patente)" aria-label="Eliminar vehículo">
-          <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
-        </ion-button>
-      </div>
-    </ion-item>
-  </ion-list>
 </ion-content>

@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, TitleCasePipe, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent, NavController } from '@ionic/angular'; // NavController puede ser útil
 import { Router } from '@angular/router';
@@ -12,12 +12,15 @@ import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchO
 import { ApiService, Vehiculo, EstadoVehiculo } from '../../services/api.service';
 import { HttpErrorResponse } from '@angular/common/http'; // Para tipar errores
 
-@Component({
+// Importamos el componente DataTable y sus interfaces
+import { DataTableComponent, Column, PageEvent, ActionButton } from '../../componentes/data-table/data-table.component';
+
+@Component({  
   selector: 'app-vehicle-list',
   templateUrl: './vehicle-list.page.html',
   styleUrls: ['./vehicle-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, TitleCasePipe, DecimalPipe]
+  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent]
 })
 export class VehicleListPage implements OnInit {
 
@@ -30,6 +33,48 @@ export class VehicleListPage implements OnInit {
 
   vehiculos: Vehiculo[] = []; // CORREGIDO: Usar la nueva interfaz Vehiculo
   isLoading = false;
+
+  // Configuración del header
+  pageTitle = 'Listado de Vehículos';
+  // Paginación
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 1; // Se actualizará según la cantidad de vehículos
+  // Configuración de las columnas para el DataTable
+  tableColumns: Column[] = [
+    { header: 'Patente', field: 'patente', sortable: true },
+    { header: 'Marca', field: 'marca', sortable: true },
+    { header: 'Modelo', field: 'modelo', sortable: true },
+    { header: 'Año', field: 'anio', sortable: true },
+    { 
+      header: 'Estado', 
+      field: 'estadoVehi', 
+      sortable: true,
+      cell: (data: Vehiculo) => this.getStatusBadge(data.estadoVehi)
+    },
+    { header: 'Kilometraje', field: 'kmVehi', sortable: true },
+    { 
+      header: 'Acciones', 
+      field: 'actions',
+      width: '120px',
+      isAction: true // Indicamos que esta columna es para los botones de acción
+    }
+  ];
+  // Configuración de los botones de acción
+  actionButtons = [
+    {
+      icon: 'pencil-outline',
+      color: 'primary',
+      tooltip: 'Editar vehículo',
+      onClick: (row: Vehiculo) => this.goToEditVehicle(row.idVehi)
+    },
+    {
+      icon: 'trash-outline',
+      color: 'danger',
+      tooltip: 'Eliminar vehículo',
+      onClick: (row: Vehiculo) => this.confirmDeleteVehicle(row.idVehi, row.patente)
+    }
+  ];
 
   constructor() {
     addIcons({ pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline });
@@ -59,6 +104,7 @@ export class VehicleListPage implements OnInit {
     this.apiService.getVehicles().subscribe({ // getVehicles ahora devuelve Observable<Vehiculo[]>
       next: (data: Vehiculo[]) => { // data es ahora Vehiculo[]
         this.vehiculos = data;
+        this.totalPages = Math.ceil(this.vehiculos.length / this.pageSize); // Actualizar total de páginas
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss(); // Solo cerrar si lo creamos aquí
         event?.target.complete();
@@ -144,6 +190,16 @@ export class VehicleListPage implements OnInit {
       case 'mantenimiento': return 'warning';
       case 'taller': return 'danger';
       default: return 'light';
+    }  }
+
+  // Método para manejar las acciones del header
+  onHeaderAction(action: string) {
+    switch (action) {
+      case 'add':
+        this.goToAddVehicle();
+        break;
+      default:
+        console.log('Acción no reconocida:', action);
     }
   }
 
@@ -154,5 +210,108 @@ export class VehicleListPage implements OnInit {
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
     const toast = await this.toastController.create({ message, duration: 2500, position: 'bottom', color });
     toast.present();
+  }
+
+  // Métodos para la paginación
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  // Métodos para DataTable
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1; // El DataTable usa pageIndex basado en 0
+    this.pageSize = event.pageSize;
+    // Si la paginación es en servidor, aquí se haría una llamada API
+  }
+
+  onRowClick(row: Vehiculo) {
+    console.log('Fila seleccionada:', row);
+    // No navegamos directamente aquí, dependiendo del contexto podríamos
+    // mostrar un modal o navegar a detalles
+  }
+
+  // Manejador para eventos del DataTable
+  handleTableEvent(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const editBtn = target.closest('.edit-btn');
+    const deleteBtn = target.closest('.delete-btn');
+    
+    if (editBtn) {
+      event.stopPropagation(); // Evitar que se active onRowClick
+      const idVehi = Number(editBtn.getAttribute('data-id'));
+      if (!isNaN(idVehi)) {
+        this.goToEditVehicle(idVehi);
+      }
+    } else if (deleteBtn) {
+      event.stopPropagation(); // Evitar que se active onRowClick
+      const idVehi = Number(deleteBtn.getAttribute('data-id'));
+      const patente = deleteBtn.getAttribute('data-patente');
+      if (!isNaN(idVehi) && patente) {
+        this.confirmDeleteVehicle(idVehi, patente);
+      }
+    }
+  }
+
+  // Método que se ejecuta después de que la vista se inicializa
+  ionViewDidEnter() {
+    // Agregar listener para eventos de botones en el DataTable
+    document.addEventListener('click', this.handleTableEvent.bind(this));
+  }
+
+  // Método que se ejecuta cuando la vista se va a abandonar
+  ionViewWillLeave() {
+    // Limpiar listener al salir para evitar memory leaks
+    document.removeEventListener('click', this.handleTableEvent.bind(this));
+  }
+
+  onSortColumn(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar por:', event);
+    // Aquí podríamos implementar la lógica de ordenamiento
+    // Si es en servidor, se haría una llamada API con los parámetros de ordenamiento
+  }
+  onExport(format: string) {
+    console.log('Exportar en formato:', format);
+    // Aquí implementaríamos la lógica para exportar los datos
+    // Por ejemplo, usar una biblioteca como ExcelJS para Excel o jsPDF para PDF
+  }
+
+  onImport(format: string) {
+    console.log('Importar desde formato:', format);
+    // Aquí implementaríamos la lógica para importar datos
+    // Por ejemplo, abrir un selector de archivos y procesar el archivo seleccionado
+    this.presentToast('Funcionalidad de importación en desarrollo', 'warning');
+  }
+  // Helper para renderizar celdas personalizadas con ion-badge para estado
+  getStatusBadge(estadoVehi: EstadoVehiculo | string | undefined): string {
+    if (estadoVehi === undefined) {
+      return '<ion-badge color="medium">Desconocido</ion-badge>';
+    }
+    const color = this.getStatusColor(estadoVehi);
+    return `<ion-badge color="${color}">${estadoVehi}</ion-badge>`;
+  }
+  // Helper para manejar botones de acción en la tabla
+  getActionButtons(idVehi: number | undefined, patente: string | undefined): string {
+    if (idVehi === undefined || patente === undefined) {
+      return '<div>ID o patente no disponible</div>';
+    }
+    
+    return `
+      <div class="action-buttons">
+        <ion-button fill="clear" size="small" class="edit-btn" data-id="${idVehi}">
+          <ion-icon name="pencil-outline" color="primary"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" class="delete-btn" data-id="${idVehi}" data-patente="${patente}">
+          <ion-icon name="trash-outline" color="danger"></ion-icon>
+        </ion-button>
+      </div>
+    `;
   }
 }

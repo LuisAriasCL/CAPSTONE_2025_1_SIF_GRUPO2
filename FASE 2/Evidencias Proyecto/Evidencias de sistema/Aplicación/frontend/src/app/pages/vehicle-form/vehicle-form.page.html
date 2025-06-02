@@ -141,4 +141,26 @@
       {{ pageTitle }}
     </ion-button>
   </form>
+
+  <!-- Tabla de historial de mantenimiento - Solo visible en modo edición -->
+  <ion-card *ngIf="isEditMode && mantenimientos.length > 0" class="ion-margin-top">
+    <ion-card-header>
+      <ion-card-title>Historial de Mantenimiento</ion-card-title>
+      <ion-card-subtitle>Registros de mantenimiento para el vehículo</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <app-data-table 
+        [columns]="historialColumns"
+        [data]="mantenimientos"
+        [pageSize]="5"
+        [totalItems]="mantenimientos.length"
+        [showPagination]="true"
+        [showExport]="true"
+        (page)="onHistorialPageChange($event)"
+        (rowClick)="onHistorialRowClick($event)"
+        (sort)="onHistorialSortColumn($event)"
+        (export)="onHistorialExport($event)">
+      </app-data-table>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

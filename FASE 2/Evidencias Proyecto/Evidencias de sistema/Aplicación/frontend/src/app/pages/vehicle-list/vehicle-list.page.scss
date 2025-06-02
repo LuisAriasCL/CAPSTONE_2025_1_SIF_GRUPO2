@@ -82,3 +82,52 @@
   .label-sm {
       display: none;
   }
+
+  .data-table-container {
+    margin-bottom: 16px;
+    
+    .pagination-info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  // Preservar estilos existentes para la vista original
+  .list-header {
+    ion-label {
+      font-weight: bold;
+      font-size: 0.9em;
+      color: var(--ion-color-medium);
+    }
+  }
+
+
+  .add-button {
+    
+    --background: green; // Color de fondo del botón
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Sombra sutil
+    --color: white; // Color del texto del botón
+    --width: 50px; // Ancho del botón
+
+
+  }
+
+  // Estilos de soporte para DataTable
+  ::ng-deep {
+    app-data-table {
+      .sortable {
+        cursor: pointer;
+        
+        &:hover {
+          background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+        }
+      }
+      
+      .page-btn {
+        &.active {
+          font-weight: bold;
+        }
+      }
+    }
+  }

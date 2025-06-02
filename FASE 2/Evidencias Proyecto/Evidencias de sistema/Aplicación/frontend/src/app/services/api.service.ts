@@ -67,7 +67,7 @@ export class ApiService {
   // import { environment } from '../../environments/environment';
   // private apiUrl = environment.apiUrl;
   // Por ahora, mantendré tu definición directa:
-  private apiUrl = 'http://localhost:8100/api';
+  private apiUrl = 'http://localhost:8101/api';
 
 
   constructor(private http: HttpClient) { }
