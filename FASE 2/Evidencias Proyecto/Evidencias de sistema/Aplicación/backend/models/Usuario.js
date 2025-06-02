@@ -1,6 +1,8 @@
 // backend/models/Usuario.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+
+
+module.exports = (sequelize, SequelizeDataTypes) => {
 
 const ROLES_USUARIO = ['admin', 'conductor', 'gestor', 'mantenimiento'];
 
@@ -87,4 +89,5 @@ const Usuario = sequelize.define('Usuario', {
                          
 });
 
-module.exports = Usuario;
+return  Usuario; 
+};

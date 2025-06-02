@@ -37,7 +37,7 @@ export const routes: Routes = [
       },
 
       {
-        path: 'rutas/new',
+        path: 'rutas/nueva',
         data: { title: 'Nueva Ruta' },
         loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
       },
@@ -70,10 +70,33 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
       },
       {
-        path: 'vehicle-form', // Esta es la ruta que causa el error JIT
+        path: 'vehicle-form', 
         loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
       },
-    
+      
+      {
+        path: 'asignacion-list', 
+       
+        loadComponent: () => import('./pages/asignacion-list/asignacion-list.page').then(m => m.AsignacionListPage)
+      },
+      {
+        path: 'asignaciones-recorrido/nueva', 
+        loadComponent: () => import('./pages/asignacion-form/asignacion-form.page').then(m => m.AsignacionFormPage)
+      },
+      {
+        path: 'asignaciones-recorrido/editar/:idAsig', 
+
+        loadComponent: () => import('./pages/asignacion-form/asignacion-form.page').then(m => m.AsignacionFormPage)
+      },
+      // Po
+      {
+        path: 'planificacion-form',
+        loadComponent: () => import('./pages/maintenance/planificacion-form/planificacion-form.page').then( m => m.PlanificacionFormPage)
+      },
+      {
+        path: 'planificacion-list',
+        loadComponent: () => import('./pages/maintenance/planificacion-list/planificacion-list.page').then( m => m.PlanificacionListPage)
+      },
       {
         path: '',
         redirectTo: 'dashboard',
@@ -81,12 +104,7 @@ export const routes: Routes = [
       }
     ]
   },
-  // Estas rutas de abajo parecen duplicadas o rutas de fallback si las anidadas no se activan.
-  // Si SidebarComponent es el layout principal para usuarios autenticados,
-  // estas rutas de nivel superior para 'route-form', 'vehicle-list', 'vehicle-form'
-  // probablemente no son necesarias o deberían estar también protegidas por authGuard y/o dentro de un layout.
-  // La navegación "Navegando a /vehicle-form" que mencionaste usa esta ruta de nivel superior.
   
-  // --- Ruta Wildcard (opcional, para 404) ---
-  // { path: '**', redirectTo: 'login' } // O a una página 404 dedicada
+  
+  
 ];

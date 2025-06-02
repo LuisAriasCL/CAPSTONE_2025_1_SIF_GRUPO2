@@ -1,6 +1,6 @@
 // models/Vehiculo.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Asegúrate que la ruta a tu instancia de Sequelize sea correcta
+module.exports = (sequelize, SequelizeDataTypes) => { // Asegúrate que la ruta a tu instancia de Sequelize sea correcta
 
 const Vehiculo = sequelize.define('Vehiculo', {
   idVehi: {
@@ -26,7 +26,7 @@ const Vehiculo = sequelize.define('Vehiculo', {
   },
   tipoVehi: {
     type: DataTypes.STRING(20),
-    allowNull: true, // Según el DDL, es nullable. Cambiar si es requerido.
+    allowNull: true, 
     field: 'tipo_vehi',
     comment: 'Tipo del vehículo (ej: ligero, mediano, pesado, sedan, camioneta, furgon)'
   },
@@ -39,7 +39,7 @@ const Vehiculo = sequelize.define('Vehiculo', {
   },
   tipoCombVehi: {
     type: DataTypes.ENUM('gasolina_93', 'gasolina_95', 'gasolina_97', 'diesel', 'electrico', 'otro'),
-    allowNull: true, // Según el DDL, es nullable. Cambiar si es requerido.
+    allowNull: true,
     field: 'tipo_comb_vehi',
     comment: 'Tipo de combustible principal del vehículo'
   },
@@ -63,13 +63,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Modelo del vehículo (ej. Hilux)'
   },
   anio: {
-    type: DataTypes.INTEGER, // Sequelize no tiene un tipo YEAR directo, se usa INTEGER para el año (4 dígitos)
+    type: DataTypes.INTEGER,
     allowNull: false,
     field: 'anio',
-    validate: { // Opcional: validación para asegurar que sea un año razonable
+    validate: { 
       isInt: true,
       min: 1900,
-      max: new Date().getFullYear() + 5 // Un margen pequeño hacia el futuro
+      max: new Date().getFullYear() + 5 
     },
     comment: 'Año de fabricación del vehículo (ej. 2023)'
   },
@@ -80,13 +80,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Kilometraje estimado de vida útil del vehículo'
   },
   efiComb: {
-    type: DataTypes.DECIMAL(5, 2), // Coincide con DECIMAL(5,2) en MySQL
+    type: DataTypes.DECIMAL(5, 2), 
     allowNull: true,
     field: 'efi_comb',
     comment: 'Eficiencia de combustible (km/l o kWh/km para eléctricos). Ej: 12.50'
   },
   fecAdqui: {
-    type: DataTypes.DATEONLY, // Para campos DATE de MySQL (solo fecha, sin hora)
+    type: DataTypes.DATEONLY, 
     allowNull: false,
     field: 'fec_adqui',
     comment: 'Fecha de adquisición del vehículo'
@@ -104,21 +104,13 @@ const Vehiculo = sequelize.define('Vehiculo', {
     comment: 'Última coordenada de longitud conocida del vehículo'
   }
 }, {
-  tableName: 'VEHICULO', // Nombre exacto de la tabla en la BD
-  timestamps: false,     // ¡Importante! No se usarán los campos createdAt y updatedAt automáticos de Sequelize
+  tableName: 'VEHICULO', 
+  timestamps: false,     
   comment: 'Tabla para almacenar la información detallada de los vehículos de la flota'
-  // Aquí podrías añadir índices si no están definidos directamente en la BD y quieres que Sequelize los conozca,
-  // o si quieres que Sequelize los cree (aunque es mejor definirlos en el DDL de MySQL).
-  // indexes: [
-  //   { unique: true, fields: ['patente'] }, // Sequelize puede crear índices, pero UNIQUE ya lo hace a nivel BD
-  //   { unique: true, fields: ['chasis'] },
-  //   { fields: ['estado_vehi'] }
-  // ]
+  
 });
 
-// Aquí irían las asociaciones con otros modelos, por ejemplo:
-// Vehiculo.hasMany(models.Mantenimiento, { foreignKey: 'VEHICULO_id_vehi', as: 'mantenimientos' });
-// Vehiculo.hasMany(models.Siniestro, { foreignKey: 'VEHICULO_id_vehi', as: 'siniestros' });
-// etc.
 
-module.exports = Vehiculo;
+
+return Vehiculo; 
+};

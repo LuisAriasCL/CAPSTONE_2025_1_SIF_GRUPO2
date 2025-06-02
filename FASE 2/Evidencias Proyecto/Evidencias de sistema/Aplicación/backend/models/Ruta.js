@@ -1,6 +1,6 @@
 // backend/models/Ruta.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Asegúrate que la ruta sea correcta
+module.exports = (sequelize, SequelizeDataTypes) => { 
 
 const Ruta = sequelize.define('Ruta', {
   idRuta: {
@@ -31,8 +31,9 @@ const Ruta = sequelize.define('Ruta', {
   }
 }, {
   tableName: 'RUTA',
-  timestamps: false, // Siguiendo el patrón de no usar timestamps automáticos de Sequelize
+  timestamps: false, 
   comment: 'Tabla para almacenar rutas predefinidas o registradas'
 });
 
-module.exports = Ruta;
+return Ruta; 
+};
