@@ -37,6 +37,8 @@ export class PlanificacionListPage implements OnInit {
     this.cargarPlanificaciones();
   }
 
+    pageTitle = 'Planes de Mantenimiento';
+    
   async cargarPlanificaciones(event?: any) {
     if (!event && this.planificaciones.length === 0) {
       this.isLoading = true;

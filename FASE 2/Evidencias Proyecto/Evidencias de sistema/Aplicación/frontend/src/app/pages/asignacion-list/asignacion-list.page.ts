@@ -35,6 +35,8 @@ export class AsignacionListPage implements OnInit {
   private loadingCtrl = inject(LoadingController);
   private socketService = inject(SocketService);
 
+  pageTitle = 'Asignaciones de Recorrido';
+
   asignaciones: AsignacionRecorrido[] = []; // Esto está bien.
   isLoading = false;
   filtros = {

@@ -103,7 +103,23 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },  {
+    path: 'home-movil',
+    loadComponent: () => import('./pages/home-movil/home-movil.page').then( m => m.HomeMovilPage)
   },
+  {
+    path: 'combustible-movil',
+    loadComponent: () => import('./pages/combustible-movil/combustible-movil.page').then( m => m.CombustibleMovilPage)
+  },
+  {
+    path: 'movil',
+    loadComponent: () => import('./pages/incidente/movil/movil.page').then( m => m.MovilPage)
+  },
+  {
+    path: 'incidente-movil',
+    loadComponent: () => import('./pages/incidente-movil/incidente-movil.page').then( m => m.IncidenteMovilPage)
+  },
+
   
   
   

@@ -1,10 +1,8 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Asignaciones de Recorrido</ion-title>
-  </ion-toolbar>
+
+     <div class="header-row ion-padding-bottom">
+      <h1 class="page-title">{{ pageTitle }}</h1>
+    </div>
+
   <ion-toolbar>
     <ion-item lines="none">
       <ion-select interface="popover" label="Estado" label-placement="floating" [(ngModel)]="filtros.estado" (ionChange)="aplicarFiltros()">
@@ -22,7 +20,6 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
 
 <ion-content class="ion-padding">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">

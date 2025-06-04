@@ -1,17 +1,12 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button autoHide="false"></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Planes de Mantenimiento</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-refresher slot="fixed" (ionRefresh)="cargarPlanificaciones($event)">
     <ion-refresher-content pullingIcon="chevron-down-circle-outline" refreshingSpinner="crescent" refreshingText="Actualizando...">
     </ion-refresher-content>
   </ion-refresher>
+
+   <div class="header-row ion-padding-bottom">
+      <h1 class="page-title">{{ pageTitle }}</h1>
+    </div>
 
   <div *ngIf="isLoading && planificaciones.length === 0" class="ion-text-center ion-padding-top">
     <ion-spinner name="dots" color="primary"></ion-spinner>
@@ -29,16 +24,13 @@
   </div>
 
   <ion-list *ngIf="planificaciones.length > 0" [inset]="true">
-    <ion-list-header>
-      <ion-label color="dark">Planes Registrados ({{ planificaciones.length }})</ion-label>
-    </ion-list-header>
     <ion-item-sliding *ngFor="let plan of planificaciones" #slidingItem>
       <ion-item lines="full" (click)="verDetalle(plan)" detail="false" button>
         <ion-icon [name]="getIconForPlanStatus(plan)" [color]="getColorForPlanStatus(plan)" slot="start" class="item-icon"></ion-icon>
         <ion-label class="ion-text-wrap">
           <h2>{{ plan.descPlan }}</h2>
           <p>
-            <ion-icon name="sync-circle-outline" class="small-icon"></ion-icon> Frec.: {{ plan.frecuencia }} {{ plan.tipoFrecuencia }}
+            <ion-icon name="calendar-outline" class="small-icon"></ion-icon> Frec.: {{ plan.frecuencia }} {{ plan.tipoFrecuencia }}
           </p>
           <p>
             <ion-icon name="list-outline" class="small-icon"></ion-icon> Tareas: {{ plan.tareas?.length || 0 }} |

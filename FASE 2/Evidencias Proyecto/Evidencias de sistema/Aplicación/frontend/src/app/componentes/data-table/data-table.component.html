@@ -14,8 +14,8 @@
     </div>
   </div>
 
-  <!-- Tabla principal -->
-  <table [id]="tableId" [class]="tableClass">
+  <!-- Tabla principal con clase data-table para aplicar estilos -->
+  <table [id]="tableId" [class]="'data-table ' + (tableClass || '')">
     <thead>
       <tr>
         <th *ngFor="let column of columns" 
