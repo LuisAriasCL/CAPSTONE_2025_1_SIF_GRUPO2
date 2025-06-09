@@ -93,7 +93,48 @@ export interface AsignacionRecorrido {
   conductor?: UsuarioConductorInfo;
   rutaPlantilla?: Route; // Usamos la interfaz Route existente para la plantilla
 }
+// (Asegúrate de tener estas interfaces básicas o adáptalas)
+export interface UsuarioResumen {
+  pri_nom_usu: string;
+  pri_ape_usu: string;
+}
 
+export interface VehiculoResumen {
+  patente: string;
+  marca: string;
+  modelo: string;
+}
+
+// --- Interfaces para Órdenes de Trabajo ---
+
+export interface DetalleOtData {
+  id_det: number;
+  desc_det: string;
+  checklist: boolean;
+  es_activo_det: boolean;
+  tecnico?: UsuarioResumen; // El técnico puede no estar asignado aún
+}
+
+export interface OrdenTrabajoResumen {
+  id_ot: number;
+  fec_ini_ot: string;
+  estado_ot: string;
+  prioridad: string;
+  km_ot: number;
+  descripcion_ot: string;
+  vehiculo: VehiculoResumen;
+  solicitante?: UsuarioResumen;
+}
+export interface UsuarioResumen {
+  id_usu: number; // <-- AÑADE ESTA LÍNEA
+  pri_nom_usu: string;
+  pri_ape_usu: string;
+}
+export interface OrdenTrabajoDetalle extends OrdenTrabajoResumen {
+  fec_fin_ot?: string;
+  encargado?: UsuarioResumen;
+  detalles: DetalleOtData[];
+}
 // Interfaz para los datos al CREAR o ACTUALIZAR una asignación
 // No incluye los objetos completos de vehiculo, conductor, rutaPlantilla, solo sus IDs
 export interface AsignacionRecorridoData {
@@ -137,11 +178,7 @@ export interface Vehiculo {
 })
 export class ApiService {
 
-  // private apiUrl = 'http://localhost:8100/api'; // Ya lo tenías así.
-  // Si usas environment.ts (como en mi propuesta anterior), sería:
-  // import { environment } from '../../environments/environment';
-  // private apiUrl = environment.apiUrl;
-  // Por ahora, mantendré tu definición directa:
+
   private apiUrl = 'http://localhost:8101/api';
 
 
@@ -181,7 +218,41 @@ export class ApiService {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
   }
+// --- Métodos para el Módulo de Órdenes de Trabajo ---
 
+// POST /api/ordenes-trabajo/generar
+generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
+  const body = { 
+    id_plan: idPlan, 
+    id_vehi: idVehi,
+    id_usuario_solicitante: idUsuario 
+  };
+  return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
+}
+
+// GET /api/ordenes-trabajo
+getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
+  return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
+}
+actualizarDetallesOt(detalles: { id_det: number, checklist: boolean, usuarioIdUsuTecnico: number | null }[]): Observable<{ message: string }> {
+  const url = `${this.apiUrl}/ordenes-trabajo/detalles`;
+  return this.http.put<{ message: string }>(url, detalles);
+}
+// GET /api/ordenes-trabajo/:id
+getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
+  return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
+}
+getUsuariosPorRol(rol: string): Observable<UsuarioResumen[]> {
+  return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, { params: { rol } });
+}
+// POST /api/ordenes-trabajo/asignar-tecnico
+asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: string }> {
+  const body = { 
+    id_detalle: idDetalle, 
+    id_tecnico: idTecnico 
+  };
+  return this.http.post<{ message: string }>(`${this.apiUrl}/ordenes-trabajo/asignar-tecnico`, body);
+}
   // (Aquí irían los métodos para GET by ID, PUT, DELETE de planificaciones cuando los implementes,
   //  siguiendo el mismo patrón: sin opciones explícitas en la llamada http.)
   getPlanificacionById(id: number): Observable<PlanificacionMantenimientoResumen> {

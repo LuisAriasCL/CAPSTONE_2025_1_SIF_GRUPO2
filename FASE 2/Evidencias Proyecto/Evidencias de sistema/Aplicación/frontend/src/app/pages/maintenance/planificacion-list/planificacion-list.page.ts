@@ -22,11 +22,16 @@ import { ApiService, PlanificacionMantenimientoResumen } from '../../../services
     RouterModule,
     IonicModule,
   ],
+    CommonModule,
+    RouterModule,
+    IonicModule,
+  ],
 })
 export class PlanificacionListPage implements OnInit {
   @ViewChildren(IonItemSliding) slidingItems!: QueryList<IonItemSliding>;
   planificaciones: PlanificacionMantenimientoResumen[] = [];
   isLoading: boolean = false;
+  pageTitle = 'Planes de Mantenimiento';
   pageTitle = 'Planes de Mantenimiento';
 
   constructor(
@@ -49,6 +54,7 @@ export class PlanificacionListPage implements OnInit {
   ionViewWillEnter() {
     this.cargarPlanificaciones();
   }
+
 
   async cargarPlanificaciones(event?: any) {
     this.isLoading = true;
@@ -75,12 +81,53 @@ export class PlanificacionListPage implements OnInit {
     });
   }
 
+  async generarOt(plan: PlanificacionMantenimientoResumen) {
+    await this.closeAllSlidingItems();
+
+    if (!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0) {
+      this.mostrarToast('Este plan no tiene vehículos asignados para generar una OT.', 'warning');
+      return;
+    }
+
+    const vehiculo = plan.vehiculosEnPlan[0];
+    const idUsuario = 1;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Generar Orden de Trabajo',
+      message: `Se creará una OT para el vehículo <strong>${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})</strong> a partir del plan <strong>"${plan.descPlan}"</strong>. ¿Continuar?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Generar',
+          role: 'confirm',
+          handler: async () => {
+            const loading = await this.loadingCtrl.create({ message: 'Generando OT...' });
+            await loading.present();
+
+            this.apiService.generarOt(plan.idPlan, vehiculo.idVehi, idUsuario).subscribe({
+              next: async (res) => {
+                await loading.dismiss();
+                this.mostrarToast(`¡Orden de Trabajo #${res.id_ot} generada con éxito!`, 'success');
+              },
+              error: async (err) => {
+                await loading.dismiss();
+                console.error('Error al generar la OT:', err);
+                this.mostrarToast(err.error?.error || 'No se pudo generar la OT.', 'danger');
+              }
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   irACrearPlan() {
-    this.navCtrl.navigateForward('/planificacion-form'); // Ajusta esta ruta
+    this.navCtrl.navigateForward('/planificacion-form');
   }
 
   private async closeAllSlidingItems(): Promise<void> {
-    if (this.slidingItems && this.slidingItems.length > 0) { // Verifica que exista y tenga items
+    if (this.slidingItems && this.slidingItems.length > 0) {
       const items = this.slidingItems.toArray();
       await Promise.all(items.map(item => item.closeOpened()));
     }
@@ -119,7 +166,7 @@ export class PlanificacionListPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Eliminando plan...' });
     await loading.present();
 
-    this.apiService.deletePlanificacion(planId).subscribe({ // Asume que tienes este método en ApiService
+    this.apiService.deletePlanificacion(planId).subscribe({
       next: async (response) => {
         await loading.dismiss();
         this.mostrarToast(response.message || 'Plan eliminado correctamente.', 'success');

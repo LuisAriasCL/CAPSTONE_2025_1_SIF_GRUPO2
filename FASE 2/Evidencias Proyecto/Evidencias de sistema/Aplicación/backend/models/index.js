@@ -1,4 +1,3 @@
-// backend/models/index.js
 'use strict';
 
 const fs = require('fs');
@@ -32,7 +31,7 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-
+// --- ASOCIACIONES EXISTENTES ---
 
 // Modelo: AsignacionRecorrido
 if (db.AsignacionRecorrido && db.Vehiculo) {
@@ -95,8 +94,7 @@ if (db.AsignacionRecorrido && db.Ruta) {
   });
 }
 
-// --- NUEVAS ASOCIACIONES DE MANTENIMIENTO ---
-
+// --- ASOCIACIONES DE PLANIFICACIÓN DE MANTENIMIENTO ---
 
 if (db.PlanificacionMantenimiento && db.TareaPlanificacion) {
   db.PlanificacionMantenimiento.hasMany(db.TareaPlanificacion, {
@@ -114,10 +112,8 @@ if (db.PlanificacionMantenimiento && db.TareaPlanificacion) {
       field: 'planificacion_mantenimiento_id_plan',
       allowNull: false
     }
- 
   });
 } else {
- 
   if (!db.PlanificacionMantenimiento) console.error("ERROR en index.js: Modelo PlanificacionMantenimiento no encontrado en db.");
   if (!db.TareaPlanificacion) console.error("ERROR en index.js: Modelo TareaPlanificacion no encontrado en db.");
 }
@@ -159,7 +155,69 @@ if (db.PlanificacionMantenimiento && db.Vehiculo && db.VehiculoPlanificacion) {
   if (!db.VehiculoPlanificacion) console.error("ERROR en index.js: Modelo VehiculoPlanificacion no encontrado en db.");
 }
 
+// --- ASOCIACIONES PARA ORDEN DE TRABAJO (OT) Y DETALLE OT ---
 
+// Relación: OrdenTrabajo (1) <--> DetalleOt (N)
+if (db.OrdenTrabajo && db.DetalleOt) {
+  db.OrdenTrabajo.hasMany(db.DetalleOt, {
+    foreignKey: { name: 'ordenTrabajoIdOt', field: 'orden_trabajo_id_ot', allowNull: false },
+    as: 'detalles'
+  });
+  db.DetalleOt.belongsTo(db.OrdenTrabajo, {
+    foreignKey: { name: 'ordenTrabajoIdOt', field: 'orden_trabajo_id_ot', allowNull: false }
+  });
+}
+
+// Relación: OrdenTrabajo (N) <--> Vehiculo (1)
+if (db.OrdenTrabajo && db.Vehiculo) {
+  db.Vehiculo.hasMany(db.OrdenTrabajo, {
+    foreignKey: { name: 'vehiculoIdVehi', field: 'vehiculo_id_vehi', allowNull: false }
+  });
+  db.OrdenTrabajo.belongsTo(db.Vehiculo, {
+    foreignKey: { name: 'vehiculoIdVehi', field: 'vehiculo_id_vehi', allowNull: false },
+    as: 'vehiculo'
+  });
+}
+
+// Relación: OrdenTrabajo con Usuarios (Solicitante y Encargado)
+if (db.OrdenTrabajo && db.Usuario) {
+  db.OrdenTrabajo.belongsTo(db.Usuario, {
+    foreignKey: { name: 'usuarioIdUsuSolicitante', field: 'usuario_id_usu_solicitante' },
+    as: 'solicitante'
+  });
+  db.OrdenTrabajo.belongsTo(db.Usuario, {
+    foreignKey: { name: 'usuarioIdUsuEncargado', field: 'usuario_id_usu_encargado' },
+    as: 'encargado'
+  });
+}
+
+// Relación: DetalleOt con Usuario (Técnico asignado)
+if (db.DetalleOt && db.Usuario) {
+    db.DetalleOt.belongsTo(db.Usuario, {
+        foreignKey: { name: 'usuarioIdUsuTecnico', field: 'usuario_id_usu_tecnico' },
+        as: 'tecnico'
+    });
+}
+
+// Relación: OrdenTrabajo <--> VehiculoPlanificacion
+if (db.OrdenTrabajo && db.VehiculoPlanificacion) {
+    db.OrdenTrabajo.belongsTo(db.VehiculoPlanificacion, {
+        foreignKey: { name: 'vehiculoPlanificacionVehiculoIdVehi', field: 'vehiculo_planificacion_vehiculo_id_vehi' },
+        as: 'planificacionVehiculo'
+    });
+     db.OrdenTrabajo.belongsTo(db.VehiculoPlanificacion, {
+        foreignKey: { name: 'vehiculoPlanificacionPlanIdPlan', field: 'vehiculo_planificacion_plan_id_plan' },
+        as: 'planificacionMantenimiento'
+    });
+}
+
+// Relación (Opcional): DetalleOt <--> Tarea (Catálogo general)
+if (db.DetalleOt && db.Tarea) {
+    db.DetalleOt.belongsTo(db.Tarea, {
+        foreignKey: { name: 'tareaIdTarea', field: 'tarea_id_tarea' },
+        as: 'tareaEstandar'
+    });
+}
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

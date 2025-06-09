@@ -1,13 +1,12 @@
 // backend/models/Usuario.js
 const { DataTypes } = require('sequelize');
 
-
 module.exports = (sequelize, SequelizeDataTypes) => {
 
-const ROLES_USUARIO = ['admin', 'conductor', 'gestor', 'mantenimiento'];
+// --- CORRECCIÓN AQUÍ ---
+const ROLES_USUARIO = ['admin', 'conductor', 'gestor', 'mantenimiento', 'tecnico'];
 
 const Usuario = sequelize.define('Usuario', { 
-   
     idUsu: { 
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -84,9 +83,8 @@ const Usuario = sequelize.define('Usuario', {
     }
 }, {
     tableName: 'USUARIO', 
-    timestamps: false,    
-    underscored: false,   
-                         
+    timestamps: false,     
+    underscored: false,     
 });
 
 return  Usuario; 

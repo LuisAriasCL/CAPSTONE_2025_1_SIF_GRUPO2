@@ -8,12 +8,13 @@ const { Server } = require("socket.io");
 const db = require('./models');
 // ... otras importaciones de rutas
 const planificacionMantenimientoRoutes = require('./routes/planificacionMantenimiento.routes');
+const ordenTrabajoRoutes = require('./routes/ordenTrabajo.routes.js'); // <--- 1. IMPORTAR NUEVAS RUTAS
 // Rutas API
 const vehicleRoutes = require('./routes/vehiculos');
 const authRoutes = require('./routes/auth');
 const routeRoutes = require('./routes/rutas'); 
 const asignacionRecorridoRoutes = require('./routes/asignacionesRecorrido');
-
+const usuarioRoutes = require('./routes/usuario.routes.js');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -36,7 +37,7 @@ async function testDbConnectionAndSync() {
     try {
         await db.sequelize.authenticate();
         console.log('✅ Conexión a la Base de Datos (Sequelize) establecida correctamente.');
-       
+        
     } catch (error) {
         console.error('❌ Error al conectar o sincronizar con la Base de Datos:', error);
     }
@@ -47,11 +48,14 @@ app.get('/', (req, res) => {
     res.send('¡API de Gestión de Flota v1.0 funcionando!');
 });
 
+// --- REGISTRO DE RUTAS API ---
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/rutas', routeRoutes);
 app.use('/api/asignaciones-recorrido', asignacionRecorridoRoutes);
 app.use('/api/planificaciones', planificacionMantenimientoRoutes); 
+app.use('/api/ordenes-trabajo', ordenTrabajoRoutes); // <--- 2. REGISTRAR NUEVAS RUTAS
+app.use('/api/usuarios', usuarioRoutes);
 // Lógica de Socket.IO
 io.on('connection', (socket) => {
     console.log(`🔌 Cliente conectado a Socket.IO: ${socket.id}`);
@@ -73,7 +77,7 @@ io.on('connection', (socket) => {
             const roomName = `asignacion_${asignacionId}`;
             socket.join(roomName);
             console.log(`[Socket] Cliente ${socket.id} se unió al room ${roomName}`);
-           
+            
         } else {
             console.warn(`[Socket] Intento de suscripción sin asignacionId por cliente ${socket.id}`);
         }
@@ -169,7 +173,7 @@ io.on('connection', (socket) => {
 
                 console.log(`[Simulación] Ruta "${nombreDeLaRuta}" [${puntoActualIndex + 1}/${puntosSimulacionArray.length}]: Vehículo ID=${vehicleNumericId} -> [Lat: ${latitudActual}, Lon: ${longitudActual}], Asignación ID=${asignacionIdSimulacion}`);
                 
-           
+            
                 if (asignacionIdSimulacion) {
                     io.to(`asignacion_${asignacionIdSimulacion}`).emit('vehicleUpdated', datosActualizacionVehiculo);
                 } else {

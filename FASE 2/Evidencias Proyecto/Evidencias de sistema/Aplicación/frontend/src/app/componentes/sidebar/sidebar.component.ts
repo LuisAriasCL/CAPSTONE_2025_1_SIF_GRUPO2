@@ -44,9 +44,7 @@ import { AuthService } from '../../services/auth.service';
   ],
 })
 export class SidebarComponent {
-  /**
-   * Índice del elemento de menú seleccionado.
-   */
+ 
   public selectedIndex = 0;
   /**
    * Opciones de navegación para la aplicación.
@@ -67,7 +65,7 @@ export class SidebarComponent {
   private authService = inject(AuthService);
 
   constructor() {
-    // Registro de íconos Ionicons personalizados
+
     addIcons({
       gridOutline,
       newspaperOutline,
