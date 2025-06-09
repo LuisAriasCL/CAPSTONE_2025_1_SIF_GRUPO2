@@ -219,7 +219,15 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 // --- Métodos para el Módulo de Órdenes de Trabajo ---
-
+  actualizarEstadoOt(id: number, estado: string, encargadoId?: number): Observable<any> {
+    const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
+      estado_ot: estado,
+    };
+    if (encargadoId) {
+      body.usuario_id_usu_encargado = encargadoId;
+    }
+    return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
+  }
 // POST /api/ordenes-trabajo/generar
 generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
   const body = { 

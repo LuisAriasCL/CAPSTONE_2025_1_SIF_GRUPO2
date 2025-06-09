@@ -1,11 +1,11 @@
 // src/app/pages/asignacion-list/asignacion-list.page.ts
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, NavController, RefresherCustomEvent } from '@ionic/angular';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline, checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline, personCircleOutline, mapOutline, analyticsOutline } from 'ionicons/icons';
+import { eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline, checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline, personCircleOutline, mapOutline, analyticsOutline, locationOutline, calendarOutline, optionsOutline } from 'ionicons/icons';
 
 // CORRECCIÓN AQUÍ: Cambiar 'Ruta' por 'Route'
 import { ApiService, AsignacionRecorrido, Route, Vehiculo, UsuarioConductorInfo } from '../../services/api.service'; 
@@ -15,48 +15,40 @@ import { SocketService } from '../../services/socket.service';
   selector: 'app-asignacion-list',
   templateUrl: './asignacion-list.page.html',
   styleUrls: ['./asignacion-list.page.scss'],
-  standalone: true,
-  imports: [
+  standalone: true,  imports: [
     IonicModule,
     CommonModule,
     FormsModule,
-    RouterLink,
     DatePipe,
     DecimalPipe,
-    TitleCasePipe
+    UpperCasePipe
   ]
 })
 export class AsignacionListPage implements OnInit {
-
   private apiService = inject(ApiService);
   private router = inject(Router);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private loadingCtrl = inject(LoadingController);
   private socketService = inject(SocketService);
-
   pageTitle = 'Asignaciones de Recorrido';
-
-  asignaciones: AsignacionRecorrido[] = []; // Esto está bien.
+  asignaciones: AsignacionRecorrido[] = [];
   isLoading = false;
-  filtros = {
-    estado: '',
-  };
 
-  constructor() {
+  constructor() { 
     addIcons({
       eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline,
       checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline,
-      personCircleOutline, mapOutline, analyticsOutline
+      personCircleOutline, mapOutline, analyticsOutline, locationOutline, calendarOutline, optionsOutline
     });
   }
 
-  ngOnInit() { }
-
+  ngOnInit() { 
+    // Simplificar inicialización
+  }
   ionViewWillEnter() {
     this.loadAsignaciones();
   }
-
   async loadAsignaciones(event?: RefresherCustomEvent) {
     this.isLoading = true;
     let loadingIndicator: HTMLIonLoadingElement | undefined;
@@ -65,12 +57,8 @@ export class AsignacionListPage implements OnInit {
       await loadingIndicator.present();
     }
 
-    const apiFiltros: any = {};
-    if (this.filtros.estado) apiFiltros.estadoAsig = this.filtros.estado;
-
-    // Usar el método existente getAsignacionesRecorrido
-    // y tipar 'data' y 'error'
-    this.apiService.getAsignacionesRecorrido(apiFiltros).subscribe({
+    // Cargar todas las asignaciones sin filtros
+    this.apiService.getAsignacionesRecorrido().subscribe({
       next: (data: AsignacionRecorrido[]) => { 
         this.asignaciones = data;
         this.isLoading = false;
@@ -88,12 +76,8 @@ export class AsignacionListPage implements OnInit {
     });
   }
 
-  aplicarFiltros() {
-    this.loadAsignaciones();
-  }
-
   limpiarFiltros() {
-    this.filtros = { estado: '' };
+    // Sin filtros, recargar asignaciones
     this.loadAsignaciones();
   }
 
@@ -225,9 +209,25 @@ export class AsignacionListPage implements OnInit {
         }
     });
   }
-
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'primary', duration: number = 3000) {
     const toast = await this.toastCtrl.create({ message, duration, color, position: 'bottom', mode: 'md' });
     toast.present();
+  }
+
+  getEstadoDisplay(estado: string): string {
+    switch (estado) {
+      case 'en_progreso':
+        return 'En progreso';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'asignado':
+        return 'Asignado';
+      case 'completado':
+        return 'Completado';
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        return estado;
+    }
   }
 }

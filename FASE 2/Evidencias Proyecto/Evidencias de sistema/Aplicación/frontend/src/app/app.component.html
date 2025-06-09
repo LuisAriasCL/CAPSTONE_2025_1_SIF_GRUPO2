@@ -1,4 +1,18 @@
 <ion-app>
+  <!-- Header global que ocupa toda la página -->
   <app-header></app-header>
-  <ion-router-outlet></ion-router-outlet>
+  
+  <ion-split-pane contentId="main-content">
+    <!-- Menú lateral -->
+    <ion-menu contentId="main-content" type="overlay" style="border-right: 1px solid var(--ion-border-color);">
+      <ion-content>
+        <app-sidebar></app-sidebar>
+      </ion-content>
+    </ion-menu>
+
+    <!-- Contenido principal -->
+    <div id="main-content">
+      <ion-router-outlet></ion-router-outlet>
+    </div>
+  </ion-split-pane>
 </ion-app>

@@ -85,35 +85,44 @@ exports.listarOrdenesTrabajo = async (req, res) => {
 
 // --- FUNCIÓN CORREGIDA Y MÁS SEGURA ---
 exports.getOrdenTrabajoPorId = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const orden = await OrdenTrabajo.findByPk(id, {
-            include: [
-                { model: Vehiculo, as: 'vehiculo', required: false },
-                { model: Usuario, as: 'solicitante', required: false, attributes: { exclude: ['clave'] } },
-                { model: Usuario, as: 'encargado', required: false, attributes: { exclude: ['clave'] } },
-                {
-                    model: DetalleOt,
-                    as: 'detalles',
-                    required: false, // LEFT JOIN para los detalles
-                    include: [{
-                        model: Usuario,
-                        as: 'tecnico',
-                        required: false, // LEFT JOIN para el técnico (muy importante)
-                        attributes: { exclude: ['clave'] }
-                    }]
-                }
-            ]
-        });
-
-        if (!orden) {
-            return res.status(404).json({ error: 'Orden de Trabajo no encontrada.' });
+  const { id } = req.params;
+  try {
+    const ordenTrabajo = await OrdenTrabajo.findByPk(id, {
+      // ESTA ES LA SECCIÓN CORREGIDA Y COMPLETA
+      include: [
+        {
+          model: Vehiculo,
+          as: 'vehiculo', // 1. Incluye el objeto completo del Vehículo
+          attributes: ['patente', 'marca', 'modelo']
+        },
+        {
+          model: Usuario,
+          as: 'solicitante', // 2. Incluye el objeto completo del Solicitante
+          attributes: ['pri_nom_usu', 'pri_ape_usu']
+        },
+        {
+          model: DetalleOt,
+          as: 'detalles',
+          include: [
+            {
+              model: Usuario,
+              as: 'tecnico', // 3. Incluye el objeto completo del Técnico PARA CADA TAREA
+              attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu']
+            }
+          ]
         }
-        res.status(200).json(orden);
-    } catch (error) {
-        console.error("Error CRÍTICO al obtener la orden de trabajo:", error);
-        res.status(500).json({ message: 'Error interno del servidor al consultar la OT.', error: error.message });
+      ]
+    });
+
+    if (!ordenTrabajo) {
+      return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
     }
+
+    res.json(ordenTrabajo);
+  } catch (error) {
+    console.error('Error al obtener la orden de trabajo:', error);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+  }
 };
 
 exports.actualizarDetallesOt = async (req, res) => {
@@ -144,4 +153,46 @@ exports.actualizarDetallesOt = async (req, res) => {
         console.error('Error al actualizar los detalles de la OT:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
+    exports.actualizarEstadoOt = async (req, res) => {
+  const { id } = req.params;
+  const { estado_ot, usuario_id_usu_encargado } = req.body; // Recibimos el nuevo estado y opcionalmente el ID del encargado
+
+  // Validación básica
+  if (!estado_ot) {
+    return res.status(400).json({ message: 'El campo estado_ot es requerido.' });
+  }
+
+  try {
+    const ordenTrabajo = await OrdenTrabajo.findByPk(id);
+
+    if (!ordenTrabajo) {
+      return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
+    }
+
+    // Preparamos los campos a actualizar
+    const camposAActualizar = {
+      estado_ot: estado_ot
+    };
+
+    // Si el estado es 'en_progreso' y se proporciona un encargado, lo asignamos.
+    // Esto coincide con el flujo del Mockup donde al "Iniciar OT" se asigna el supervisor.
+    if (estado_ot === 'en_progreso' && usuario_id_usu_encargado) {
+      camposAActualizar.usuario_id_usu_encargado = usuario_id_usu_encargado;
+    }
+    
+    // Si el estado es 'completado', actualizamos la fecha de finalización.
+    if (estado_ot === 'completado') {
+        camposAActualizar.fec_fin_ot = new Date();
+    }
+
+
+    await ordenTrabajo.update(camposAActualizar);
+
+    res.json({ message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', ordenTrabajo });
+
+  } catch (error) {
+    console.error('Error al actualizar el estado de la OT:', error);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+  }
+};
 };
