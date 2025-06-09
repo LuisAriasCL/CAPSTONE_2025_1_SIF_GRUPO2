@@ -42,12 +42,13 @@ ion-content.custom-modal-content {
   // ... (sin cambios - altura automática)
   --max-width: 380px;
   --width: auto;
-  --border-radius: 12px;
-  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --background: #fff;
+  --border-radius: 16px;
+  --box-shadow: 0 8px 32px rgba(0, 92, 147, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+  --background: #ffffff;
   overflow: auto;
   display: block;
   position: relative;
+  border: 1px solid rgba(0, 92, 147, 0.08);
 
   // Aplicar animación al modal
   animation: scaleInModal 0.3s ease-out forwards;
@@ -55,11 +56,13 @@ ion-content.custom-modal-content {
 
 .modal-container {
   // ... (sin cambios)
-  padding: 25px 35px;
+  padding: 30px 40px;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
 }
 
 .icon-container {
@@ -111,29 +114,40 @@ ion-content.custom-modal-content {
   gap: 15px;
   flex-wrap: wrap;
   margin-top: 15px;
-
   .alert-button {
     // ... (sin cambios)
     margin: 0;
     min-width: 120px;
     min-height: 52px;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1.1rem;
+    transition: all 0.2s ease;
 
-    --border-radius: 8px;
-    --padding-start: 22px;
-    --padding-end: 22px;
-    --box-shadow: none;
+    --border-radius: 12px;
+    --padding-start: 24px;
+    --padding-end: 24px;
+    --box-shadow: 0 2px 8px rgba(0, 92, 147, 0.1);
 
     &.button-cancel {
       --background: var(--ion-color-light);
       --color: var(--ion-color-dark);
-      --border: 1px solid var(--ion-color-medium);
+      --border: 1px solid rgba(0, 92, 147, 0.2);
+      
+      &:hover {
+        --background: rgba(0, 92, 147, 0.05);
+        transform: translateY(-1px);
+      }
     }
 
     &.button-danger {
-      --background: var(--ion-color-danger);
+      --background: linear-gradient(135deg, var(--ion-color-danger), var(--ion-color-danger-tint));
       --color: white;
+      --box-shadow: 0 4px 12px rgba(var(--ion-color-danger-rgb), 0.3);
+      
+      &:hover {
+        --box-shadow: 0 6px 16px rgba(var(--ion-color-danger-rgb), 0.4);
+        transform: translateY(-2px);
+      }
     }
   }
 }

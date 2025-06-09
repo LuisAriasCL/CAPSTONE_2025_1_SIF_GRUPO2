@@ -7,89 +7,78 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
+<ion-content class="ion-padding">  <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
     <ion-list lines="full">
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Patente <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="patente" type="text" required maxlength="6" autocapitalize="characters"
           placeholder="AA1234 o AAAA12"></ion-input>
-      </ion-item>
-      <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['patente'].errors?.['required']">Patente es requerida.</small>
         <small *ngIf="f['patente'].errors?.['minlength'] || f['patente'].errors?.['maxlength']">Patente debe tener 6 caracteres.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Nº Chasis (VIN) <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="chasis" type="text" required maxlength="17" autocapitalize="characters"></ion-input>
-      </ion-item>
-      <div *ngIf="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['chasis'].errors?.['required']">Nº de Chasis es requerido.</small>
         <small *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']">Nº de Chasis debe tener 17 caracteres.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Marca <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="marca" type="text" required></ion-input>
-      </ion-item>
-      <div *ngIf="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['marca'].errors?.['required']">Marca es requerida.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Modelo <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="modelo" type="text" required></ion-input>
-      </ion-item>
-      <div *ngIf="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['modelo'].errors?.['required']">Modelo es requerido.</small>
-      </div>
-
-      <ion-item>
+      </div>      <div class="input-wrapper">
         <ion-label position="floating">Año <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="anio" type="number" inputmode="numeric" required placeholder="YYYY"></ion-input>
-      </ion-item>
+      </div>
       <div *ngIf="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['anio'].errors?.['required']">Año es requerido.</small>
-        <small *ngIf="f['anio'].errors?.['min']">Año no puede ser menor a 1900.</small>
-        <small *ngIf="f['anio'].errors?.['max']">Año no puede ser tan futuro.</small>
+        <small *ngIf="f['anio'].errors?.['min']">Año no puede ser menor a 1900.</small>        <small *ngIf="f['anio'].errors?.['max']">Año no puede ser tan futuro.</small>
       </div>
       
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Kilometraje Actual <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="kmVehi" type="number" inputmode="numeric" required></ion-input>
-      </ion-item>
-      <div *ngIf="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['kmVehi'].errors?.['required']">Kilometraje es requerido.</small>
         <small *ngIf="f['kmVehi'].errors?.['min']">Kilometraje no puede ser negativo.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Fecha Adquisición <ion-text color="danger">*</ion-text></ion-label>
         <ion-input formControlName="fecAdqui" type="date" required displayFormat="YYYY-MM-DD" pickerFormat="YYYY-MM-DD"></ion-input>
-      </ion-item>
-      <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['fecAdqui'].errors?.['required']">Fecha de adquisición es requerida.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Estado <ion-text color="danger">*</ion-text></ion-label>
         <ion-select formControlName="estadoVehi" interface="popover" required>
           <ion-select-option *ngFor="let estado of estadosVehiculoOptions" [value]="estado">
             {{ estado.charAt(0).toUpperCase() + estado.slice(1) }} </ion-select-option>
         </ion-select>
-      </ion-item>
-      <div *ngIf="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['estadoVehi'].errors?.['required']">Estado es requerido.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Tipo de Vehículo</ion-label>
         <ion-input formControlName="tipoVehi" type="text" placeholder="Ej: Camioneta, Sedan, Furgón"></ion-input>
-      </ion-item>
+      </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Tipo de Combustible</ion-label>
         <ion-select formControlName="tipoCombVehi" interface="popover">
           <ion-select-option [value]="null">-- No especificado --</ion-select-option>
@@ -99,37 +88,33 @@
             </ion-select-option>
           </ng-container>
         </ion-select>
-      </ion-item>
-      
-      <ion-item>
+      </div>      
+      <div class="input-wrapper">
         <ion-label position="floating">Km. Vida Útil Estimado</ion-label>
         <ion-input formControlName="kmVidaUtil" type="number" inputmode="numeric"></ion-input>
-      </ion-item>
-      <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['kmVidaUtil'].errors?.['min']">Km. Vida Útil no puede ser negativo.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Eficiencia Combustible (km/L)</ion-label>
         <ion-input formControlName="efiComb" type="number" inputmode="decimal" step="0.01" placeholder="Ej: 10.50"></ion-input>
-      </ion-item>
-       <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched)" class="error-message ion-padding-start">
+      </div>       <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['efiComb'].errors?.['min']">Eficiencia no puede ser negativa.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Latitud</ion-label>
         <ion-input formControlName="latitud" type="number" inputmode="decimal" step="any" placeholder="-33.12345678"></ion-input>
-      </ion-item>
-      <div *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched)" class="error-message ion-padding-start">
+      </div>      <div *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['latitud'].errors?.['min']">Latitud mínima es -90.</small>
         <small *ngIf="f['latitud'].errors?.['max']">Latitud máxima es 90.</small>
       </div>
 
-      <ion-item>
+      <div class="input-wrapper">
         <ion-label position="floating">Longitud</ion-label>
         <ion-input formControlName="longitud" type="number" inputmode="decimal" step="any" placeholder="-70.12345678"></ion-input>
-      </ion-item>
+      </div>
       <div *ngIf="f['longitud'].invalid && (f['longitud'].dirty || f['longitud'].touched)" class="error-message ion-padding-start">
         <small *ngIf="f['longitud'].errors?.['min']">Longitud mínima es -180.</small>
         <small *ngIf="f['longitud'].errors?.['max']">Longitud máxima es 180.</small>

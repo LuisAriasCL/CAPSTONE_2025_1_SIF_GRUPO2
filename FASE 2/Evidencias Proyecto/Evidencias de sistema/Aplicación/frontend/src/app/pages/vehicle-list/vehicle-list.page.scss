@@ -1,155 +1,411 @@
-// Estilos para la tabla/rejilla de vehículos
+// Estilos responsivos para la lista de vehículos
+
+// Variables CSS para consistencia y responsividad
+:root {
+  --list-padding-mobile: 12px;
+  --list-padding-tablet: 16px;
+  --list-padding-desktop: 20px;
+  --header-height-mobile: 60px;
+  --header-height-tablet: 70px;
+  --header-height-desktop: 80px;
+  --card-border-radius: 12px;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
 
 .header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: var(--ion-color-light-tint);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border-radius: var(--card-border-radius);
+    padding: var(--list-padding-mobile);
+    margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
     border-left: 4px solid var(--ion-color-primary);
+    transition: all 0.3s ease;
+    min-height: var(--header-height-mobile);
   
     .page-title {
       margin: 0;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--ion-color-dark);
+      line-height: 1.2;
+    }
+
+    &:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+}.data-table-container {
+  margin-bottom: 16px;
+  background-color: white;
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+  
+  .pagination-info {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    padding: 0 var(--list-padding-mobile);
+  }
+}
+
+.data-row {
+  border-bottom: 1px solid var(--ion-color-light-tint);
+  align-items: center;
+  transition: background-color 0.2s ease;
+  padding: 8px 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.02);
+  }
+}
+
+ion-col {
+  padding: 8px var(--list-padding-mobile);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.actions-col {
+    display: flex;
+    justify-content: flex-end;
+    white-space: normal;
+    gap: 8px;
+    
+    ion-button {
+        --padding-start: 12px;
+        --padding-end: 12px;
+        height: 36px;
+        font-size: 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: translateY(-1px);
+        }
     }
 }
 
+.add-button {
+  --background: var(--ion-color-success);
+  --color: white;
+  --border-radius: 50px;
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --box-shadow: var(--card-shadow);
+  font-weight: 500;
+  height: 44px;
+  transition: all 0.3s ease;
   
-  .data-row {
-    border-bottom: 1px solid var(--ion-color-light-tint);
-    align-items: center; // Centrar verticalmente contenido de celda
-  
-    &:last-child {
-      border-bottom: none;
+  &:hover {
+    --box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+}
+
+// Preservar estilos existentes para la vista original
+.list-header {
+  ion-label {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--ion-color-medium-shade);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+// Estilos por defecto para las etiquetas de móvil (ocultas en escritorio)
+.label-sm {
+    display: none;
+    font-weight: 500;
+    color: var(--ion-color-medium-shade);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+// Estilos de soporte para DataTable
+::ng-deep {
+  app-data-table {
+    .sortable {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+      }
+    }
+    
+    .page-btn {
+      transition: all 0.2s ease;
+      
+      &.active {
+        font-weight: bold;
+        background-color: var(--ion-color-primary);
+        color: white;
+      }
+      
+      &:hover:not(.active) {
+        background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+      }
+    }
+  }
+}
+
+// --- Responsive Design ---
+
+// Tablets (768px - 1199px)
+@media (min-width: 768px) and (max-width: 1199px) {
+  .header-row {
+    padding: var(--list-padding-tablet);
+    min-height: var(--header-height-tablet);
+    
+    .page-title {
+      font-size: 24px;
     }
   }
   
   ion-col {
-    padding: 8px 5px; // Padding para celdas
-    overflow: hidden;
-    text-overflow: ellipsis; // Evitar desbordamiento
-    white-space: nowrap; // Evitar saltos de línea en celdas
+    padding: 10px var(--list-padding-tablet);
+    font-size: 15px;
   }
   
   .actions-col {
-      display: flex;
-      justify-content: flex-end; // Alinear botones a la derecha
-      white-space: normal; // Permitir que los botones se ajusten
-      ion-button {
-          --padding-start: 5px;
-          --padding-end: 5px;
-          height: 28px; // Botones más pequeños
-      }
+    ion-button {
+      height: 38px;
+      font-size: 13px;
+    }
   }
   
-  // --- Estilos específicos para Móvil (cuando las columnas se apilan) ---
-  // Usamos media query para aplicar solo en pantallas pequeñas (inferior a md)
-  @media (max-width: 767px) {
-      // Ocultar cabecera de tabla en móvil
-      .header-row {
-          display: none;
-      }
-  
-      // Estilo para las filas de datos en móvil
-      .data-row {
-          border-bottom: 1px solid var(--ion-color-medium-shade);
-          margin-bottom: 10px; // Espacio entre "cartas"
-          padding-bottom: 5px;
-  
-           ion-col {
-                padding: 4px 0; // Menos padding vertical
-                white-space: normal; // Permitir saltos de línea
-                text-overflow: initial;
-                overflow: visible;
-                border-bottom: 1px dashed var(--ion-color-light-shade); // Separador ligero
-                &:last-child {
-                     border-bottom: none;
-                }
-           }
-      }
-  
-       // Mostrar etiquetas antes del valor en móvil
-       .label-sm {
-            display: inline-block; // O block si prefieres en línea separada
-            font-weight: bold;
-            color: var(--ion-color-medium-shade);
-            margin-right: 8px;
-            min-width: 70px; // Ancho mínimo para alinear un poco
-       }
-  
-       // Alinear acciones al centro o inicio en móvil
-       .actions-col {
-           justify-content: flex-start; // O center
-           padding-top: 10px;
-       }
+  .data-table-container .pagination-info {
+    padding: 0 var(--list-padding-tablet);
+  }
+}
+
+// Desktop (1200px+)
+@media (min-width: 1200px) {
+  .header-row {
+    padding: var(--list-padding-desktop);
+    min-height: var(--header-height-desktop);
+    
+    .page-title {
+      font-size: 26px;
+    }
   }
   
-  // Estilo por defecto para las etiquetas de móvil (ocultas en escritorio)
-  .label-sm {
-      display: none;
+  ion-col {
+    padding: 12px var(--list-padding-desktop);
+    font-size: 16px;
+  }
+  
+  .actions-col {
+    ion-button {
+      height: 40px;
+      font-size: 14px;
+      --padding-start: 16px;
+      --padding-end: 16px;
+    }
+  }
+  
+  .data-table-container .pagination-info {
+    padding: 0 var(--list-padding-desktop);
+  }
+}
+
+// Mobile (max-width: 767px)
+@media (max-width: 767px) {
+  .header-row {
+    display: flex; // Mostrar en móvil también
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--list-padding-mobile);
+    margin-bottom: 12px;
+    
+    .page-title {
+      font-size: 18px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
   }
 
-  .data-table-container {
-    margin-bottom: 16px;
+  // Convertir filas de datos en cards para móvil
+  .data-row {
     background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 12px;
+    padding: 16px;
+    border: none;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-2px);
+    }
+    
+    ion-col {
+      padding: 6px 0;
+      white-space: normal;
+      text-overflow: initial;
+      overflow: visible;
+      border-bottom: 1px dashed var(--ion-color-light-shade);
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      
+      &:last-child {
+        border-bottom: none;
+        padding-top: 12px;
+      }
+    }
+  }
+
+  // Mostrar etiquetas antes del valor en móvil
+  .label-sm {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    margin-right: 8px;
+    min-width: 80px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  // Alinear acciones al centro en móvil
+  .actions-col {
+    justify-content: center;
+    gap: 12px;
+    padding-top: 8px;
+    
+    ion-button {
+      height: 40px;
+      flex: 1;
+      max-width: 120px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
+  
+  .add-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    --border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    --padding-start: 0;
+    --padding-end: 0;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+  
+  .data-table-container {
+    margin: 0 -8px;
+    border-radius: 0;
+    box-shadow: none;
+    background-color: transparent;
     
     .pagination-info {
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--ion-color-medium);
+      padding: 0 var(--list-padding-mobile);
+      text-align: center;
+      background-color: white;
+      border-radius: var(--card-border-radius);
+      padding: 12px;
+      margin: 12px 8px;
+      box-shadow: var(--card-shadow);
     }
   }
+}
 
-  // Preservar estilos existentes para la vista original
-  .list-header {
-    ion-label {
-      font-weight: bold;
-      font-size: 0.9em;
-      color: var(--ion-color-medium);
-    }
-  }
-
-
-  .add-button {
+// Landscape orientation adjustments for mobile
+@media (max-width: 767px) and (orientation: landscape) {
+  .header-row {
+    flex-direction: row;
+    align-items: center;
     
-    --background: green; // Color de fondo del botón
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Sombra sutil
-    --color: white; // Color del texto del botón
-    --width: 50px; // Ancho del botón
-    --padding-start: 16px;
-    --padding-end: 16px;
-  }
-
-  // Estilos de soporte para DataTable
-  ::ng-deep {
-    app-data-table {
-      .sortable {
-        cursor: pointer;
-        
-        &:hover {
-          background-color: rgba(var(--ion-color-primary-rgb), 0.05);
-        }
-      }
-      
-      .page-btn {
-        &.active {
-          font-weight: bold;
-        }
-      }
+    .page-title {
+      margin-bottom: 0;
+      text-align: left;
     }
   }
-
-  .page-title {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--ion-color-dark);
+  
+  .data-row {
+    padding: 12px 16px;
+    
+    ion-col {
+      padding: 4px 0;
+    }
   }
+  
+  .add-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .data-table-container {
+    background-color: var(--ion-color-dark);
+  }
+  
+  .data-row {
+    background-color: var(--ion-color-dark-shade);
+    
+    &:hover {
+      background-color: var(--ion-color-dark-tint);
+    }
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  .header-row,
+  .data-row,
+  .actions-col ion-button,
+  .add-button {
+    transition: none;
+  }
+  
+  .data-row:hover,
+  .add-button:hover {
+    transform: none;
+  }
+}

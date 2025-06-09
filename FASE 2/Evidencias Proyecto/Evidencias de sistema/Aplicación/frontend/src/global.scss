@@ -53,6 +53,153 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/* Estilos globales para suavizar esquinas de inputs */
+/* -------------------------------------------------------------------------- */
+/* Aplicar bordes redondeados a todos los elementos de entrada */
+ion-input,
+ion-select,
+ion-searchbar,
+ion-item {
+  --border-radius: 12px !important;
+  border-radius: 12px !important;
+  /* Líneas más suaves y plomo claro */
+  border: 1px solid transparent !important;
+}
+
+/* Textareas con bordes transparentes para un look más suave */
+ion-textarea {
+  --border-radius: 12px !important;
+  border-radius: 12px !important;
+  /* Sin bordes visibles para textareas */
+  border: none !important;
+  outline: none !important;
+}
+
+/* Suavizar específicamente los elementos internos de los inputs */
+ion-input .native-input,
+ion-textarea .native-textarea,
+ion-select .select-text,
+ion-searchbar .searchbar-input {
+  border-radius: 12px !important;
+  /* Más padding izquierdo para el contenido interno */
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Padding adicional para elementos específicos */
+ion-input {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-textarea {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+}
+
+ion-select {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+/* Estilos específicos para placeholders */
+ion-input .native-input::placeholder,
+ion-textarea .native-textarea::placeholder {
+  padding-left: 4px !important;
+  color: #9ca3af !important;
+  font-style: italic;
+}
+
+/* Mejorar el padding para el texto dentro de selects */
+ion-select .select-text {
+  padding-left: 4px !important;
+}
+
+/* Aplicar padding consistente a labels flotantes */
+ion-item ion-label {
+  margin-left: 4px;
+}
+
+/* Mejorar el espaciado interno de searchbar */
+ion-searchbar .searchbar-input {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* Estilos para datetime picker */
+ion-datetime {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border: none !important;
+}
+
+/* Para los ion-item que contienen inputs */
+ion-item.item {
+  --border-radius: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Suavizar bordes de elementos select */
+ion-select-option {
+  border-radius: 8px;
+}
+
+/* Aplicar a elementos de fecha y datetime */
+ion-datetime {
+  --border-radius: 12px;
+  border-radius: 12px;
+}
+
+/* Suavizar popover de selects */
+ion-popover .popover-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Aplicar a elementos de toggle y checkbox para consistencia */
+ion-toggle,
+ion-checkbox,
+ion-radio {
+  --border-radius: 8px;
+}
+
+/* Estilos adicionales para mayor suavizado */
+/* Asegurar que los botones también tengan esquinas suavizadas */
+ion-button {
+  --border-radius: 12px;
+}
+
+/* Suavizar cards y elementos contenedores */
+ion-card {
+  --border-radius: 16px;
+  border-radius: 16px;
+}
+
+/* Suavizar modales */
+ion-modal .modal-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Suavizar alertas */
+ion-alert .alert-wrapper {
+  border-radius: 16px;
+}
+
+/* Suavizar toasts */
+ion-toast {
+  --border-radius: 12px;
+}
+
+/* Suavizar action sheets */
+ion-action-sheet .action-sheet-wrapper {
+  border-radius: 16px 16px 0 0;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Estilos específicos para el contenido */
 /* -------------------------------------------------------------------------- */
 /* Aplica el color terciario solo al contenido principal, excluyendo el sidebar y el header */
@@ -243,6 +390,69 @@ ion-header {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Clase Input Wrapper para formularios */
+/* -------------------------------------------------------------------------- */
+.input-wrapper {
+  
+  ion-input, 
+  ion-textarea, 
+  ion-select, 
+  ion-datetime {
+    background-color: #ffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    
+    --padding-end: 20px;
+    --border-radius: 12px;
+    
+    /* Estilo para los elementos internos */
+    .native-input,
+    .native-textarea,
+    .select-text,
+    .datetime-text {
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+      border-radius: 12px !important;
+    }
+    
+    /* Placeholders */
+    .native-input::placeholder,
+    .native-textarea::placeholder {
+      color: #9ca3af !important;
+      font-style: italic;
+    }
+  }
+  
+  /* Textareas específicamente sin bordes */
+  ion-textarea {
+    border: none !important;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+  }
+    /* Labels */
+  ion-label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    font-size: 13px !important; /* Tamaño reducido para labels */
+    
+    /* Labels flotantes específicos */
+    &[position="floating"] {
+      font-size: 11px !important;
+    }
+  }
+  
+  /* Estados de focus */
+  ion-input:focus-within,
+  ion-select:focus-within,
+  ion-textarea:focus-within {
+    border-color: var(--ion-color-primary) !important;
+    box-shadow: 0 0 0 2px rgba(0, 92, 147, 0.1) !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* Estilos para el modal de planificación */
 /* -------------------------------------------------------------------------- */
 .planificacion-form-modal {
@@ -267,6 +477,194 @@ ion-header {
     --width: 100%;
     --height: 100%;
     --border-radius: 0;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos específicos para action-sheet de ion-select */
+/* -------------------------------------------------------------------------- */
+ion-action-sheet {
+  .action-sheet-group {
+    .action-sheet-button {
+      font-size: 18px !important;
+      
+      .action-sheet-button-inner {
+        font-size: 18px !important;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reforzar estilos para ion-select múltiple */
+/* -------------------------------------------------------------------------- */
+.input-wrapper {
+  ion-select[multiple] {
+    font-size: 18px !important;
+    min-height: 50px !important;
+    
+    .select-text {
+      font-size: 18px !important;
+      color: var(--ion-color-dark) !important;
+      font-weight: 500 !important;
+      line-height: 1.4 !important;
+    }
+    
+    .select-placeholder {
+      font-size: 18px !important;
+      color: #9ca3af !important;
+    }
+    
+    /* Para cuando hay valores seleccionados */
+    .select-text .select-value {
+      font-size: 18px !important;
+    }
+    
+    /* Chips y elementos seleccionados */
+    .select-text ion-chip {
+      font-size: 16px !important;
+      margin: 2px 4px 2px 0 !important;
+      
+      ion-label {
+        font-size: 16px !important;
+        color: white !important;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos globales adicionales para asegurar consistencia */
+/* -------------------------------------------------------------------------- */
+/* Forzar tamaño de fuente en todos los selects */
+ion-select {
+  font-size: 18px !important;
+  
+  .select-text,
+  .select-placeholder {
+    font-size: 18px !important;
+  }
+  
+  /* Específico para múltiple selección */
+  &[multiple] {
+    .select-text {
+      font-size: 18px !important;
+      
+      /* Texto cuando hay elementos seleccionados */
+      .select-value-text {
+        font-size: 18px !important;
+      }
+      
+      /* Lista de elementos separados por coma */
+      .select-value {
+        font-size: 18px !important;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsividad para action-sheet y selects múltiples */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  ion-action-sheet {
+    .action-sheet-group {
+      .action-sheet-button {
+        font-size: 16px !important;
+        
+        .action-sheet-button-inner {
+          font-size: 16px !important;
+        }
+      }
+    }
+  }
+  
+  .input-wrapper {
+    ion-select[multiple] {
+      font-size: 16px !important;
+      
+      .select-text,
+      .select-placeholder {
+        font-size: 16px !important;
+      }
+      
+      .select-text ion-chip {
+        font-size: 14px !important;
+        
+        ion-label {
+          font-size: 14px !important;
+        }
+      }
+    }
+  }
+  
+  ion-select {
+    font-size: 16px !important;
+    
+    .select-text,
+    .select-placeholder {
+      font-size: 16px !important;
+    }
+    
+    &[multiple] {
+      .select-text {
+        .select-value-text,
+        .select-value {
+          font-size: 16px !important;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 1200px) {
+  ion-action-sheet {
+    .action-sheet-group {
+      .action-sheet-button {
+        font-size: 20px !important;
+        
+        .action-sheet-button-inner {
+          font-size: 20px !important;
+        }
+      }
+    }
+  }
+  
+  .input-wrapper {
+    ion-select[multiple] {
+      font-size: 20px !important;
+      
+      .select-text,
+      .select-placeholder {
+        font-size: 20px !important;
+      }
+      
+      .select-text ion-chip {
+        font-size: 18px !important;
+        
+        ion-label {
+          font-size: 18px !important;
+        }
+      }
+    }
+  }
+  
+  ion-select {
+    font-size: 20px !important;
+    
+    .select-text,
+    .select-placeholder {
+      font-size: 20px !important;
+    }
+    
+    &[multiple] {
+      .select-text {
+        .select-value-text,
+        .select-value {
+          font-size: 20px !important;
+        }
+      }
+    }
   }
 }
 

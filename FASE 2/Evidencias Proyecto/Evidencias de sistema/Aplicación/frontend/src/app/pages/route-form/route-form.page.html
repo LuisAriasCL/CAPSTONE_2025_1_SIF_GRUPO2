@@ -19,20 +19,18 @@ crossorigin=""></script>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-loading [isOpen]="isLoading" message="Cargando datos..."></ion-loading>
-
   <form *ngIf="routeForm" [formGroup]="routeForm" (ngSubmit)="saveRoute()" novalidate>
-    <ion-item lines="full">
+    <div class="input-wrapper">
       <ion-label position="floating">Nombre de la Ruta</ion-label>
       <ion-input type="text" formControlName="nombre" required></ion-input>
-    </ion-item>
-    <div *ngIf="isSubmitted && routeForm.controls['nombre']?.errors?.['required']" class="error-message ion-padding-start">
+    </div>    <div *ngIf="isSubmitted && routeForm.controls['nombre']?.errors?.['required']" class="error-message ion-padding-start">
       <ion-text color="danger">El nombre es requerido.</ion-text>
     </div>
 
-    <ion-item lines="full">
+    <div class="input-wrapper">
       <ion-label position="floating">Descripción (Opcional)</ion-label>
       <ion-textarea formControlName="descripcion" rows="2"></ion-textarea>
-    </ion-item>    <ion-item-divider class="ion-margin-top">
+    </div><ion-item-divider class="ion-margin-top">
       <ion-label>Definir Ruta en Mapa</ion-label>
        <ion-button fill="clear" size="small" (click)="clearMapSelection()" slot="end" *ngIf="origenCoords || destinoCoords" color="warning">
            <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>

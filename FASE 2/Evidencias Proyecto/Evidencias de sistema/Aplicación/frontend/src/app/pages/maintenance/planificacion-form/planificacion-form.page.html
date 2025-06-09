@@ -12,63 +12,87 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
-    <ion-list lines="none">
-      <ion-item>
-        <ion-label position="floating">Descripción del Plan <ion-text color="danger">*</ion-text></ion-label>
-        <ion-textarea formControlName="descPlan" rows="3" autoGrow="true" maxlength="255" [readonly]="isViewMode"></ion-textarea>
-      </ion-item>
+<ion-content class="ion-padding ultra-compact">  <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
+      <div class="input-wrapper">
+        <ion-label position="floating">Nombre del Mantenimiento <ion-text color="danger">*</ion-text></ion-label>
+        <ion-textarea class="bordered-textarea" formControlName="descPlan" rows="3" autoGrow="true" maxlength="255" [readonly]="isViewMode"></ion-textarea>
+      </div>
       <div *ngIf="f['descPlan'].invalid && (f['descPlan'].dirty || f['descPlan'].touched || isSubmitted)" class="error-message">
         <div *ngIf="f['descPlan'].errors?.['required']">La descripción es requerida.</div>
         <div *ngIf="f['descPlan'].errors?.['minlength']">La descripción debe tener al menos 5 caracteres.</div>
       </div>
-
-      <ion-row>        <ion-col size-xs="12" size-sm="6">
-          <ion-item>
-            <ion-label position="floating">Frecuencia <ion-text color="danger">*</ion-text></ion-label>
-            <ion-input formControlName="frecuencia" type="number" min="1" [readonly]="isViewMode"></ion-input>
-          </ion-item>
-          <div *ngIf="f['frecuencia'].invalid && (f['frecuencia'].dirty || f['frecuencia'].touched || isSubmitted)" class="error-message">
-            <div *ngIf="f['frecuencia'].errors?.['required']">La frecuencia es requerida.</div>
-            <div *ngIf="f['frecuencia'].errors?.['min']">La frecuencia debe ser mayor a 0.</div>
-          </div>
-        </ion-col>
-        <ion-col size-xs="12" size-sm="6">          <ion-item>
-            <ion-label position="floating">Tipo Frecuencia <ion-text color="danger">*</ion-text></ion-label>
-            <ion-select formControlName="tipoFrecuencia" interface="popover" placeholder="Seleccionar" [disabled]="isViewMode">
+      
+      <ion-row>
+        <ion-col size-xs="12" size-sm="6">
+          <div class="input-wrapper">
+            <ion-label>Tipo de Frecuencia <ion-text color="danger">*</ion-text></ion-label>
+            <ion-select formControlName="tipoFrecuencia" interface="popover" placeholder="Seleccionar"
+              [disabled]="isViewMode"
+              (ionChange)="onTipoFrecuenciaChange($event)">
               <ion-select-option value="km">Kilómetros</ion-select-option>
               <ion-select-option value="dias">Días</ion-select-option>
               <ion-select-option value="semanas">Semanas</ion-select-option>
               <ion-select-option value="meses">Meses</ion-select-option>
             </ion-select>
-          </ion-item>
+          </div>
           <div *ngIf="f['tipoFrecuencia'].invalid && (f['tipoFrecuencia'].dirty || f['tipoFrecuencia'].touched || isSubmitted)" class="error-message">
             <div *ngIf="f['tipoFrecuencia'].errors?.['required']">Seleccione un tipo de frecuencia.</div>
           </div>
         </ion-col>
-      </ion-row>      <ion-item>
-        <ion-label>Es Preventivo</ion-label>
-        <ion-toggle formControlName="esPreventivo" slot="end" color="success" [disabled]="isViewMode"></ion-toggle>
-      </ion-item>
+        <ion-col size-xs="12" size-sm="6">
+          <div class="input-wrapper">
+            <ion-label>
+              Frecuencia
+              <ng-container *ngIf="tipoFrecuenciaSeleccionado">
+                en
+                {{
+                  tipoFrecuenciaSeleccionado === 'km' ? 'KM' :
+                  tipoFrecuenciaSeleccionado === 'dias' ? 'Días' :
+                  tipoFrecuenciaSeleccionado === 'semanas' ? 'Semanas' :
+                  tipoFrecuenciaSeleccionado === 'meses' ? 'Meses' : ''
+                }}
+              </ng-container>
+              <ion-text color="danger">*</ion-text>
+            </ion-label>
+            <ion-input formControlName="frecuencia" type="number" min="1"
+              [readonly]="isViewMode"
+              [disabled]="!tipoFrecuenciaSeleccionado || isViewMode"></ion-input>
+          </div>
+          <div *ngIf="f['frecuencia'].invalid && (f['frecuencia'].dirty || f['frecuencia'].touched || isSubmitted)" class="error-message">
+            <div *ngIf="f['frecuencia'].errors?.['required']">La frecuencia es requerida.</div>
+            <div *ngIf="f['frecuencia'].errors?.['min']">La frecuencia debe ser mayor a 0.</div>
+          </div>
+        </ion-col>
+      </ion-row><ion-row>
+        <ion-col size-xs="12" size-sm="6">
+          <div class="input-wrapper">
+            <ion-label>Es Preventivo</ion-label>
+            <ion-toggle formControlName="esPreventivo" slot="end" color="success" [disabled]="isViewMode"></ion-toggle>
+          </div>
+        </ion-col>
+        <ion-col size-xs="12" size-sm="6">
+          <div class="input-wrapper">
+            <ion-label>Plan Activo</ion-label>
+            <ion-toggle formControlName="esActivoPlan" slot="end" color="success" [disabled]="isViewMode"></ion-toggle>
+          </div>
+        </ion-col>
+      </ion-row>
 
-      <ion-item>
-        <ion-label>Plan Activo</ion-label>
-        <ion-toggle formControlName="esActivoPlan" slot="end" color="secondary" [disabled]="isViewMode"></ion-toggle>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Vehículos Asignados <ion-text color="danger">*</ion-text></ion-label>
-        <ion-select formControlName="vehiculosIds" multiple="true" interface="action-sheet" placeholder="Seleccionar uno o más vehículos" cancelText="Cancelar" okText="Aceptar" [disabled]="isViewMode">
-          <ion-select-option *ngFor="let vehiculo of vehiculosDisponibles" [value]="vehiculo.idVehi">
-            {{ vehiculo.patente }} ({{ vehiculo.marca }} {{ vehiculo.modelo }})
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
-      <div *ngIf="f['vehiculosIds'].invalid && (f['vehiculosIds'].dirty || f['vehiculosIds'].touched || isSubmitted)" class="error-message">
-        <div *ngIf="f['vehiculosIds'].errors?.['required'] || f['vehiculosIds'].errors?.['minlength']">Seleccione al menos un vehículo.</div>
-      </div>
-    </ion-list>
+      <ion-row>
+        <ion-col size="12">
+          <div class="input-wrapper">
+            <ion-label class="ion-margin-bottom vehiculos-label">Vehículos Asignados <ion-text color="danger">*</ion-text></ion-label>
+            <ion-select formControlName="vehiculosIds" multiple="true" interface="popover" placeholder="Seleccionar uno o más vehículos" cancelText="Cancelar" okText="Aceptar" [disabled]="isViewMode">
+              <ion-select-option *ngFor="let vehiculo of vehiculosDisponibles" [value]="vehiculo.idVehi">
+                {{ vehiculo.patente }} ({{ vehiculo.marca }} {{ vehiculo.modelo }})
+              </ion-select-option>
+            </ion-select>
+          </div>
+          <div *ngIf="f['vehiculosIds'].invalid && (f['vehiculosIds'].dirty || f['vehiculosIds'].touched || isSubmitted)" class="error-message">
+            <div *ngIf="f['vehiculosIds'].errors?.['required'] || f['vehiculosIds'].errors?.['minlength']">Seleccione al menos un vehículo.</div>
+          </div>
+        </ion-col>
+      </ion-row>
 
     <ion-list-header class="ion-margin-top">
       <ion-label>Tareas de la Planificación <ion-text color="danger">*</ion-text></ion-label>
@@ -86,19 +110,18 @@
           </ion-item>
           <ion-item *ngIf="tareas.length <= 1 || isViewMode" lines="none" class="task-card-header">
             <ion-label class="ion-text-wrap"><strong>Tarea {{ i + 1 }}</strong></ion-label>
-          </ion-item>
-        <ion-card-content class="ion-no-padding">          <ion-item lines="full">
+          </ion-item>        <ion-card-content class="ion-no-padding">          <div class="input-wrapper">
             <ion-label position="floating">Nombre Tarea <ion-text color="danger">*</ion-text></ion-label>
             <ion-input formControlName="nomTareaPlan" type="text" maxlength="150" [readonly]="isViewMode"></ion-input>
-          </ion-item>
+          </div>
           <div *ngIf="tareaCtrl.get('nomTareaPlan')?.invalid && (tareaCtrl.get('nomTareaPlan')?.dirty || tareaCtrl.get('nomTareaPlan')?.touched || isSubmitted)" class="error-message ion-padding-start">
             <div *ngIf="tareaCtrl.get('nomTareaPlan')?.errors?.['required']">Nombre de tarea es requerido.</div>
           </div>
     
-          <ion-item lines="none">
+          <div class="input-wrapper">
             <ion-label position="floating">Descripción Tarea</ion-label>
             <ion-textarea formControlName="descTareaPlan" rows="2" autoGrow="true" maxlength="500" [readonly]="isViewMode"></ion-textarea>
-          </ion-item>
+          </div>
           </ion-card-content>
       </ion-card>
     </div>    <ion-button *ngIf="!isViewMode" expand="block" type="button" (click)="agregarTarea()" color="tertiary" class="ion-margin-top">
