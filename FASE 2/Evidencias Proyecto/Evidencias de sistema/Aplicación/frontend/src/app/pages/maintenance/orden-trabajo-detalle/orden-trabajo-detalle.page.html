@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orden-trabajo-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>OT #{{ ordenTrabajo?.id_ot }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && ordenTrabajo">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Detalles Generales</ion-card-title>
+        <ion-badge [color]="getColorForStatus(ordenTrabajo.estado_ot)" class="ion-margin-top">{{ ordenTrabajo.estado_ot | titlecase }}</ion-badge>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon name="car-sport-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Vehículo</h3>
+              <p>{{ ordenTrabajo.vehiculo.marca }} {{ ordenTrabajo.vehiculo.modelo }} ({{ ordenTrabajo.vehiculo.patente }})</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="speedometer-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Kilometraje</h3>
+              <p>{{ ordenTrabajo.km_ot }} km</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Solicitante</h3>
+              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'No' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || 'asignado' }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-list-header>
+      <ion-label>Tareas a Realizar</ion-label>
+    </ion-list-header>
+
+    <ion-card *ngFor="let tarea of ordenTrabajo.detalles">
+      <ion-item lines="none">
+        <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <p>{{ tarea.desc_det }}</p>
+        </ion-label>
+        <ion-checkbox slot="end" [(ngModel)]="tarea.checklist"></ion-checkbox>
+      </ion-item>
+      <ion-item lines="none">
+          <ion-button (click)="abrirSelectorTecnicos(tarea)" fill="clear" size="small">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Asignar Técnico
+          </ion-button>
+          <ion-label slot="end" class="ion-text-right">
+              <p>Técnico: {{ tarea.tecnico?.pri_nom_usu || 'Sin asignar' }}</p>
+          </ion-label>
+      </ion-item>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+    <ion-toolbar>
+        <div class="ion-padding">
+            <ion-button (click)="guardarCambios()" expand="block" color="success">
+                <ion-icon name="save-outline" slot="start"></ion-icon>
+                Guardar Cambios
+            </ion-button>
+        </div>
+    </ion-toolbar>
+</ion-footer>

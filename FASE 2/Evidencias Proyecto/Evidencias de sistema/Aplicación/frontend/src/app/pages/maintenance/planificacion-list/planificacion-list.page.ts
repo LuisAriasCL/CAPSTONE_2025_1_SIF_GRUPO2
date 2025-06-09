@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common'; // Importa DatePipe
+import { CommonModule } from '@angular/common';
 import { IonicModule, NavController, AlertController, ToastController, LoadingController, IonItemSliding } from '@ionic/angular';
-import { RouterModule } from '@angular/router'; // Para routerLink
-import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
+import { RouterModule } from '@angular/router';
+import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service';
 
 @Component({
   selector: 'app-planificacion-list',
@@ -10,18 +10,16 @@ import { ApiService, PlanificacionMantenimientoResumen } from '../../../services
   styleUrls: ['./planificacion-list.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, // Necesario para *ngIf, *ngFor, y el DatePipe
-    RouterModule, // Necesario para [routerLink]
-    IonicModule,  // Necesario para todos los componentes ion-*
-    // DatePipe // Ya no es necesario importar DatePipe aquí directamente si CommonModule está bien configurado.
-               // CommonModule lo re-exporta.
+    CommonModule,
+    RouterModule,
+    IonicModule,
   ],
-  // providers: [DatePipe] // No es necesario si CommonModule lo provee.
 })
 export class PlanificacionListPage implements OnInit {
   @ViewChildren(IonItemSliding) slidingItems!: QueryList<IonItemSliding>;
   planificaciones: PlanificacionMantenimientoResumen[] = [];
   isLoading: boolean = false;
+  pageTitle = 'Planes de Mantenimiento';
 
   constructor(
     private apiService: ApiService,
@@ -37,8 +35,6 @@ export class PlanificacionListPage implements OnInit {
     this.cargarPlanificaciones();
   }
 
-    pageTitle = 'Planes de Mantenimiento';
-    
   async cargarPlanificaciones(event?: any) {
     if (!event && this.planificaciones.length === 0) {
       this.isLoading = true;
@@ -52,7 +48,6 @@ export class PlanificacionListPage implements OnInit {
     this.apiService.getPlanificaciones().subscribe({
       next: (data) => {
         this.planificaciones = data;
-        console.log('Planificaciones cargadas:', this.planificaciones);
       },
       error: async (error) => {
         console.error('Error cargando planificaciones:', error);
@@ -68,12 +63,53 @@ export class PlanificacionListPage implements OnInit {
     });
   }
 
+  async generarOt(plan: PlanificacionMantenimientoResumen) {
+    await this.closeAllSlidingItems();
+
+    if (!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0) {
+      this.mostrarToast('Este plan no tiene vehículos asignados para generar una OT.', 'warning');
+      return;
+    }
+
+    const vehiculo = plan.vehiculosEnPlan[0];
+    const idUsuario = 1;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Generar Orden de Trabajo',
+      message: `Se creará una OT para el vehículo <strong>${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})</strong> a partir del plan <strong>"${plan.descPlan}"</strong>. ¿Continuar?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Generar',
+          role: 'confirm',
+          handler: async () => {
+            const loading = await this.loadingCtrl.create({ message: 'Generando OT...' });
+            await loading.present();
+
+            this.apiService.generarOt(plan.idPlan, vehiculo.idVehi, idUsuario).subscribe({
+              next: async (res) => {
+                await loading.dismiss();
+                this.mostrarToast(`¡Orden de Trabajo #${res.id_ot} generada con éxito!`, 'success');
+              },
+              error: async (err) => {
+                await loading.dismiss();
+                console.error('Error al generar la OT:', err);
+                this.mostrarToast(err.error?.error || 'No se pudo generar la OT.', 'danger');
+              }
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   irACrearPlan() {
-    this.navCtrl.navigateForward('/planificacion-form'); // Ajusta esta ruta
+    this.navCtrl.navigateForward('/planificacion-form');
   }
 
   private async closeAllSlidingItems(): Promise<void> {
-    if (this.slidingItems && this.slidingItems.length > 0) { // Verifica que exista y tenga items
+    if (this.slidingItems && this.slidingItems.length > 0) {
       const items = this.slidingItems.toArray();
       await Promise.all(items.map(item => item.closeOpened()));
     }
@@ -112,7 +148,7 @@ export class PlanificacionListPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Eliminando plan...' });
     await loading.present();
 
-    this.apiService.deletePlanificacion(planId).subscribe({ // Asume que tienes este método en ApiService
+    this.apiService.deletePlanificacion(planId).subscribe({
       next: async (response) => {
         await loading.dismiss();
         this.mostrarToast(response.message || 'Plan eliminado correctamente.', 'success');

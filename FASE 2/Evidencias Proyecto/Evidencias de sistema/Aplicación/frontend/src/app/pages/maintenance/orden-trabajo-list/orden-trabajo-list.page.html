@@ -1,0 +1,42 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Órdenes de Trabajo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="cargarOrdenes($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="isLoading" class="ion-text-center ion-padding-top">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando órdenes de trabajo...</p>
+  </div>
+
+  <div *ngIf="!isLoading && ordenes.length === 0" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="file-tray-outline" size="large" color="medium"></ion-icon>
+    <h2>No hay Órdenes de Trabajo</h2>
+    <p>Aún no se han generado órdenes de trabajo desde los planes de mantenimiento.</p>
+  </div>
+
+  <ion-list *ngIf="!isLoading && ordenes.length > 0" [inset]="true">
+    <ion-item *ngFor="let ot of ordenes" [button]="true" (click)="verDetalle(ot.id_ot)" detail="true">
+      <ion-icon [name]="getIconForStatus(ot.estado_ot)" [color]="getColorForStatus(ot.estado_ot)" slot="start"></ion-icon>
+      <ion-label>
+        <h2>OT #{{ ot.id_ot }} - {{ ot.vehiculo.marca }} {{ ot.vehiculo.modelo }}</h2>
+        <p>Patente: {{ ot.vehiculo.patente }}</p>
+        <p>Solicitante: {{ ot.solicitante?.pri_nom_usu || 'N/A' }} {{ ot.solicitante?.pri_ape_usu || '' }}</p>
+      </ion-label>
+      <div slot="end" class="ion-text-right">
+        <ion-note color="medium">{{ ot.fec_ini_ot | date:'dd/MM/yyyy' }}</ion-note>
+        <br>
+        <ion-badge [color]="getColorForStatus(ot.estado_ot)">{{ ot.estado_ot | titlecase }}</ion-badge>
+      </div>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

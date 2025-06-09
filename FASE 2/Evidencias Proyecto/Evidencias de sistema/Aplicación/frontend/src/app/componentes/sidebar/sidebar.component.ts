@@ -23,14 +23,12 @@ import {
   navigateOutline,
   warningOutline,
   mapOutline,
+  listOutline 
 } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
 
-/**
- * Componente principal del menú lateral y contenido principal.
- * Maneja la navegación y el cierre de sesión.
- */
+
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
@@ -51,18 +49,17 @@ import { AuthService } from '../../services/auth.service';
   ],
 })
 export class SidebarComponent {
-  /**
-   * Índice del elemento de menú seleccionado.
-   */
+ 
   public selectedIndex = 0;
 
-  /**
-   * Opciones de navegación para la aplicación.
-   */
+
   public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
     { title: 'Reportes', url: '/reportes', icon: 'newspaper' },
-    { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
+    { title: 'Planes de Mnt.', url: '/planificacion-list', icon: 'build' },
+  
+    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'list' },
+   
     { title: 'Combustible', url: '/combustible', icon: 'flame' },
     { title: 'Vehículos', url: '/vehiculos', icon: 'car' },
     { title: 'Conductores', url: '/conductores', icon: 'people' },
@@ -74,7 +71,7 @@ export class SidebarComponent {
   private authService = inject(AuthService);
 
   constructor() {
-    // Registro de íconos Ionicons personalizados
+
     addIcons({
       gridOutline,
       newspaperOutline,
@@ -85,6 +82,7 @@ export class SidebarComponent {
       navigateOutline,
       warningOutline,
       mapOutline,
+      listOutline 
     });
   }
 }

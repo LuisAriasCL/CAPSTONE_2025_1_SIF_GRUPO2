@@ -52,7 +52,7 @@ export function passwordMatchValidator(controlName: string, matchingControlName:
 export class RegisterPage implements OnInit {
   registerForm!: FormGroup; // El ! indica que se inicializará en ngOnInit
   isSubmitted = false; // Flag para mostrar errores solo después del primer intento de envío
-  availableRoles: string[] = ['gestor', 'mantenimiento', 'conductor'];
+  availableRoles: string[] = ['gestor', 'mantenimiento', 'conductor', 'tecnico'];
 
   constructor(
     private formBuilder: FormBuilder, // Ayuda a crear formularios

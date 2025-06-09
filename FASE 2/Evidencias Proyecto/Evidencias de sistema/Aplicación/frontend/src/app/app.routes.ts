@@ -1,7 +1,6 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-
 import { SidebarComponent } from './componentes/sidebar/sidebar.component';
 
 export const routes: Routes = [
@@ -15,27 +14,25 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register.page').then( m => m.RegisterPage)
   },
 
-  // --- Rutas Privadas (dentro del contendio principal con menú) ---
+  // --- Rutas Privadas (dentro del contenido principal con menú) ---
   {
     path: '', // Ruta raíz para la sección autenticada
     component: SidebarComponent, // Carga el contenido con menú
     canActivate: [authGuard], // Protegido por el guardián
     children: [
-
       {
         path: 'dashboard',
         loadComponent: () => import('./pages/dashboard/dashboard.page').then( m => m.DashboardPage)
       },
       {
         path: 'recorridos',
-        loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage) // Carga HomePage para /recorridos
+        loadComponent: () => import('./pages/recorridos/recorridos.page').then((m) => m.HomePage)
       },
       {
         path: 'rutas',
         data: { title: 'Gestión de Rutas' },
         loadComponent: () => import('./pages/route-list/route-list.page').then( m => m.RouteListPage)
       },
-
       {
         path: 'rutas/nueva',
         data: { title: 'Nueva Ruta' },
@@ -47,19 +44,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/route-form/route-form.page').then( m => m.RouteFormPage)
       },
       {
-        path: 'vehiculos', // Ruta para listar vehículos (debería ir a vehicle-list)
+        path: 'vehiculos',
         data: { title: 'Vehículos' },
         loadComponent: () => import('./pages/vehicle-list/vehicle-list.page').then( m => m.VehicleListPage)
       },
       {
-        path: 'vehiculos/new', // Ruta para crear vehículo nuevo
+        path: 'vehiculos/new',
         data: { title: 'Nuevo Vehículo' },
-        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
       },
       {
         path: 'vehiculos/edit/:id',
         data: { title: 'Editar Vehículo' },
-        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
       },
       {
         path: 'route-form',
@@ -71,12 +68,10 @@ export const routes: Routes = [
       },
       {
         path: 'vehicle-form', 
-        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage) // Carga VehicleFormPage
+        loadComponent: () => import('./pages/vehicle-form/vehicle-form.page').then( m => m.VehicleFormPage)
       },
-      
       {
         path: 'asignacion-list', 
-       
         loadComponent: () => import('./pages/asignacion-list/asignacion-list.page').then(m => m.AsignacionListPage)
       },
       {
@@ -85,10 +80,10 @@ export const routes: Routes = [
       },
       {
         path: 'asignaciones-recorrido/editar/:idAsig', 
-
         loadComponent: () => import('./pages/asignacion-form/asignacion-form.page').then(m => m.AsignacionFormPage)
       },
-      // Po
+      
+      // --- Rutas de Mantenimiento ---
       {
         path: 'planificacion-form',
         loadComponent: () => import('./pages/maintenance/planificacion-form/planificacion-form.page').then( m => m.PlanificacionFormPage)
@@ -97,30 +92,27 @@ export const routes: Routes = [
         path: 'planificacion-list',
         loadComponent: () => import('./pages/maintenance/planificacion-list/planificacion-list.page').then( m => m.PlanificacionListPage)
       },
+      // --- ¡NUEVAS RUTAS AÑADIDAS AQUÍ! ---
+      {
+        path: 'orden-trabajo-list',
+        data: { title: 'Órdenes de Trabajo' },
+        loadComponent: () => import('./pages/maintenance/orden-trabajo-list/orden-trabajo-list.page').then( m => m.OrdenTrabajoListPage)
+      },
+      {
+        path: 'orden-trabajo-detalle/:id',
+        data: { title: 'Detalle de OT' },
+        // Esta ruta la crearemos a continuación
+        loadComponent: () => import('./pages/maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page').then( m => m.OrdenTrabajoDetallePage)
+      },
+      // --- Fin de nuevas rutas ---
+      
       {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
       }
     ]
-  },  {
-    path: 'home-movil',
-    loadComponent: () => import('./pages/home-movil/home-movil.page').then( m => m.HomeMovilPage)
   },
-  {
-    path: 'combustible-movil',
-    loadComponent: () => import('./pages/combustible-movil/combustible-movil.page').then( m => m.CombustibleMovilPage)
-  },
-  {
-    path: 'movil',
-    loadComponent: () => import('./pages/incidente/movil/movil.page').then( m => m.MovilPage)
-  },
-  {
-    path: 'incidente-movil',
-    loadComponent: () => import('./pages/incidente-movil/incidente-movil.page').then( m => m.IncidenteMovilPage)
-  },
-
   
-  
-  
+  // Se eliminó la ruta de 'orden-trabajo-list' de aquí porque la movimos arriba
 ];

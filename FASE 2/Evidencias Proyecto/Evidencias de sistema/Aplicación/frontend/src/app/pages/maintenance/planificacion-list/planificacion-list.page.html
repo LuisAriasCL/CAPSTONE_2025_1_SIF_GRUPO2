@@ -5,8 +5,8 @@
   </ion-refresher>
 
    <div class="header-row ion-padding-bottom">
-      <h1 class="page-title">{{ pageTitle }}</h1>
-    </div>
+     <h1 class="page-title">{{ pageTitle }}</h1>
+   </div>
 
   <div *ngIf="isLoading && planificaciones.length === 0" class="ion-text-center ion-padding-top">
     <ion-spinner name="dots" color="primary"></ion-spinner>
@@ -25,6 +25,16 @@
 
   <ion-list *ngIf="planificaciones.length > 0" [inset]="true">
     <ion-item-sliding *ngFor="let plan of planificaciones" #slidingItem>
+      
+      <ion-item-options side="start">
+        <ion-item-option 
+            color="success" 
+            (click)="generarOt(plan)"
+            [disabled]="!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0">
+          <ion-icon slot="icon-only" name="build-outline"></ion-icon>
+          Generar OT
+        </ion-item-option>
+      </ion-item-options>
       <ion-item lines="full" (click)="verDetalle(plan)" detail="false" button>
         <ion-icon [name]="getIconForPlanStatus(plan)" [color]="getColorForPlanStatus(plan)" slot="start" class="item-icon"></ion-icon>
         <ion-label class="ion-text-wrap">
@@ -60,6 +70,6 @@
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="irACrearPlan()" color="primary" aria-label="Crear Planificación">
       <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
+    </ion-fab-button> 
   </ion-fab>
 </ion-content>

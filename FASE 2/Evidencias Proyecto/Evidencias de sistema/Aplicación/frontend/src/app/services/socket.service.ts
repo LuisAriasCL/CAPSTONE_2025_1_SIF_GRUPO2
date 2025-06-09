@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 export class SocketService {
   private socket: Socket | undefined; // La instancia del socket cliente
   // URL del backend donde corre Socket.IO (asegúrate que coincida)
-  private backendUrl = 'http://localhost:8100';
+  private backendUrl = 'http://localhost:8101';
 
   constructor() {
     
