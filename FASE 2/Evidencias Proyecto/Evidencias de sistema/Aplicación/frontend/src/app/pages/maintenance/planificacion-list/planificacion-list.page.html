@@ -7,7 +7,7 @@
   <div class="header-row ion-padding-bottom">
     <h1 class="page-title">{{ pageTitle }}</h1>
     <ion-button (click)="irACrearPlan()" fill="solid" class="add-button">
-      <ion-icon slot="start" name="add-circle-outline" style="border-color: black;"></ion-icon>
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
       Crear Nueva Planificación
     </ion-button>
   </div>
@@ -61,6 +61,15 @@
           </ion-col>
 
           <ion-col size="12" size-md="3" class="ion-text-md-end ion-text-center action-buttons">
+            
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="generarOt(plan)"
+              title="Generar Orden de Trabajo"
+              [disabled]="!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0">
+              <ion-icon slot="icon-only" name="settings-outline" color="success"></ion-icon>
+            </ion-button>
             <ion-button fill="clear" size="small" (click)="verDetalle(plan)" title="Ver Detalles">
               <ion-icon slot="icon-only" name="eye-outline" color="primary"></ion-icon>
             </ion-button>
@@ -70,10 +79,10 @@
             </ion-button>
 
             <ion-button
-                fill="clear"
-                size="small"
-                (click)="confirmarEliminar(plan)"
-                title="Eliminar Plan">
+              fill="clear"
+              size="small"
+              (click)="confirmarEliminar(plan)"
+              title="Eliminar Plan">
               <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
             </ion-button>
           </ion-col>

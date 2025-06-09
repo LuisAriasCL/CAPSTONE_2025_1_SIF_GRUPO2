@@ -100,6 +100,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/maintenance/planificacion-list/planificacion-list.page').then( m => m.PlanificacionListPage)
   },
   {
+        path: 'orden-trabajo-list',
+        data: { title: 'Órdenes de Trabajo' },
+        loadComponent: () => import('./pages/maintenance/orden-trabajo-list/orden-trabajo-list.page').then( m => m.OrdenTrabajoListPage)
+      },
+      {
+        path: 'orden-trabajo-detalle/:id',
+        data: { title: 'Detalle de OT' },
+        // Esta ruta la crearemos a continuación
+        loadComponent: () => import('./pages/maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page').then( m => m.OrdenTrabajoDetallePage)
+      },
+  
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
