@@ -9,7 +9,7 @@ import {
   closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
   closeCircleOutline 
 } from 'ionicons/icons';
-import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData } from '../../../services/api.service'; // Ajusta la ruta
+import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
 
 @Component({
   selector: 'app-planificacion-form',
@@ -30,7 +30,11 @@ export class PlanificacionFormPage implements OnInit {
   planForm!: FormGroup;
   vehiculosDisponibles: VehiculoAsignacionInfo[] = [];
   isSubmitted = false;
-  pageTitle = 'Crear Planificación';  constructor(
+  pageTitle = 'Crear Planificación';
+  
+  // Propiedades para datos cargados (estilo RouteFormPage)
+  loadedTareas: any[] = [];
+  loadedVehiculosIds: number[] = [];constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
     private navCtrl: NavController,
@@ -44,8 +48,7 @@ export class PlanificacionFormPage implements OnInit {
       closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
       closeCircleOutline
     });
-  }
-  ngOnInit() {
+  }  ngOnInit() {
     // Support for both modal parameters and route parameters
     if (!this.planId) {
       this.route.paramMap.subscribe(params => {
@@ -61,8 +64,12 @@ export class PlanificacionFormPage implements OnInit {
     this.initForm();
     this.cargarVehiculos();
     
+    // Verificar si se recibieron parámetros via modal (Input properties)
     if (this.planId && (this.isEditMode || this.isViewMode)) {
-      this.cargarPlanificacion();
+      this.loadPlanificacionData();
+    } else {
+      // Modo creación - agregar una tarea por defecto
+      this.agregarTarea();
     }
   }
 
@@ -129,7 +136,6 @@ export class PlanificacionFormPage implements OnInit {
       }
     );
   }
-
   async onSubmit() {
     this.isSubmitted = true;
     this.planForm.markAllAsTouched();
@@ -143,34 +149,65 @@ export class PlanificacionFormPage implements OnInit {
       return;
     }
 
-    const loading = await this.loadingCtrl.create({ message: 'Guardando planificación...' });
+    const isEditMode = this.isEditMode && this.planId;
+    const loading = await this.loadingCtrl.create({ 
+      message: isEditMode ? 'Actualizando planificación...' : 'Guardando planificación...' 
+    });
     await loading.present();
 
-    const formData = this.planForm.value as PlanificacionMantenimientoData;
-    console.log('Datos del formulario a enviar al backend:', formData);    this.apiService.crearPlanificacion(formData).subscribe({
+    // Construcción manual del objeto (estilo RouteFormPage)
+    const planData: Partial<PlanificacionMantenimientoData> = {
+      descPlan: this.planForm.value.descPlan,
+      frecuencia: this.planForm.value.frecuencia,
+      tipoFrecuencia: this.planForm.value.tipoFrecuencia,
+      esPreventivo: this.planForm.value.esPreventivo,
+      esActivoPlan: this.planForm.value.esActivoPlan,
+      vehiculosIds: this.planForm.value.vehiculosIds,
+      tareas: this.tareas.value
+    };
+
+    console.log('Datos de la planificación a enviar:', planData);
+
+    const apiCall = isEditMode 
+      ? this.apiService.updatePlanificacion(this.planId!, planData as PlanificacionMantenimientoData)
+      : this.apiService.crearPlanificacion(planData as PlanificacionMantenimientoData);
+
+    apiCall.subscribe({
       next: async (response) => {
         await loading.dismiss();
-        this.mostrarToast(`Planificación "${response.planificacion.descPlan}" creada exitosamente.`, 'success');
+        const message = isEditMode 
+          ? `Planificación actualizada exitosamente.`
+          : `Planificación "${response.planificacion?.descPlan || planData.descPlan}" creada exitosamente.`;
+        
+        this.mostrarToast(message, 'success');
         
         // Close modal if we're in modal mode, otherwise navigate
         if (this.modalCtrl) {
-          await this.closeModal({ planificacionCreated: true });
-        } else {
-          this.planForm.reset({
-            esPreventivo: true,
-            esActivoPlan: true,
-            vehiculosIds: [],
+          await this.closeModal({ 
+            planificacionCreated: !isEditMode, 
+            planificacionUpdated: isEditMode 
           });
-          this.tareas.clear();
-          this.agregarTarea();
-          this.isSubmitted = false;
+        } else {
+          if (!isEditMode) {
+            this.planForm.reset({
+              esPreventivo: true,
+              esActivoPlan: true,
+              vehiculosIds: [],
+            });
+            this.tareas.clear();
+            this.agregarTarea();
+            this.isSubmitted = false;
+          }
           this.navCtrl.navigateRoot('/tabs/planificaciones', { animationDirection: 'back' });
         }
       },
       error: async (error) => {
         await loading.dismiss();
-        console.error('Error al crear planificación desde el frontend:', error);
-        this.mostrarToast(error.message || 'No se pudo crear la planificación. Intente más tarde.', 'danger', 5000);
+        console.error('Error al procesar planificación:', error);
+        const errorMessage = isEditMode 
+          ? 'No se pudo actualizar la planificación. Intente más tarde.'
+          : 'No se pudo crear la planificación. Intente más tarde.';
+        this.mostrarToast(error.message || errorMessage, 'danger', 5000);
       }
     });
   }
@@ -189,21 +226,65 @@ export class PlanificacionFormPage implements OnInit {
   async closeModal(data?: any) {
     await this.modalCtrl.dismiss(data);
   }
-
-  async cargarPlanificacion() {
+  async loadPlanificacionData() {
     if (!this.planId) return;
 
     const loading = await this.loadingCtrl.create({ message: 'Cargando planificación...' });
     await loading.present();
 
-    try {
-      // This method would need to be implemented in ApiService
-      // For now, we'll show a placeholder
-      await loading.dismiss();
-      this.mostrarToast('Función de carga de planificación pendiente de implementación', 'warning');
-    } catch (error) {
-      await loading.dismiss();
-      this.mostrarToast('Error al cargar la planificación', 'danger');
+    this.apiService.getPlanificacionById(this.planId).subscribe({
+      next: async (data) => {
+        await loading.dismiss();
+        
+        // Mapeo directo de datos (estilo RouteFormPage)
+        this.planForm.patchValue({
+          descPlan: data.descPlan,
+          frecuencia: data.frecuencia,
+          tipoFrecuencia: data.tipoFrecuencia,
+          esActivoPlan: data.esActivoPlan,
+          esPreventivo: data.esPreventivo
+        });
+
+        // Asignar datos a propiedades del componente (estilo RouteFormPage)
+        this.loadedTareas = data.tareas || [];
+        this.loadedVehiculosIds = data.vehiculosEnPlan?.map(v => v.idVehi) || [];
+
+        // Cargar tareas en el FormArray
+        this.cargarTareasEnFormulario();
+        // Asignar vehículos al control
+        this.planForm.patchValue({ vehiculosIds: this.loadedVehiculosIds });
+
+        console.log('Planificación cargada:', data);
+      },
+      error: async (error) => {
+        await loading.dismiss();
+        console.error('Error al cargar planificación:', error);
+        this.mostrarToast(error.message || 'Error al cargar la planificación', 'danger');
+      }
+    });
+  }
+
+  private cargarTareasEnFormulario() {
+    // Limpiar FormArray
+    this.tareas.clear();
+    
+    // Agregar tareas cargadas
+    if (this.loadedTareas.length > 0) {
+      this.loadedTareas.forEach(() => {
+        this.agregarTarea();
+      });
+      
+      // Llenar los valores de las tareas
+      this.loadedTareas.forEach((tarea, index) => {
+        const tareaControl = this.tareas.at(index);
+        tareaControl.patchValue({
+          nomTareaPlan: tarea.nomTareaPlan,
+          descTareaPlan: tarea.descTareaPlan || ''
+        });
+      });
+    } else {
+      // Si no hay tareas, agregar una por defecto
+      this.agregarTarea();
     }
   }
 }

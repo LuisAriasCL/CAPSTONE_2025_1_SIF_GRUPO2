@@ -12,6 +12,15 @@ router.post('/', planificacionController.crearPlanificacion);
 // Ejemplo con middleware: router.get('/', checkAuth, planificacionController.listarPlanificaciones);
 router.get('/', planificacionController.listarPlanificaciones);
 
-// (Aquí irán más rutas para GET por ID, PUT, DELETE más adelante)
+// Ruta para obtener una planificación por ID
+router.get('/:id', planificacionController.obtenerPlanificacionPorId);
+
+// Ruta para actualizar una planificación por ID
+router.put('/:id', planificacionController.actualizarPlanificacion);
+
+// Ruta para eliminar una planificación por ID
+router.delete('/:id', planificacionController.eliminarPlanificacion);
+
+// (Aquí irán más rutas más adelante)
 
 module.exports = router;

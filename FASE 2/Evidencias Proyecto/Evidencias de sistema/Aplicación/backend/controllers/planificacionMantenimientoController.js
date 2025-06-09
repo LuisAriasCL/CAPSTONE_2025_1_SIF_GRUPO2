@@ -137,10 +137,163 @@ exports.listarPlanificaciones = async (req, res) => {
             order: [['idPlan', 'DESC']]
         });
         res.status(200).json(planificaciones);
-    } catch (error) {
-        console.error('Error al listar planificaciones:', error);
+    } catch (error) {        console.error('Error al listar planificaciones:', error);
         res.status(500).json({ msg: 'Error interno del servidor al listar las planificaciones.', error: error.message });
     }
 };
 
-// (Más adelante añadiremos obtenerPorId, actualizar, eliminar)
+// Obtener una planificación por ID
+exports.obtenerPlanificacionPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const planificacion = await PlanificacionMantenimiento.findByPk(id, {
+            include: [
+                {
+                    model: TareaPlanificacion,
+                    as: 'tareas'
+                },
+                {
+                    model: Vehiculo,
+                    as: 'vehiculosEnPlan',
+                    attributes: ['idVehi', 'patente', 'marca', 'modelo'],
+                    through: { attributes: [] }
+                }
+            ]
+        });
+
+        if (!planificacion) {
+            return res.status(404).json({ msg: 'Planificación no encontrada.' });
+        }
+
+        res.status(200).json(planificacion);
+    } catch (error) {
+        console.error('Error al obtener planificación por ID:', error);
+        res.status(500).json({ msg: 'Error interno del servidor al obtener la planificación.', error: error.message });
+    }
+};
+
+// Actualizar una planificación por ID
+exports.actualizarPlanificacion = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
+    try {
+        const { id } = req.params;
+        const {
+            descPlan,
+            frecuencia,
+            tipoFrecuencia,
+            esActivoPlan,
+            esPreventivo,
+            tareas,
+            vehiculosIds
+        } = req.body;
+
+        // Buscar la planificación
+        const planificacion = await PlanificacionMantenimiento.findByPk(id);
+        if (!planificacion) {
+            return res.status(404).json({ msg: 'Planificación no encontrada.' });
+        }
+
+        // Validaciones básicas
+        if (!descPlan || !tareas || !Array.isArray(tareas) || tareas.length === 0) {
+            return res.status(400).json({ msg: 'La descripción y al menos una tarea son obligatorias.' });
+        }
+
+        // Actualizar la planificación
+        await planificacion.update({
+            descPlan,
+            frecuencia,
+            tipoFrecuencia,
+            esActivoPlan,
+            esPreventivo
+        }, { transaction });
+
+        // Eliminar tareas existentes y crear nuevas
+        await TareaPlanificacion.destroy({
+            where: { planificacionMantenimientoIdPlan: id },
+            transaction
+        });
+
+        const nuevasTareas = tareas.map(tarea => ({
+            nomTareaPlan: tarea.nomTareaPlan,
+            descTareaPlan: tarea.descTareaPlan,
+            planificacionMantenimientoIdPlan: id
+        }));
+        await TareaPlanificacion.bulkCreate(nuevasTareas, { transaction });
+
+        // Actualizar vehículos asociados
+        if (vehiculosIds && Array.isArray(vehiculosIds)) {
+            await planificacion.setVehiculosEnPlan(vehiculosIds, { transaction });
+        }
+
+        await transaction.commit();
+
+        // Obtener la planificación actualizada
+        const planificacionActualizada = await PlanificacionMantenimiento.findByPk(id, {
+            include: [
+                { model: TareaPlanificacion, as: 'tareas' },
+                { model: Vehiculo, as: 'vehiculosEnPlan', attributes: ['idVehi', 'patente', 'marca', 'modelo'] }
+            ]
+        });
+
+        res.status(200).json({ 
+            msg: 'Planificación actualizada exitosamente', 
+            planificacion: planificacionActualizada 
+        });
+
+    } catch (error) {
+        if (transaction && transaction.finished !== 'commit' && transaction.finished !== 'rollback') {
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error('Error al intentar hacer rollback:', rollbackError);
+            }
+        }
+        
+        console.error('Error al actualizar planificación:', error);
+        res.status(500).json({ msg: 'Error interno del servidor al actualizar la planificación.', error: error.message });
+    }
+};
+
+// Eliminar una planificación por ID
+exports.eliminarPlanificacion = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
+    try {
+        const { id } = req.params;
+        
+        const planificacion = await PlanificacionMantenimiento.findByPk(id);
+        if (!planificacion) {
+            return res.status(404).json({ msg: 'Planificación no encontrada.' });
+        }
+
+        // Eliminar tareas asociadas
+        await TareaPlanificacion.destroy({
+            where: { planificacionMantenimientoIdPlan: id },
+            transaction
+        });
+
+        // Eliminar asociaciones con vehículos
+        await planificacion.setVehiculosEnPlan([], { transaction });
+
+        // Eliminar la planificación
+        await planificacion.destroy({ transaction });
+
+        await transaction.commit();
+
+        res.status(200).json({ message: 'Planificación eliminada correctamente.' });
+
+    } catch (error) {
+        if (transaction && transaction.finished !== 'commit' && transaction.finished !== 'rollback') {
+            try {
+                await transaction.rollback();
+            } catch (rollbackError) {
+                console.error('Error al intentar hacer rollback:', rollbackError);
+            }
+        }
+        
+        console.error('Error al eliminar planificación:', error);
+        res.status(500).json({ msg: 'Error interno del servidor al eliminar la planificación.', error: error.message });
+    }
+};

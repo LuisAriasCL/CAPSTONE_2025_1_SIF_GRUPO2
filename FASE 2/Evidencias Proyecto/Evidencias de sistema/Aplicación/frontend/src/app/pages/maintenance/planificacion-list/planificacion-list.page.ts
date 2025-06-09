@@ -138,8 +138,7 @@ export class PlanificacionListPage implements OnInit {
       const items = this.slidingItems.toArray();
       await Promise.all(items.map(item => item.closeOpened()));
     }
-  }
-  async verDetalle(plan: PlanificacionMantenimientoResumen) {
+  }  async verDetalle(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
     
     const modal = await this.modalCtrl.create({
