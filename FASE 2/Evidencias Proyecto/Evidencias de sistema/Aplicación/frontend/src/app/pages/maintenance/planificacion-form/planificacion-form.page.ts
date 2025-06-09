@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; // Para *ngIf, *ngFor
 import { IonicModule } from '@ionic/angular';   // Para todos los componentes Ionic
 import { NavController, ToastController, LoadingController, AlertController, ModalController } from '@ionic/angular';
@@ -20,6 +20,7 @@ import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, Pla
     CommonModule,
     ReactiveFormsModule,
     IonicModule,
+    FormsModule,
   ]
 })
 export class PlanificacionFormPage implements OnInit {
@@ -36,6 +37,10 @@ export class PlanificacionFormPage implements OnInit {
   loadedTareas: any[] = [];
   loadedVehiculosIds: number[] = [];tareasDisponibles: any;
   tipoFrecuenciaSeleccionado: string | null = null;
+  selectedTab = 'infoGeneral';
+
+  // Agregar esta propiedad
+  esPreventivo: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -51,7 +56,15 @@ export class PlanificacionFormPage implements OnInit {
       closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
       closeCircleOutline
     });
-  }  ngOnInit() {
+  }  
+  
+  setPreventivo(value: boolean) {
+    if (this.isViewMode) return;
+    this.esPreventivo = value;
+    this.planForm.patchValue({ esPreventivo: value });
+  }
+
+  ngOnInit() {
     // Support for both modal parameters and route parameters
     if (!this.planId) {
       this.route.paramMap.subscribe(params => {
@@ -76,6 +89,11 @@ export class PlanificacionFormPage implements OnInit {
     }
 
     this.tipoFrecuenciaSeleccionado = this.planForm.get('tipoFrecuencia')?.value || null;
+
+    // Agregar después de initForm()
+    this.planForm.get('esPreventivo')?.valueChanges.subscribe(value => {
+      this.esPreventivo = value;
+    });
   }
 
   updatePageTitle() {
@@ -298,5 +316,12 @@ export class PlanificacionFormPage implements OnInit {
     if (!this.tipoFrecuenciaSeleccionado) {
       this.planForm.get('frecuencia')?.reset();
     }
+  }
+
+  // Añadir este método
+  segmentChanged(event: any) {
+    this.selectedTab = event.detail.value;
+    const tabs = document.querySelector('ion-tabs');
+    tabs?.select(event.detail.value);
   }
 }

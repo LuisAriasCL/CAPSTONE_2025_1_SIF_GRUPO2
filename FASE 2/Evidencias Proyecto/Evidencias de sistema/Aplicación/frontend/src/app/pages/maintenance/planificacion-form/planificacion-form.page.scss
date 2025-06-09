@@ -16,7 +16,9 @@
   --form-label-color: var(--ion-color-dark);
   --form-label-color-floating: var(--ion-color-medium-shade);
   --form-label-color-focus: var(--ion-color-primary);
+  background-color: #d1d5db;
 }
+
 
 /* Contenido del formulario */
 ion-content {
@@ -36,6 +38,45 @@ ion-header {
         }
       }
     }
+  }
+}
+
+/* ===== ESTILOS PARA LA BARRA DE PESTAÑAS ===== */
+ion-tab-bar {
+  --background: var(--ion-color-light, #f4f5f8); // Color gris claro para el fondo de las pestañas
+  border-bottom: 1px solid var(--ion-color-medium-tint); // Borde inferior para la barra de pestañas
+  // --border-color: var(--ion-color-medium-tint, #cccccc); // Comentado ya que se maneja con border-bottom
+
+  width: 100%; // Asegura que la barra de pestañas ocupe todo el ancho disponible
+  display: flex; // Asegura que los botones de pestañas se alineen horizontalmente
+     justify-content: space-between; // Distribuye los botones uniformemente a lo largo de la barra
+     flex-direction: row; // Permite que la barra de pestañas ocupe todo el espacio disponible;
+
+  ion-tab-button {
+    --color: var(--ion-color-medium-shade); // Color para los iconos y texto no seleccionados
+    --color-selected: var(--ion-color-primary); // Color para el icono y texto de la pestaña seleccionada
+     
+    // Borde derecho para simular delimitación, excepto para el último botón
+    &:not(:last-child) {
+    }
+
+    &::part(indicator) { // Línea indicadora debajo de la pestaña seleccionada
+      background-color: var(--ion-color-primary);
+      height: 2px; // Grosor del indicador
+    }
+  }
+}
+
+/* ===== ESTILOS PARA LOS ENCABEZADOS DE PESTAÑA ===== */
+.tab-header {
+  width: 100%;
+  text-align: center; // Asegura el centrado del texto
+  // border-bottom: 1px solid var(--ion-color-light-shade); // Opcional: si se desea una línea divisoria
+  
+  ion-label {
+    font-size: 1.1em; // Tamaño de fuente para el encabezado
+    font-weight: 600; // Peso de la fuente
+    color: var(--ion-color-dark); // Color del texto
   }
 }
 
@@ -219,23 +260,37 @@ ion-toggle {
 }
 
 /* ===== MENSAJES DE ERROR UNIFICADOS ===== */
+/* Contenedor de mensajes de error */
+.error-container {
+  min-height: 24px; // Altura mínima para mantener el espacio
+  margin-bottom: 8px;
+}
+
 .error-message {
   color: var(--ion-color-danger);
-  font-size: 16px !important; /* MUCHO MÁS GRANDE - aumentado de 12px */
-  margin-top: 4px;
+  font-size: 12px;
   padding-left: var(--form-input-padding);
   display: flex;
   align-items: center;
   gap: 6px;
   font-weight: 500;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
   
+  &.visible {
+    opacity: 1;
+    height: auto;
+    margin-top: 4px;
+  }
+
   &::before {
     content: "⚠";
-    font-size: 18px !important; /* Aumentado también */
+    font-size: 14px;
     color: var(--ion-color-danger);
   }
 }
-
 /* ===== ESTILOS PARA CARDS DE TAREAS (MANTENER EXISTENTE) ===== */
 .task-card {
   border-left: 4px solid var(--ion-color-primary);
@@ -259,6 +314,25 @@ ion-toggle {
       margin-bottom: 0;
     }
   }
+
+  .input-wrapper {
+    margin-bottom: 35px !important; // Aumentado para dar más espacio entre campos
+    
+    &:last-child {
+      margin-bottom: 16px !important; // Menor margen para el último elemento
+    }
+  }
+
+  
+  .input-wrapper {
+    // ...existing code...
+
+    ion-label {
+      color: var(--ion-color-dark) !important; // Cambiado a color oscuro/negro
+      font-weight: 500 !important;
+    }
+  }
+
 }
 
 .task-card-header {
@@ -695,38 +769,31 @@ ion-col {
   line-height: 1.2 !important;
 }
 
-/* Estilos para el contenedor de ion-toggle, para que se asemeje a otros campos de entrada */
+/* Estilos para el contenedor de ion-toggle */
 .input-wrapper:has(ion-toggle) {
-  background: #ffffff; /* ✅ Fondo blanco */
-  border: 1px solid var(--form-input-border); /* ✅ Borde gris (usando la variable existente) */
-  border-radius: 16px; /* ✅ Esquinas más suavizadas (aumentado de 12px) */
-  padding: 0 var(--form-input-padding); // Padding horizontal, la alineación vertical se maneja con align-items
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
   display: flex;
-  align-items: center; // Centrar verticalmente label y toggle
-  justify-content: space-between; // Label a la izquierda, toggle a la derecha
-  margin-bottom: 16px !important; // Espaciado inferior consistente
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Sombra sutil como en ion-item
-  transition: all 0.3s ease; // Transición suave para hover
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  margin-bottom: 16px !important;
+  min-height: 60px !important; // Aumentar altura mínima
 
   ion-label {
-    padding-left: 0 !important; // El padding del wrapper maneja el espaciado izquierdo
-    margin-bottom: 0 !important; // No es necesario si está alineado verticalmente
-    flex-grow: 1; // Permite que la etiqueta ocupe el espacio disponible
-    margin-right: var(--form-input-padding); // Espacio entre la etiqueta y el toggle
-    // Los estilos globales de ion-label (tamaño, color, fuente) se aplican
+    font-size: 18px !important;
+    margin-bottom: 12px !important; // Aumentar espacio entre label y toggle
+    color: var(--form-label-color) !important;
+    font-weight: 500 !important;
+    padding-left: 0 !important;
   }
 
   ion-toggle {
-    flex-shrink: 0; // Evita que el toggle se encoja
-    --width: 50px !important; // Tamaño base para el toggle (grande)
-    --height: 24px !important; // Tamaño base para el toggle (grande)
-    margin-right: 0 !important; // El padding del wrapper maneja el espaciado derecho
-    // Otros estilos de ion-toggle (colores, etc.) se heredan o se definen globalmente
-  }
-
-  &:hover {
-    border-color: var(--ion-color-primary-tint);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    margin-top: 8px !important; // Aumentar margen superior
+    --width: 50px !important;
+    --height: 24px !important;
+    align-self: flex-start !important; // Alinear a la izquierda
   }
 }
 
@@ -1387,6 +1454,7 @@ ion-col {
     
     ion-card-content {
       padding: 16px !important;
+      background-color: #f5f6f9;
     }
     
     .input-wrapper:has(ion-input[formControlName="nomTareaPlan"]) {
@@ -1636,3 +1704,163 @@ ion-col {
   }
 }
 
+/* ===== ESTILOS PARA TABS PERSONALIZADOS ===== */
+.custom-tabs {   
+  background: var(--ion-color-light);
+  border: none;
+  box-shadow: none;
+
+  ion-tab-button {
+    --color: var(--ion-color-medium);
+    --color-selected: var(--ion-color-primary);
+    width: 100%;
+    position: relative;
+    border-radius: 8px var(--background-radius) var(--background-radius) 8px;
+    min-height: 48px;
+    transition: all 0.3s ease;
+    overflow: visible;
+
+    &.tab-selected {
+      background: rgba(var(--ion-color-primary-rgb), 0.1);
+      border-bottom: #3880ff 2px solid;
+      transition: step-start 0.3s ease;
+
+
+      ion-icon, ion-label {
+        color: var(--ion-color-primary);
+        font-weight: 600;
+      }
+    }
+
+    &:hover:not(.tab-selected) {
+      background: rgba(var(--ion-color-primary-rgb), 0.05);
+    }
+
+    ion-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+      transition: color 0.3s ease;
+    }
+
+    ion-label {
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+/* ===== DIV CENTRADO CON COLOR DE FONDO ===== */
+.ion-text-center {
+  background-color: #f4f5f8; /* Color de fondo gris */
+  border-radius: 12px var(--background); /* Esquinas redondeadas */
+     padding: 16px; /* Espaciado interno */
+}
+
+/* ===== DISTRIBUCIÓN EQUITATIVA DE LOS TAB BUTTONS ===== */
+ion-tab-bar {
+  display: flex;
+  width: 100%;
+
+  ion-tab-button {
+    flex: 1;
+    min-width: 50%;
+  }
+}
+
+/* Estilos para los botones de tipo de mantenimiento */
+.tipo-mantenimiento-container {
+  margin-bottom: 16px;
+  
+  ion-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    margin-bottom: 8px;
+  }
+  
+  .tipo-mantenimiento-buttons {
+    display: flex;
+    width: 75%;
+    border: 1px solid var(--ion-color-medium-tint);
+    border-radius: 8px;
+    overflow: hidden;
+    
+    ion-button {
+      flex: 1;
+      margin: 0;
+      --border-radius: 0;
+      height: 36px; // Más pequeño
+      font-size: 13px; // Más pequeño
+      font-weight: 500;
+      text-transform: none;
+      
+      &.selected {
+        --background: var(--ion-color-primary);
+        --color: white;
+        --box-shadow: none;
+        z-index: 1;
+      }
+      
+      &:not(.selected) {
+        --background: var(--ion-color-light);
+        --color: var(--ion-color-medium);
+        --border-width: 0;
+        --border-style: none;
+        
+        &:hover {
+          --background: var(--ion-color-light-shade);
+          --color: var(--ion-color-dark);
+        }
+      }
+      
+      &:first-child {
+        border-right: 1px solid var(--ion-color-medium-tint);
+      }
+      
+      ion-icon {
+        font-size: 16px;
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+/* ===== ESTILOS PARA LA FILA DE CONTROLES ===== */
+.controls-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+  width: 100%;
+
+  .tipo-mantenimiento-container {
+    flex: 2;
+    margin-bottom: 0;
+  }
+
+  .plan-activo-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+    ion-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ion-color-dark);
+      margin-bottom: 12px;
+    }
+
+    ion-toggle {
+      --width: 50px;
+      --height: 24px;
+      margin-top: 4px;
+    }
+  }
+}
