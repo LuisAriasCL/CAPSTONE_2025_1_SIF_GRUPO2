@@ -1,0 +1,71 @@
+/* Variables CSS para el layout */
+:root {
+  --header-height: 56px;
+}
+
+/* Estilos generales del layout principal */
+ion-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header global */
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+/* Split pane ajustado para dejar espacio al header */
+ion-split-pane {
+  --side-min-width: 280px;
+  --side-max-width: 320px;
+  height: calc(100vh - var(--header-height, 56px));
+  
+}
+
+/* Estilos para el menú lateral */
+ion-menu {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  border-right: 1px solid var(--ion-color-medium);
+  margin-top: var(--header-height, 56px);
+  height: calc(100vh - var(--header-height, 56px));
+  
+  ion-content {
+    --background: var(--ion-color-light);
+    --padding-top: 0;
+    --padding-bottom: 0;
+  }
+}
+
+/* Contenedor principal */
+#main-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height, 56px));
+  background: var(--ion-color-light-shade);;
+}
+
+/* Responsividad para móviles */
+@media (max-width: 768px) {
+  ion-split-pane {
+    --side-min-width: 100%;
+    --side-max-width: 100%;
+  }
+  
+  ion-menu {
+    --width: 280px;
+  }
+}
+
+/* Mejoras visuales adicionales */
+ion-router-outlet {
+  flex: 1;
+  background: var(--ion-background-color, #fafafa);
+  overflow-y: auto;
+}

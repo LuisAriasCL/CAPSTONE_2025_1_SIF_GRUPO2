@@ -1,31 +1,22 @@
-<ion-split-pane contentId="main-content">
-  <!-- Menú lateral -->
-  <ion-menu contentId="main-content" type="overlay" style="border-right: 1px solid var(--ion-border-color);">
-    <ion-content>
-      <!-- Lista de navegación principal -->
-      <ion-list id="menu-list">
-        <ion-menu-toggle auto-hide="false" *ngFor="let page of appPages; let i = index">
-          <ion-item
-            button
-            [routerLink]="page.url"
-            routerDirection="root"
-            [class.selected]="selectedIndex === i"
-            lines="none"
-            detail="false"
-            (click)="selectedIndex = i"
-          >
-            <ion-icon
-              aria-hidden="true"
-              slot="start"
-              [name]="page.icon + '-outline'"
-            ></ion-icon>
-            <ion-label>{{ page.title }}</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-      </ion-list>
-    </ion-content>
-  </ion-menu>
 
-  <!-- Contenido principal -->
-  <ion-router-outlet id="main-content"></ion-router-outlet>
-</ion-split-pane>
+<!-- Lista de navegación principal -->
+<ion-list id="menu-list">
+  <ion-menu-toggle auto-hide="false" *ngFor="let page of appPages; let i = index">
+    <ion-item
+      button
+      [routerLink]="page.url"
+      routerDirection="root"
+      [class.selected]="selectedIndex === i"
+      lines="none"
+      detail="false"
+      (click)="selectedIndex = i"
+    >
+      <ion-icon
+        aria-hidden="true"
+        slot="start"
+        [name]="page.icon + '-outline'"
+      ></ion-icon>
+      <ion-label>{{ page.title }}</ion-label>
+    </ion-item>
+  </ion-menu-toggle>
+</ion-list>

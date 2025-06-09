@@ -1,8 +1,16 @@
 import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common'; // Importa DatePipe
+import { CommonModule, DatePipe } from '@angular/common';
 import { IonicModule, NavController, AlertController, ToastController, LoadingController, IonItemSliding } from '@ionic/angular';
-import { RouterModule } from '@angular/router'; // Para routerLink
-import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
+import { RouterModule } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { 
+  eyeOutline, createOutline, trashOutline, addCircleOutline, 
+  calendarOutline, listOutline, timeOutline, shieldCheckmarkOutline, 
+  powerOutline, documentTextOutline, checkboxOutline, carOutline,
+  calendarNumberOutline, settingsOutline
+} from 'ionicons/icons';
+
+import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service';
 
 @Component({
   selector: 'app-planificacion-list',
@@ -10,18 +18,16 @@ import { ApiService, PlanificacionMantenimientoResumen } from '../../../services
   styleUrls: ['./planificacion-list.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, // Necesario para *ngIf, *ngFor, y el DatePipe
-    RouterModule, // Necesario para [routerLink]
-    IonicModule,  // Necesario para todos los componentes ion-*
-    // DatePipe // Ya no es necesario importar DatePipe aquí directamente si CommonModule está bien configurado.
-               // CommonModule lo re-exporta.
+    CommonModule,
+    RouterModule,
+    IonicModule,
   ],
-  // providers: [DatePipe] // No es necesario si CommonModule lo provee.
 })
 export class PlanificacionListPage implements OnInit {
   @ViewChildren(IonItemSliding) slidingItems!: QueryList<IonItemSliding>;
   planificaciones: PlanificacionMantenimientoResumen[] = [];
   isLoading: boolean = false;
+  pageTitle = 'Planes de Mantenimiento';
 
   constructor(
     private apiService: ApiService,
@@ -29,7 +35,14 @@ export class PlanificacionListPage implements OnInit {
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController
-  ) {}
+  ) {
+    addIcons({
+      eyeOutline, createOutline, trashOutline, addCircleOutline,
+      calendarOutline, listOutline, timeOutline, shieldCheckmarkOutline,
+      powerOutline, documentTextOutline, checkboxOutline, carOutline,
+      calendarNumberOutline, settingsOutline
+    });
+  }
 
   ngOnInit() {}
 
@@ -37,33 +50,27 @@ export class PlanificacionListPage implements OnInit {
     this.cargarPlanificaciones();
   }
 
-    pageTitle = 'Planes de Mantenimiento';
-    
   async cargarPlanificaciones(event?: any) {
-    if (!event && this.planificaciones.length === 0) {
-      this.isLoading = true;
-    }
-    let loadingIndicator: HTMLIonLoadingElement | null = null;
-    if (!event && this.isLoading) {
-      loadingIndicator = await this.loadingCtrl.create({ message: 'Cargando planes...', duration: 15000, spinner: 'dots' });
+    this.isLoading = true;
+    let loadingIndicator: HTMLIonLoadingElement | undefined;
+    if (!event) {
+      loadingIndicator = await this.loadingCtrl.create({ message: 'Cargando planes...' });
       await loadingIndicator.present();
     }
 
     this.apiService.getPlanificaciones().subscribe({
       next: (data) => {
         this.planificaciones = data;
-        console.log('Planificaciones cargadas:', this.planificaciones);
+        this.isLoading = false;
+        loadingIndicator?.dismiss();
+        event?.target?.complete();
       },
       error: async (error) => {
         console.error('Error cargando planificaciones:', error);
-        this.mostrarToast(error.message || 'Error al cargar las planificaciones.', 'danger');
-      },
-      complete: () => {
-        if (event?.target) {
-          event.target.complete();
-        }
-        if(loadingIndicator) loadingIndicator.dismiss();
         this.isLoading = false;
+        loadingIndicator?.dismiss();
+        event?.target?.complete();
+        this.mostrarToast(error.message || 'Error al cargar las planificaciones.', 'danger');
       }
     });
   }
