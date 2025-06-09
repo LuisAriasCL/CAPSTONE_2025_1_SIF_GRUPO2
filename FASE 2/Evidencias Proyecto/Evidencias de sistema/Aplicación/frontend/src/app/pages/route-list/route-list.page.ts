@@ -1,23 +1,23 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, UpperCasePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent } from '@ionic/angular';
+import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent, ModalController } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router'; 
 import { addIcons } from 'ionicons';
 import { navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline, eyeOutline, createOutline, documentTextOutline, locationOutline, speedometerOutline, gitNetworkOutline } from 'ionicons/icons';
 
 import { ApiService, Route } from '../../services/api.service'; 
 import { SidebarComponent } from '../../componentes/sidebar/sidebar.component'; 
-import { SocketService } from '../../services/socket.service'; 
+import { SocketService } from '../../services/socket.service';
+import { RouteFormPage } from '../route-form/route-form.page';
 @Component({
   selector: 'app-route-list',
   templateUrl: './route-list.page.html',
   styleUrls: ['./route-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, SidebarComponent, RouterLink, UpperCasePipe, DecimalPipe] // Añadir imports
+  imports: [IonicModule, CommonModule, FormsModule, UpperCasePipe, DecimalPipe] // Imports necesarios para el template
 })
 export class RouteListPage implements OnInit {
-
   // Inyección de dependencias (estilo moderno)
   private apiService = inject(ApiService);
   private router = inject(Router);
@@ -25,6 +25,7 @@ export class RouteListPage implements OnInit {
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
   private socketService = inject(SocketService);
+  private modalController = inject(ModalController);
 
   // Propiedades del componente
   routes: Route[] = [];
@@ -85,17 +86,50 @@ export class RouteListPage implements OnInit {
       this.loadRoutes(event);
    }
 
-
   // --- Navegación ---
-  goToAddRoute() {
-    console.log('Navegando a /rutas/nueva');
-    this.router.navigateByUrl('/rutas/nueva'); // Cambiado de '/rutas/new' a '/rutas/nueva'
+  async goToAddRoute() {
+    console.log('Abriendo modal para crear nueva ruta');
+    
+    const modal = await this.modalController.create({
+      component: RouteFormPage,
+      backdropDismiss: false,
+      showBackdrop: true,
+      cssClass: 'route-form-modal'
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data?.routeCreated) {
+        console.log('Ruta creada exitosamente, recargando lista');
+        this.loadRoutes();
+        this.presentToast('Ruta creada exitosamente', 'success');
+      }
+    });
+
+    return await modal.present();
   }
-  
-  // Este método se llama desde el ion-item-option del lápiz
-  editRoute(id: number) {
-    console.log('Navegando a /rutas/edit/' + id);
-    this.router.navigate(['/rutas/edit', id]); 
+    // Este método se llama desde el ion-item-option del lápiz
+  async editRoute(id: number) {
+    console.log('Abriendo modal para editar ruta ID:', id);
+    
+    const modal = await this.modalController.create({
+      component: RouteFormPage,
+      backdropDismiss: false,
+      showBackdrop: true,
+      cssClass: 'route-form-modal',
+      componentProps: {
+        routeId: id,
+        isEditMode: true
+      }
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.data.routeCreated) {
+        console.log('Ruta editada exitosamente');
+        this.loadRoutes(); // Recargar la lista
+      }
+    });
+
+    return await modal.present();
   }
   startRouteSimulation(routeId: number, routeName: string) {
     console.log(`Solicitando iniciar simulación para Ruta ID: ${routeId}, Nombre: "${routeName}"`);
@@ -118,13 +152,29 @@ export class RouteListPage implements OnInit {
   }
   // --- Fin del método a añadir ---
 
+  // El método viewRouteDetail ahora también usa modal para consistencia
+  async viewRouteDetail(id: number) {
+    console.log('Abriendo modal para ver/editar detalle ruta:', id);
+    
+    const modal = await this.modalController.create({
+      component: RouteFormPage,
+      backdropDismiss: false,
+      showBackdrop: true,
+      cssClass: 'route-form-modal',
+      componentProps: {
+        routeId: id,
+        isEditMode: true
+      }
+    });
 
-  // El método viewRouteDetail puede quedarse como está o también navegar a editar/ver
-  viewRouteDetail(id: number) {
-     console.log('Navegando a ver/editar detalle ruta:', id);
-     // Podrías navegar a editar directamente también desde aquí
-     this.router.navigate(['/rutas/edit', id]);
-     // this.presentToast(`Funcionalidad "Ver Detalle ${id}" no implementada aún.`, 'warning'); // <--- QUITAR
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.data.routeCreated) {
+        console.log('Ruta actualizada exitosamente');
+        this.loadRoutes(); // Recargar la lista
+      }
+    });
+
+    return await modal.present();
   }
 
   // --- Eliminación ---

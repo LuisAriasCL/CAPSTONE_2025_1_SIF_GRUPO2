@@ -179,6 +179,46 @@ ion-alert {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Estilos para el modal de creación de rutas */
+/* -------------------------------------------------------------------------- */
+.route-form-modal {
+  .modal-wrapper {
+    width: 95vw;
+    max-width: 900px;
+    height: 90vh;
+    max-height: 800px;
+    border-radius: 12px;
+    
+    ion-content {
+      --padding-top: 0;
+      --padding-bottom: 0;
+    }
+    
+    ion-header {
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      
+      ion-toolbar {
+        --background: var(--ion-color-primary);
+        --color: white;
+        
+        ion-title {
+          font-weight: 600;
+        }
+        
+        ion-button {
+          --color: white;
+          
+          &:hover {
+            --background: rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* Estilos Adicionales */
 /* -------------------------------------------------------------------------- */
 
@@ -200,6 +240,34 @@ ion-header {
 #main-content {
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos para el modal de planificación */
+/* -------------------------------------------------------------------------- */
+.planificacion-form-modal {
+  --height: 90%;
+  --width: 95%;
+  --max-width: 800px;
+  --border-radius: 16px;
+  --backdrop-opacity: 0.6;
+}
+
+.planificacion-form-modal .modal-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.planificacion-form-modal ion-header {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .planificacion-form-modal {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+  }
 }
 
 

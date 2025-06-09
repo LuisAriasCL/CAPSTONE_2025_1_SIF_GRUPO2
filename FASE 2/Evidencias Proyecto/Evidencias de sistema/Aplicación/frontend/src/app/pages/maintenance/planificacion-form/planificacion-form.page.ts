@@ -1,39 +1,79 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; // Para *ngIf, *ngFor
 import { IonicModule } from '@ionic/angular';   // Para todos los componentes Ionic
-import { NavController, ToastController, LoadingController, AlertController } from '@ionic/angular';
+import { NavController, ToastController, LoadingController, AlertController, ModalController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
+import { addIcons } from 'ionicons';
+import { 
+  closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
+  closeCircleOutline 
+} from 'ionicons/icons';
 import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData } from '../../../services/api.service'; // Ajusta la ruta
 
 @Component({
   selector: 'app-planificacion-form',
   templateUrl: './planificacion-form.page.html',
   styleUrls: ['./planificacion-form.page.scss'],
-  standalone: true, // Indica que es un componente standalone
+  standalone: true,
   imports: [
-    CommonModule,        // Para directivas como *ngIf, *ngFor
-    ReactiveFormsModule, // Para FormGroup, FormControlName, FormArray, etc.
-    IonicModule,         // Importa TODOS los componentes de Ionic y directivas necesarias
-    // RouterModule // No es necesario aquí si solo usas ion-back-button y no routerLink
+    CommonModule,
+    ReactiveFormsModule,
+    IonicModule
   ]
 })
 export class PlanificacionFormPage implements OnInit {
+  @Input() planId?: number;
+  @Input() isEditMode: boolean = false;
+  @Input() isViewMode: boolean = false;
+  
   planForm!: FormGroup;
   vehiculosDisponibles: VehiculoAsignacionInfo[] = [];
   isSubmitted = false;
-
-  constructor(
+  pageTitle = 'Crear Planificación';  constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
     private navCtrl: NavController,
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController // Aunque no se usa directamente en el submit, es bueno tenerlo
-  ) {}
-
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController,
+    private route: ActivatedRoute
+  ) {
+    addIcons({
+      closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
+      closeCircleOutline
+    });
+  }
   ngOnInit() {
+    // Support for both modal parameters and route parameters
+    if (!this.planId) {
+      this.route.paramMap.subscribe(params => {
+        const id = params.get('id');
+        if (id) {
+          this.planId = parseInt(id);
+          this.isEditMode = true;
+        }
+      });
+    }
+
+    this.updatePageTitle();
     this.initForm();
     this.cargarVehiculos();
+    
+    if (this.planId && (this.isEditMode || this.isViewMode)) {
+      this.cargarPlanificacion();
+    }
+  }
+
+  updatePageTitle() {
+    if (this.isViewMode) {
+      this.pageTitle = 'Ver Planificación';
+    } else if (this.isEditMode) {
+      this.pageTitle = 'Editar Planificación';
+    } else {
+      this.pageTitle = 'Crear Planificación';
+    }
   }
 
   initForm() {
@@ -107,22 +147,25 @@ export class PlanificacionFormPage implements OnInit {
     await loading.present();
 
     const formData = this.planForm.value as PlanificacionMantenimientoData;
-    console.log('Datos del formulario a enviar al backend:', formData);
-
-    this.apiService.crearPlanificacion(formData).subscribe({
+    console.log('Datos del formulario a enviar al backend:', formData);    this.apiService.crearPlanificacion(formData).subscribe({
       next: async (response) => {
         await loading.dismiss();
         this.mostrarToast(`Planificación "${response.planificacion.descPlan}" creada exitosamente.`, 'success');
-        this.planForm.reset({
-          esPreventivo: true,
-          esActivoPlan: true,
-          vehiculosIds: [],
-        });
-        this.tareas.clear();
-        this.agregarTarea();
-        this.isSubmitted = false;
-        // Ajusta la ruta a tu lista de planificaciones, puede ser con tabs o directa
-        this.navCtrl.navigateRoot('/tabs/planificaciones', { animationDirection: 'back' });
+        
+        // Close modal if we're in modal mode, otherwise navigate
+        if (this.modalCtrl) {
+          await this.closeModal({ planificacionCreated: true });
+        } else {
+          this.planForm.reset({
+            esPreventivo: true,
+            esActivoPlan: true,
+            vehiculosIds: [],
+          });
+          this.tareas.clear();
+          this.agregarTarea();
+          this.isSubmitted = false;
+          this.navCtrl.navigateRoot('/tabs/planificaciones', { animationDirection: 'back' });
+        }
       },
       error: async (error) => {
         await loading.dismiss();
@@ -141,5 +184,26 @@ export class PlanificacionFormPage implements OnInit {
       buttons: [{ text: 'Cerrar', role: 'cancel' }]
     });
     toast.present();
+  }
+
+  async closeModal(data?: any) {
+    await this.modalCtrl.dismiss(data);
+  }
+
+  async cargarPlanificacion() {
+    if (!this.planId) return;
+
+    const loading = await this.loadingCtrl.create({ message: 'Cargando planificación...' });
+    await loading.present();
+
+    try {
+      // This method would need to be implemented in ApiService
+      // For now, we'll show a placeholder
+      await loading.dismiss();
+      this.mostrarToast('Función de carga de planificación pendiente de implementación', 'warning');
+    } catch (error) {
+      await loading.dismiss();
+      this.mostrarToast('Error al cargar la planificación', 'danger');
+    }
   }
 }

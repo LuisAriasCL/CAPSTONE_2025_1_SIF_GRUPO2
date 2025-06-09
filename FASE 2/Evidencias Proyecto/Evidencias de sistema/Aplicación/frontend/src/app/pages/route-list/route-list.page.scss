@@ -353,3 +353,16 @@ ion-label {
     margin-right: 8px;
   }
 }
+
+// Estilos para el modal de creación de rutas
+.route-form-modal {
+  --width: 90%;
+  --max-width: 800px;
+  --height: 90%;
+  --max-height: 800px;
+  --border-radius: 12px;
+
+  ion-modal {
+    --backdrop-opacity: 0.5;
+  }
+}

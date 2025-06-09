@@ -1,16 +1,16 @@
 // src/app/pages/route-form/route-form.page.ts
 
-import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common'; // <--- ASEGÚRATE DE IMPORTAR DecimalPipe
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController } from '@ionic/angular';
+import { IonicModule, LoadingController, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as L from 'leaflet';
 // Importa OsrmRouteData y asegúrate que la interfaz Route incluya kilometrosRuta
 import { ApiService, Route, OsrmRouteData } from '../../services/api.service'; // <--- OsrmRouteData AÑADIDO
 import { addIcons } from 'ionicons';
 // Añade el icono para la distancia, por ejemplo, speedometerOutline
-import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline, speedometerOutline } from 'ionicons/icons'; // <--- speedometerOutline AÑADIDO
+import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline, speedometerOutline, close } from 'ionicons/icons'; // <--- close AÑADIDO
 
 @Component({
   selector: 'app-route-form',
@@ -28,7 +28,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
 
   // --- Inyecciones ---
   private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
+    private apiService = inject(ApiService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private loadingCtrl = inject(LoadingController);
@@ -36,11 +36,11 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
   private changeDetectorRef = inject(ChangeDetectorRef);
-
+  private modalCtrl = inject(ModalController);
   // --- Propiedades del formulario y estado ---
+  @Input() routeId: number | null = null; // Para recibir ID desde modal
+  @Input() isEditMode: boolean = false;   // Para recibir modo desde modal
   routeForm!: FormGroup;
-  isEditMode = false;
-  routeId: number | null = null;
   pageTitle = 'Nueva Ruta';
   isLoading = false;
   isSubmitted = false;
@@ -60,26 +60,31 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   // --- NUEVAS Propiedades para Distancia y Duración ---
   public calculatedDistance: number | null = null; // En KM
   public calculatedDuration: number | null = null; // En segundos (opcional para mostrar)
-
   constructor() {
     addIcons({
       save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline,
-      speedometerOutline // <--- Icono para la distancia añadido
+      speedometerOutline, close // <--- Icono close añadido
     });
   }
-
   ngOnInit() {
     this.routeForm = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
     });
 
-    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.isEditMode = true;
-      this.routeId = parseInt(idParam, 10);
+    // Verificar si se recibieron parámetros via modal (Input properties)
+    if (this.routeId && this.isEditMode) {
       this.pageTitle = 'Editar Ruta';
       this.loadRouteData();
+    } else {
+      // Fallback: verificar parámetros de ruta (para navegación directa)
+      const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+      if (idParam) {
+        this.isEditMode = true;
+        this.routeId = parseInt(idParam, 10);
+        this.pageTitle = 'Editar Ruta';
+        this.loadRouteData();
+      }
     }
   }
 
@@ -143,7 +148,6 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.destinoMarker) { this.routeMap.removeLayer(this.destinoMarker); this.destinoMarker = null; }
     if (this.routePolyline) { this.routeMap.removeLayer(this.routePolyline); this.routePolyline = null; }
   }
-
   private handleMapClick(latlng: L.LatLng): void {
     const coords: L.LatLngTuple = [latlng.lat, latlng.lng];
     this.clearCalculatedRouteAndDistance(); // MODIFICADO: Limpiar ruta y distancia
@@ -156,6 +160,9 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       this.destinoCoords = coords;
       this.destinoMarker = L.marker(coords, { draggable: true, title: "Destino" })
         .addTo(this.routeMap).on('dragend', (e) => this.handleMarkerDragEnd(e, 'destino'));
+      
+      // NUEVO: Calcular ruta automáticamente cuando se establece el destino
+      this.calculateRouteAutomatically();
     } else { // Reiniciar
       this.origenCoords = coords;
       if (this.origenMarker) this.origenMarker.setLatLng(coords);
@@ -163,12 +170,17 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     }
      this.changeDetectorRef.detectChanges();
   }
-
   private handleMarkerDragEnd(event: L.DragEndEvent, type: 'origen' | 'destino'): void {
     const newCoords: L.LatLngTuple = [event.target.getLatLng().lat, event.target.getLatLng().lng];
     if (type === 'origen') this.origenCoords = newCoords;
     else this.destinoCoords = newCoords;
     this.clearCalculatedRouteAndDistance(); // MODIFICADO: Limpiar ruta y distancia
+    
+    // NUEVO: Si ambos puntos están definidos, calcular ruta automáticamente
+    if (this.origenCoords && this.destinoCoords) {
+      this.calculateRouteAutomatically();
+    }
+    
     this.changeDetectorRef.detectChanges();
   }
 
@@ -231,6 +243,57 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         this.changeDetectorRef.detectChanges(); // Actualizar la UI
       },
       error: async (err) => { /* ... tu manejo de error ... */ }
+    });
+  }
+
+  // NUEVO: Método para calcular ruta automáticamente
+  private async calculateRouteAutomatically() {
+    if (!this.origenCoords || !this.destinoCoords) return;
+    
+    this.isCalculatingRoute = true;
+    this.routeCalculationError = null;
+    this.calculatedDistance = null;
+    this.calculatedDuration = null;
+
+    this.apiService.getRoutePath(this.origenCoords!, this.destinoCoords!).subscribe({
+      next: async (osrmResponse: OsrmRouteData | null) => {
+        this.isCalculatingRoute = false;
+        if (osrmResponse && osrmResponse.points && osrmResponse.points.length > 1) {
+          this.calculatedPoints = osrmResponse.points;
+          
+          if (typeof osrmResponse.distance === 'number') {
+            this.calculatedDistance = parseFloat((osrmResponse.distance / 1000).toFixed(2));
+          }
+          if (typeof osrmResponse.duration === 'number') {
+            this.calculatedDuration = osrmResponse.duration;
+          }
+
+          if (this.routePolyline) { this.routeMap.removeLayer(this.routePolyline); }
+          this.routePolyline = L.polyline(osrmResponse.points, { color: 'blue' }).addTo(this.routeMap);
+          this.routeMap.fitBounds(this.routePolyline.getBounds().pad(0.1));          this.presentToast(`Ruta calculada: ${this.calculatedDistance !== null ? this.calculatedDistance + ' km' : ''}`, "success");
+            // NUEVO: Solo mostrar mensaje de que la ruta está lista para guardar
+          if (this.routeForm.valid && this.routeForm.value.nombre && this.routeForm.value.nombre.trim()) {
+            this.presentToast('Ruta lista para crear. Presiona "CREAR RUTA" para guardar.', "medium");
+          }
+        } else {
+          this.calculatedPoints = null;
+          this.calculatedDistance = null;
+          this.calculatedDuration = null;
+          this.routeCalculationError = 'No se pudo calcular una ruta válida desde OSRM.';
+          this.presentToast(this.routeCalculationError, "danger");
+        }
+        this.changeDetectorRef.detectChanges();
+      },
+      error: async (error) => {
+        this.isCalculatingRoute = false;
+        this.calculatedPoints = null;
+        this.calculatedDistance = null;
+        this.calculatedDuration = null;
+        this.routeCalculationError = 'Error al conectar con servicio de rutas.';
+        console.error("Error cálculo OSRM:", error);
+        this.presentToast(this.routeCalculationError, "danger");
+        this.changeDetectorRef.detectChanges();
+      }
     });
   }
 
@@ -308,12 +371,15 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
 
         const saveObservable = this.isEditMode
             ? this.apiService.updateRoute(this.routeId!, routeData)
-            : this.apiService.createRoute(routeData);
-
-        saveObservable.subscribe({
+            : this.apiService.createRoute(routeData);        saveObservable.subscribe({
             next: async (savedRoute) => {
                 await this.presentToast(`Ruta ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
-                this.navCtrl.navigateBack('/rutas'); // O tu ruta de lista
+                // Si es modal, cerrar con datos de éxito
+                if (this.modalCtrl) {
+                  this.modalCtrl.dismiss({ routeCreated: true }, 'success');
+                } else {
+                  this.navCtrl.navigateBack('/rutas'); // Fallback para navegación normal
+                }
             },
             error: async (error) => {
                 console.error("Error guardando ruta:", error);
@@ -328,9 +394,11 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         });
     } catch (error) {
         if (loading) await loading.dismiss();
-        console.error("Error inesperado en saveRoute:", error);
-        await this.presentAlert('Error', 'Ocurrió un error inesperado al guardar.');
-    }
+        console.error("Error inesperado en saveRoute:", error);        await this.presentAlert('Error', 'Ocurrió un error inesperado al guardar.');
+    }  }
+
+  async closeModal() {
+    await this.modalCtrl.dismiss();
   }
 
   async presentAlert(header: string, message: string) {

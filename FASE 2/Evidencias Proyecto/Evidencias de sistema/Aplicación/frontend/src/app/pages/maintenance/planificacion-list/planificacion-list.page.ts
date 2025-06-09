@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule, NavController, AlertController, ToastController, LoadingController, IonItemSliding } from '@ionic/angular';
+import { IonicModule, NavController, AlertController, ToastController, LoadingController, IonItemSliding, ModalController } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { 
@@ -11,6 +11,7 @@ import {
 } from 'ionicons/icons';
 
 import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service';
+import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.page';
 
 @Component({
   selector: 'app-planificacion-list',
@@ -29,13 +30,13 @@ export class PlanificacionListPage implements OnInit {
   planificaciones: PlanificacionMantenimientoResumen[] = [];
   isLoading: boolean = false;
   pageTitle = 'Planes de Mantenimiento';
-
   constructor(
     private apiService: ApiService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private modalCtrl: ModalController
   ) {
     addIcons({
       eyeOutline, createOutline, trashOutline, addCircleOutline,
@@ -117,9 +118,19 @@ export class PlanificacionListPage implements OnInit {
     });
     await alert.present();
   }
+  async irACrearPlan() {
+    const modal = await this.modalCtrl.create({
+      component: PlanificacionFormPage,
+      cssClass: 'planificacion-form-modal'
+    });
 
-  irACrearPlan() {
-    this.navCtrl.navigateForward('/planificacion-form');
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.data.planificacionCreated) {
+        this.cargarPlanificaciones();
+      }
+    });
+
+    return await modal.present();
   }
 
   private async closeAllSlidingItems(): Promise<void> {
@@ -128,17 +139,39 @@ export class PlanificacionListPage implements OnInit {
       await Promise.all(items.map(item => item.closeOpened()));
     }
   }
-
   async verDetalle(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
-    console.log('Ver detalle del plan:', plan);
-    this.mostrarToast(`Detalle para plan "${plan.descPlan}" (funcionalidad no implementada).`, 'medium');
-  }
+    
+    const modal = await this.modalCtrl.create({
+      component: PlanificacionFormPage,
+      componentProps: {
+        planId: plan.idPlan,
+        isViewMode: true
+      },
+      cssClass: 'planificacion-form-modal'
+    });
 
+    return await modal.present();
+  }
   async editarPlan(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
-    console.log('Editar plan:', plan);
-    this.mostrarToast(`Editar plan "${plan.descPlan}" (funcionalidad no implementada).`, 'medium');
+    
+    const modal = await this.modalCtrl.create({
+      component: PlanificacionFormPage,
+      componentProps: {
+        planId: plan.idPlan,
+        isEditMode: true
+      },
+      cssClass: 'planificacion-form-modal'
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.data.planificacionUpdated) {
+        this.cargarPlanificaciones();
+      }
+    });
+
+    return await modal.present();
   }
 
   async confirmarEliminar(plan: PlanificacionMantenimientoResumen) {
