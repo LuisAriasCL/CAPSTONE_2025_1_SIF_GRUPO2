@@ -10,6 +10,16 @@ module.exports = (sequelize) => {
       field: 'id_det',
       comment: 'ID del detalle de la OT'
     },
+    usuario_id_usu_tecnico: {
+  type: DataTypes.INTEGER,
+  allowNull: true,  // El técnico puede no estar asignado inicialmente
+  field: 'usuario_id_usu_tecnico',
+  references: {
+    model: 'usuarios', // Asegúrate de que esto coincida con el nombre de tu tabla de usuarios
+    key: 'id_usu'      // El campo clave primaria de la tabla de usuarios
+  },
+  comment: 'ID del usuario asignado como técnico a esta tarea'
+},
     desc_det: {
       type: DataTypes.TEXT,
       allowNull: false,

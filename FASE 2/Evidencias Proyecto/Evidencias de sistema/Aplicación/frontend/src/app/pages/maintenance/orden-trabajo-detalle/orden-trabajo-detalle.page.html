@@ -4,7 +4,14 @@
       <ion-back-button defaultHref="/orden-trabajo-list"></ion-back-button>
     </ion-buttons>
     <ion-title>OT #{{ ordenTrabajo?.id_ot }}</ion-title>
-  </ion-toolbar>
+    
+    <ion-buttons slot="end" *ngIf="ordenTrabajo?.encargado">
+      <ion-chip color="primary" outline>
+        <ion-icon name="person-circle"></ion-icon>
+       <ion-label>{{ ordenTrabajo?.encargado?.pri_nom_usu }}</ion-label>
+      </ion-chip>
+    </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
@@ -38,51 +45,67 @@
             <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
             <ion-label>
               <h3>Solicitante</h3>
-              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'No' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || 'asignado' }}</p>
+              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu }} {{ ordenTrabajo.solicitante?.pri_ape_usu }}</p>
             </ion-label>
           </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
 
-    <ion-list-header>
-      <ion-label>Tareas a Realizar</ion-label>
-    </ion-list-header>
-
-    <ion-card *ngFor="let tarea of ordenTrabajo.detalles">
-      <ion-item lines="none">
-        <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
-        <ion-label class="ion-text-wrap">
-          <p>{{ tarea.desc_det }}</p>
-        </ion-label>
-        <ion-checkbox slot="end" [(ngModel)]="tarea.checklist"></ion-checkbox>
-      </ion-item>
-      <ion-item lines="none">
+    <div *ngIf="ordenTrabajo.estado_ot !== 'completado'">
+      <ion-list-header>
+        <ion-label>Tareas a Realizar</ion-label>
+      </ion-list-header>
+      <ion-card *ngFor="let tarea of ordenTrabajo.detalles">
+        <ion-item lines="none">
+          <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <p>{{ tarea.desc_det }}</p>
+          </ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="tarea.checklist" [disabled]="ordenTrabajo.estado_ot !== 'en_progreso'"></ion-checkbox>
+        </ion-item>
+        <ion-item lines="full" *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
           <ion-button (click)="abrirSelectorTecnicos(tarea)" fill="clear" size="small">
             <ion-icon name="person-add-outline" slot="start"></ion-icon>
             Asignar Técnico
           </ion-button>
           <ion-label slot="end" class="ion-text-right">
             <p>
-              Técnico: 
+              Técnico:
               <span *ngIf="tarea.tecnico; else noAsignado">
                 {{ tarea.tecnico.pri_nom_usu }} {{ tarea.tecnico.pri_ape_usu }}
               </span>
               <ng-template #noAsignado>Sin asignar</ng-template>
             </p>
           </ion-label>
-      </ion-item>
-    </ion-card>
+        </ion-item>
+      </ion-card>
+    </div>
+
+    <div *ngIf="ordenTrabajo.estado_ot === 'completado'" class="ion-text-center ion-padding">
+      <ion-icon name="checkmark-done-circle" color="success" style="font-size: 4rem;"></ion-icon>
+      <p>Esta Orden de Trabajo fue finalizada.</p>
+    </div>
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border">
-    <ion-toolbar>
-        <div class="ion-padding">
-            <ion-button (click)="guardarCambios()" expand="block" color="success">
-                <ion-icon name="save-outline" slot="start"></ion-icon>
-                Guardar Cambios
-            </ion-button>
-        </div>
-    </ion-toolbar>
+<ion-footer class="ion-no-border" *ngIf="!isLoading && ordenTrabajo">
+  <ion-toolbar>
+    <div class="ion-padding">
+      <ion-button *ngIf="ordenTrabajo.estado_ot === 'solicitado'" (click)="iniciarOrdenDeTrabajo()" expand="block" color="primary">
+        <ion-icon name="play-circle-outline" slot="start"></ion-icon>
+        Iniciar Orden de Trabajo
+      </ion-button>
+      <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
+        <ion-button (click)="guardarProgresoTareas()" expand="block" color="secondary">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          Guardar Progreso
+        </ion-button>
+        <ion-button (click)="finalizarOrdenDeTrabajo()" expand="block" color="success" class="ion-margin-top">
+          <ion-icon name="flag-outline" slot="start"></ion-icon>
+          Finalizar Orden de Trabajo
+        </ion-button>
+      </div>
+    </div>
+  </ion-toolbar>
 </ion-footer>

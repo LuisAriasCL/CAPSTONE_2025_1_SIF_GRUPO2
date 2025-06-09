@@ -193,9 +193,15 @@ if (db.OrdenTrabajo && db.Usuario) {
 
 // Relación: DetalleOt con Usuario (Técnico asignado)
 if (db.DetalleOt && db.Usuario) {
+    // Una tarea (DetalleOt) pertenece a un usuario (el técnico)
     db.DetalleOt.belongsTo(db.Usuario, {
         foreignKey: { name: 'usuarioIdUsuTecnico', field: 'usuario_id_usu_tecnico' },
         as: 'tecnico'
+    });
+    // Y la relación inversa: Un usuario (técnico) puede tener muchas tareas
+    db.Usuario.hasMany(db.DetalleOt, {
+        foreignKey: { name: 'usuarioIdUsuTecnico', field: 'usuario_id_usu_tecnico' },
+        as: 'tareasAsignadas' // Usamos un alias diferente para evitar conflictos
     });
 }
 

@@ -242,10 +242,12 @@ generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ messa
 getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
   return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
 }
-actualizarDetallesOt(detalles: { id_det: number, checklist: boolean, usuarioIdUsuTecnico: number | null }[]): Observable<{ message: string }> {
-  const url = `${this.apiUrl}/ordenes-trabajo/detalles`;
-  return this.http.put<{ message: string }>(url, detalles);
+actualizarDetallesOt(idOt: number, detalles: any[]): Observable<any> {
+  // El 'idOt' se usa para construir la URL del endpoint.
+  // El array 'detalles' se envía como el cuerpo (body) de la petición PUT.
+  return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, detalles);
 }
+
 // GET /api/ordenes-trabajo/:id
 getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
   return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
