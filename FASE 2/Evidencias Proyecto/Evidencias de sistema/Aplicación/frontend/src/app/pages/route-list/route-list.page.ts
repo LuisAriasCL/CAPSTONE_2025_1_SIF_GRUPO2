@@ -1,10 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, UpperCasePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router'; 
 import { addIcons } from 'ionicons';
-import { navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline } from 'ionicons/icons';
+import { navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline, eyeOutline, createOutline, documentTextOutline, locationOutline, speedometerOutline, gitNetworkOutline } from 'ionicons/icons';
 
 import { ApiService, Route } from '../../services/api.service'; 
 import { SidebarComponent } from '../../componentes/sidebar/sidebar.component'; 
@@ -14,7 +14,7 @@ import { SocketService } from '../../services/socket.service';
   templateUrl: './route-list.page.html',
   styleUrls: ['./route-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, SidebarComponent, RouterLink] // Añadir imports
+  imports: [IonicModule, CommonModule, FormsModule, SidebarComponent, RouterLink, UpperCasePipe, DecimalPipe] // Añadir imports
 })
 export class RouteListPage implements OnInit {
 
@@ -31,7 +31,10 @@ export class RouteListPage implements OnInit {
   isLoading = false;
 
   constructor() {
-    addIcons({ navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline }); // Registra todos los usados en el HTML de esta página
+    addIcons({ 
+      navigateOutline, pencilOutline, trashOutline, addCircleOutline, add, playCircleOutline,
+      eyeOutline, createOutline, documentTextOutline, locationOutline, speedometerOutline, gitNetworkOutline
+    }); // Registra todos los usados en el HTML de esta página
 }
 
   ngOnInit() {
@@ -85,8 +88,8 @@ export class RouteListPage implements OnInit {
 
   // --- Navegación ---
   goToAddRoute() {
-    console.log('Navegando a /rutas/new');
-    this.router.navigateByUrl('/rutas/new'); 
+    console.log('Navegando a /rutas/nueva');
+    this.router.navigateByUrl('/rutas/nueva'); // Cambiado de '/rutas/new' a '/rutas/nueva'
   }
   
   // Este método se llama desde el ion-item-option del lápiz
@@ -181,4 +184,4 @@ export class RouteListPage implements OnInit {
      toast.present();
   }
 
-} 
+}

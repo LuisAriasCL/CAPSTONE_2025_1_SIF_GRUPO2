@@ -1,15 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  IonSplitPane,
-  IonMenu,
-  IonContent,
   IonList,
   IonMenuToggle,
   IonItem,
   IonIcon,
   IonLabel,
-  IonRouterOutlet,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -23,12 +19,15 @@ import {
   navigateOutline,
   warningOutline,
   mapOutline,
-  listOutline 
+  businessOutline,
 } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
 
-
+/**
+ * Componente de navegación lateral.
+ * Contiene solo la lista de navegación principal.
+ */
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
@@ -37,35 +36,30 @@ import { AuthService } from '../../services/auth.service';
   imports: [
     CommonModule,
     RouterLink,
-    IonSplitPane,
-    IonMenu,
-    IonContent,
     IonList,
     IonMenuToggle,
     IonItem,
     IonIcon,
     IonLabel,
-    IonRouterOutlet,
   ],
 })
 export class SidebarComponent {
  
   public selectedIndex = 0;
-
-
+  /**
+   * Opciones de navegación para la aplicación.
+   */
   public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
-    { title: 'Reportes', url: '/reportes', icon: 'newspaper' },
-    { title: 'Planes de Mnt.', url: '/planificacion-list', icon: 'build' },
-  
-    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'list' },
-   
-    { title: 'Combustible', url: '/combustible', icon: 'flame' },
+    // { title: 'Reportes', url: '/reportes', icon: 'newspaper' }, // Página no existe aún
+    { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
+    // { title: 'Combustible', url: '/combustible', icon: 'flame' }, // Página no existe aún
     { title: 'Vehículos', url: '/vehiculos', icon: 'car' },
-    { title: 'Conductores', url: '/conductores', icon: 'people' },
+    // { title: 'Conductores', url: '/conductores', icon: 'people' }, // Página no existe aún
     { title: 'Asignación de recorridos', url: '/asignacion-list', icon: 'navigate' },
-    { title: 'Incidentes', url: '/siniestros', icon: 'warning' },
+    // { title: 'Incidentes', url: '/siniestros', icon: 'warning' }, // Página no existe aún
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'map' },
+    { title: 'Recorridos', url: '/recorridos', icon: 'navigate' },
   ];
 
   private authService = inject(AuthService);
@@ -82,7 +76,7 @@ export class SidebarComponent {
       navigateOutline,
       warningOutline,
       mapOutline,
-      listOutline 
+      businessOutline,
     });
   }
 }
