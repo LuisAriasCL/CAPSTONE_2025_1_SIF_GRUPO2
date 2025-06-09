@@ -1,11 +1,8 @@
-// backend/controllers/ordenTrabajoController.js
 const db = require('../models');
 const sequelize = db.sequelize;
 const { OrdenTrabajo, DetalleOt, PlanificacionMantenimiento, Vehiculo, VehiculoPlanificacion, Usuario, TareaPlanificacion } = db;
 
-// ... (El código para generarOtDesdePlan, etc. se queda como está) ...
 exports.generarOtDesdePlan = async (req, res) => {
-    // Tu código funcional para generar OT va aquí...
     const { id_plan, id_vehi, id_usuario_solicitante } = req.body;
 
     if (!id_plan || !id_vehi || !id_usuario_solicitante) {
@@ -66,7 +63,6 @@ exports.generarOtDesdePlan = async (req, res) => {
 };
 
 exports.listarOrdenesTrabajo = async (req, res) => {
-    // Tu código funcional para listar OTs va aquí...
     try {
         const ordenes = await OrdenTrabajo.findAll({
             include: [
@@ -82,8 +78,6 @@ exports.listarOrdenesTrabajo = async (req, res) => {
     }
 };
 
-
-// --- FUNCIÓN CORREGIDA Y MÁS SEGURA ---
 exports.getOrdenTrabajoPorId = async (req, res) => {
   const { id } = req.params;
   try {
@@ -126,7 +120,7 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
 };
 
 exports.actualizarDetallesOt = async (req, res) => {
-    // Espera un array: [{ id_det: 1, checklist: true, usuarioIdUsuTecnico: 5 }, ...]
+    const { id } = req.params;
     const detallesParaActualizar = req.body;
 
     if (!Array.isArray(detallesParaActualizar)) {
@@ -136,16 +130,17 @@ exports.actualizarDetallesOt = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         for (const detalle of detallesParaActualizar) {
-            await DetalleOt.update(
-                {
-                    checklist: detalle.checklist,
-                    // Usamos el nombre correcto de la foreignKey que confirmaste
-                    usuarioIdUsuTecnico: detalle.usuarioIdUsuTecnico
-                },
-                { where: { id_det: detalle.id_det }, transaction: t }
-            );
+            await DetalleOt.update({
+                checklist: detalle.checklist,
+                usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico
+            }, { 
+                where: { 
+                    id_det: detalle.id_det,
+                    orden_trabajo_id_ot: id 
+                }, 
+                transaction: t 
+            });
         }
-
         await t.commit();
         res.status(200).json({ message: 'Cambios guardados con éxito.' });
     } catch (error) {
@@ -153,46 +148,37 @@ exports.actualizarDetallesOt = async (req, res) => {
         console.error('Error al actualizar los detalles de la OT:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
-    exports.actualizarEstadoOt = async (req, res) => {
-  const { id } = req.params;
-  const { estado_ot, usuario_id_usu_encargado } = req.body; // Recibimos el nuevo estado y opcionalmente el ID del encargado
-
-  // Validación básica
-  if (!estado_ot) {
-    return res.status(400).json({ message: 'El campo estado_ot es requerido.' });
-  }
-
-  try {
-    const ordenTrabajo = await OrdenTrabajo.findByPk(id);
-
-    if (!ordenTrabajo) {
-      return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
-    }
-
-    // Preparamos los campos a actualizar
-    const camposAActualizar = {
-      estado_ot: estado_ot
-    };
-
-    // Si el estado es 'en_progreso' y se proporciona un encargado, lo asignamos.
-    // Esto coincide con el flujo del Mockup donde al "Iniciar OT" se asigna el supervisor.
-    if (estado_ot === 'en_progreso' && usuario_id_usu_encargado) {
-      camposAActualizar.usuario_id_usu_encargado = usuario_id_usu_encargado;
-    }
-    
-    // Si el estado es 'completado', actualizamos la fecha de finalización.
-    if (estado_ot === 'completado') {
-        camposAActualizar.fec_fin_ot = new Date();
-    }
-
-
-    await ordenTrabajo.update(camposAActualizar);
-
-    res.json({ message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', ordenTrabajo });
-
-  } catch (error) {
-    console.error('Error al actualizar el estado de la OT:', error);
-    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
-  }
 };
+
+exports.actualizarEstadoOt = async (req, res) => {
+    const { id } = req.params;
+    const { estado_ot, usuario_id_usu_encargado } = req.body;
+
+    if (!estado_ot) {
+        return res.status(400).json({ message: 'El campo estado_ot es requerido.' });
+    }
+
+    try {
+        const ordenTrabajo = await OrdenTrabajo.findByPk(id);
+        if (!ordenTrabajo) {
+            return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
+        }
+
+        const camposAActualizar = { estado_ot: estado_ot };
+
+        if (estado_ot === 'en_progreso' && usuario_id_usu_encargado) {
+            camposAActualizar.usuario_id_usu_encargado = usuario_id_usu_encargado;
+        }
+        
+        if (estado_ot === 'completado') {
+            camposAActualizar.fec_fin_ot = new Date();
+        }
+
+        await ordenTrabajo.update(camposAActualizar);
+        res.json({ message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', ordenTrabajo });
+
+    } catch (error) {
+        console.error('Error al actualizar el estado de la OT:', error);
+        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
 };

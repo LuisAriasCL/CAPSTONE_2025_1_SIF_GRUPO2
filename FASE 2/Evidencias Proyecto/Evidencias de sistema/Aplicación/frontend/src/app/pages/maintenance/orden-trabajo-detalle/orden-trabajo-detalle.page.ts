@@ -1,16 +1,19 @@
+// frontend/src/app/pages/maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page.ts
+
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController, LoadingController, AlertController, ToastController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, OrdenTrabajoDetalle, DetalleOtData, UsuarioResumen } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-orden-trabajo-detalle',
   templateUrl: './orden-trabajo-detalle.page.html',
   styleUrls: ['./orden-trabajo-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DatePipe, TitleCasePipe]
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class OrdenTrabajoDetallePage implements OnInit {
 
@@ -20,19 +23,17 @@ export class OrdenTrabajoDetallePage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private apiService: ApiService,
+    private authService: AuthService,
     private navCtrl: NavController,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController
   ) { }
 
-  ngOnInit() {
-    // No cargamos datos aquí para evitar dobles llamadas.
-  }
+  ngOnInit() { }
 
-  // Usamos ionViewWillEnter para asegurarnos de que los datos se recarguen
-  // cada vez que el usuario entre a la página.
   ionViewWillEnter() {
     this.cargarDatosDePagina();
   }
@@ -43,21 +44,11 @@ export class OrdenTrabajoDetallePage implements OnInit {
       this.navCtrl.back();
       return;
     }
-
     this.isLoading = true;
-    
-    // Llamamos al API para obtener los datos frescos de la OT
     this.apiService.getOrdenTrabajoById(+idOt).subscribe({
       next: (data) => {
-        // --- PUNTO DE DIAGNÓSTICO CLAVE ---
-        // Esto nos mostrará en la consola del navegador el objeto completo que llega del backend.
-        // Si aquí 'solicitante' es null, el problema está 100% en el backend.
-        console.log('Datos recibidos del backend para la OT:', data);
-        
         this.ordenTrabajo = data;
         this.isLoading = false;
-        
-        // Cargamos los técnicos solo después de tener los detalles de la OT
         this.cargarTecnicos();
       },
       error: (error) => {
@@ -75,6 +66,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
     });
   }
 
+  // ===== LÓGICA COMPLETA Y FUNCIONAL PARA SELECCIONAR TÉCNICOS =====
   async abrirSelectorTecnicos(tarea: DetalleOtData) {
     if (this.tecnicos.length === 0) {
       this.mostrarToast('No hay técnicos disponibles para asignar.', 'warning');
@@ -104,23 +96,55 @@ export class OrdenTrabajoDetallePage implements OnInit {
     await alert.present();
   }
 
-  async guardarCambios() {
+  // ===== LÓGICA COMPLETA Y FUNCIONAL PARA EL CICLO DE VIDA DE LA OT =====
+  async iniciarOrdenDeTrabajo() {
+  if (!this.ordenTrabajo) return;
+
+  // --- ASEGÚRATE DE QUE ESTA LÍNEA USE TU FUNCIÓN ---
+  const currentUser = this.authService.getCurrentUser();
+  // --- FIN DE LA LÍNEA CRÍTICA ---
+
+  if (!currentUser) {
+    this.mostrarToast('No se pudo identificar al usuario actual.', 'danger');
+    return;
+  }
+
+  const alert = await this.alertCtrl.create({
+    header: 'Iniciar Orden de Trabajo',
+    message: `¿Confirmas iniciar la OT #${this.ordenTrabajo.id_ot}? Serás asignado como encargado.`,
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Sí, Iniciar',
+        handler: () => {
+          // Aquí usamos la propiedad correcta 'idUsu' de tu interfaz UserInfo
+          this.apiService.actualizarEstadoOt(this.ordenTrabajo!.id_ot, 'en_progreso', currentUser.idUsu).subscribe({
+            next: () => {
+              this.mostrarToast('Orden de Trabajo iniciada.', 'success');
+              this.cargarDatosDePagina();
+            },
+            error: (err) => this.mostrarToast('Error al iniciar la OT.', 'danger')
+          });
+        }
+      }
+    ]
+  });
+  await alert.present();
+}
+  
+  async guardarProgresoTareas() {
     if (!this.ordenTrabajo || !this.ordenTrabajo.detalles) { return; }
-
-    const loading = await this.loadingCtrl.create({ message: 'Guardando...' });
+    const loading = await this.loadingCtrl.create({ message: 'Guardando progreso...' });
     await loading.present();
-
     const detallesParaActualizar = this.ordenTrabajo.detalles.map(t => ({
       id_det: t.id_det,
       checklist: t.checklist,
-      usuarioIdUsuTecnico: t.tecnico ? t.tecnico.id_usu : null
+      usuario_id_usu_tecnico: t.tecnico ? t.tecnico.id_usu : null
     }));
-
-    this.apiService.actualizarDetallesOt(detallesParaActualizar).subscribe({
+    this.apiService.actualizarDetallesOt(this.ordenTrabajo.id_ot, detallesParaActualizar).subscribe({
       next: async () => {
         await loading.dismiss();
-        this.mostrarToast('Cambios guardados con éxito.', 'success');
-        this.navCtrl.back();
+        this.mostrarToast('Progreso guardado con éxito.', 'success');
       },
       error: async (err) => {
         await loading.dismiss();
@@ -129,15 +153,41 @@ export class OrdenTrabajoDetallePage implements OnInit {
     });
   }
 
+  async finalizarOrdenDeTrabajo() {
+    if (!this.ordenTrabajo) return;
+    const todasCompletas = this.ordenTrabajo.detalles.every(t => t.checklist);
+    if (!todasCompletas) {
+      this.mostrarToast('Debes completar todas las tareas para poder finalizar la OT.', 'warning');
+      return;
+    }
+    const alert = await this.alertCtrl.create({
+      header: 'Finalizar Orden de Trabajo',
+      message: '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Sí, Finalizar',
+          handler: () => {
+            this.apiService.actualizarEstadoOt(this.ordenTrabajo!.id_ot, 'completado').subscribe({
+              next: () => {
+                this.mostrarToast('Orden de Trabajo finalizada.', 'success');
+                this.router.navigate(['/orden-trabajo-list']);
+              },
+              error: (err) => this.mostrarToast('Error al finalizar la OT.', 'danger')
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   getColorForStatus(estado: string | undefined): string {
     if (!estado) return 'medium';
-    switch (estado) {
-      case 'completado': return 'success';
-      case 'en_progreso': return 'warning';
-      case 'solicitado': return 'primary';
-      case 'cancelado': return 'danger';
-      default: return 'medium';
-    }
+    const colores: { [key: string]: string } = {
+      solicitado: 'primary', en_progreso: 'warning', completado: 'success', cancelado: 'danger'
+    };
+    return colores[estado] || 'medium';
   }
 
   async mostrarToast(mensaje: string, color: string = 'dark', duracion: number = 2000) {
