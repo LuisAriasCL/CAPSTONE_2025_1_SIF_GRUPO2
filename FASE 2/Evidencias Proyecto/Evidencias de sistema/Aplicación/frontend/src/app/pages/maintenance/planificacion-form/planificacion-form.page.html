@@ -15,7 +15,7 @@
 <ion-content class="ion-padding ultra-compact">  <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
       <div class="input-wrapper">
         <ion-label position="floating">Nombre del Mantenimiento <ion-text color="danger">*</ion-text></ion-label>
-        <ion-textarea class="bordered-textarea" formControlName="descPlan" rows="3" autoGrow="true" maxlength="255" [readonly]="isViewMode"></ion-textarea>
+        <ion-textarea class="bordered-textarea" formControlName="descPlan" rows="3" autoGrow="true" maxlength="255" [readonly]="isViewMode" placeholder="Ej: Mantenimiento General de Vehículos Pesados"></ion-textarea>
       </div>
       <div *ngIf="f['descPlan'].invalid && (f['descPlan'].dirty || f['descPlan'].touched || isSubmitted)" class="error-message">
         <div *ngIf="f['descPlan'].errors?.['required']">La descripción es requerida.</div>
@@ -112,7 +112,7 @@
             <ion-label class="ion-text-wrap"><strong>Tarea {{ i + 1 }}</strong></ion-label>
           </ion-item>        <ion-card-content class="ion-no-padding">          <div class="input-wrapper">
             <ion-label position="floating">Nombre Tarea <ion-text color="danger">*</ion-text></ion-label>
-            <ion-input formControlName="nomTareaPlan" type="text" maxlength="150" [readonly]="isViewMode"></ion-input>
+            <ion-input formControlName="nomTareaPlan" type="text" maxlength="150" [readonly]="isViewMode" placeholder="Ej: Cambio de aceite motor"></ion-input>
           </div>
           <div *ngIf="tareaCtrl.get('nomTareaPlan')?.invalid && (tareaCtrl.get('nomTareaPlan')?.dirty || tareaCtrl.get('nomTareaPlan')?.touched || isSubmitted)" class="error-message ion-padding-start">
             <div *ngIf="tareaCtrl.get('nomTareaPlan')?.errors?.['required']">Nombre de tarea es requerido.</div>
@@ -120,7 +120,7 @@
     
           <div class="input-wrapper">
             <ion-label position="floating">Descripción Tarea</ion-label>
-            <ion-textarea formControlName="descTareaPlan" rows="2" autoGrow="true" maxlength="500" [readonly]="isViewMode"></ion-textarea>
+            <ion-textarea formControlName="descTareaPlan" rows="2" autoGrow="true" maxlength="500" [readonly]="isViewMode" placeholder="Ej: Drenar aceite usado, reemplazar filtro, añadir aceite nuevo según especificaciones."></ion-textarea>
           </div>
           </ion-card-content>
       </ion-card>
