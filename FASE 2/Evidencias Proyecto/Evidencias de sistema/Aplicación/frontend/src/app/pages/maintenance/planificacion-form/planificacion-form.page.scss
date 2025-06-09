@@ -248,7 +248,7 @@ ion-select {
 /* ===== ESTILOS PARA TOGGLES ===== */
 ion-toggle {
   --background: var(--ion-color-light);
-  --background-checked: var(--ion-color-success);
+  --background-checked: #008000; // Cambiado a verde específico
   --handle-background: white;
   --handle-background-checked: white;
   margin-right: 8px;
@@ -385,9 +385,9 @@ ion-button[color="tertiary"] {
 }
 
 ion-button[type="submit"] {
-  --background: linear-gradient(135deg, var(--ion-color-success), var(--ion-color-success-tint));
+  --background: #008000; // Color verde específico
   --border-radius: 12px;
-  --box-shadow: 0 4px 12px rgba(var(--ion-color-success-rgb), 0.3);
+  --box-shadow: 0 4px 12px rgba(0, 128, 0, 0.3); // Ajustado para el nuevo verde
   margin-top: 20px;
   height: 48px;
   font-weight: 600;
@@ -395,7 +395,8 @@ ion-button[type="submit"] {
   transition: all 0.3s ease;
   
   &:hover {
-    --box-shadow: 0 6px 16px rgba(var(--ion-color-success-rgb), 0.4);
+    --background: #006600; // Verde más oscuro para hover
+    --box-shadow: 0 6px 16px rgba(0, 128, 0, 0.4);
     transform: translateY(-2px);
   }
 }
@@ -1863,4 +1864,17 @@ ion-tab-bar {
       margin-top: 4px;
     }
   }
+}
+
+/* Animación para resaltar campo con error */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.shake-animation {
+  animation: shake 0.5s ease-in-out;
+  border-color: var(--ion-color-danger) !important;
+  box-shadow: 0 0 0 3px rgba(var(--ion-color-danger-rgb), 0.1) !important;
 }

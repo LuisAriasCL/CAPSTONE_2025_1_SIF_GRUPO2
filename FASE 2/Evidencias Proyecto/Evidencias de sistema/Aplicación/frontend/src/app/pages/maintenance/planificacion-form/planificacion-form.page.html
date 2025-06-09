@@ -27,7 +27,7 @@
 
           <div class="input-wrapper">
             <ion-label position="floating">Nombre del Mantenimiento <ion-text color="danger">*</ion-text></ion-label>
-            <ion-input formControlName="descPlan" type="text" maxlength="255" [readonly]="isViewMode" placeholder="Ej: Mantenimiento General de Vehículos Pesados"></ion-input>
+            <ion-input id="descPlan" formControlName="descPlan" type="text" maxlength="255" [readonly]="isViewMode" placeholder="Ej: Mantenimiento General de Vehículos Pesados"></ion-input>
           </div>
           <div class="error-container">
             <div class="error-message" [class.visible]="f['descPlan'].invalid && (f['descPlan'].dirty || f['descPlan'].touched || isSubmitted)">
@@ -40,7 +40,7 @@
             <ion-col size-xs="12" size-sm="6">
               <div class="input-wrapper">
                 <ion-label>Tipo de Frecuencia <ion-text color="danger">*</ion-text></ion-label>
-                <ion-select formControlName="tipoFrecuencia" interface="popover" placeholder="Seleccionar"
+                <ion-select id="tipoFrecuencia" formControlName="tipoFrecuencia" interface="popover" placeholder="Seleccionar"
                   [disabled]="isViewMode"
                   (ionChange)="onTipoFrecuenciaChange($event)">
                   <ion-select-option value="km">Kilómetros</ion-select-option>
@@ -70,7 +70,7 @@
                   </ng-container>
                   <ion-text color="danger">*</ion-text>
                 </ion-label>
-                <ion-input formControlName="frecuencia" type="number" min="1"
+                <ion-input id="frecuencia" formControlName="frecuencia" type="number" min="1"
                   [readonly]="isViewMode || !tipoFrecuenciaSeleccionado"
                   [disabled]="isViewMode"></ion-input>
               </div>
@@ -88,7 +88,7 @@
             <ion-col size="12">
               <div class="input-wrapper">
                 <ion-label class="ion-margin-bottom vehiculos-label">Vehículos Asignados <ion-text color="danger">*</ion-text></ion-label>
-                <ion-select formControlName="vehiculosIds" multiple="true" interface="popover" placeholder="Seleccionar uno o más vehículos" cancelText="Cancelar" okText="Aceptar" [disabled]="isViewMode">
+                <ion-select id="vehiculosIds" formControlName="vehiculosIds" multiple="true" interface="popover" placeholder="Seleccionar uno o más vehículos" cancelText="Cancelar" okText="Aceptar" [disabled]="isViewMode">
                   <ion-select-option *ngFor="let vehiculo of vehiculosDisponibles" [value]="vehiculo.idVehi">
                     {{ vehiculo.patente }} ({{ vehiculo.marca }} {{ vehiculo.modelo }})
                   </ion-select-option>
@@ -150,7 +150,7 @@
                       <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
                     </ion-button>
                   </div>
-                  <ion-input formControlName="nomTareaPlan" type="text" maxlength="150" [readonly]="isViewMode" placeholder="Ej: Cambio de aceite motor"></ion-input>
+                  <ion-input [id]="'tarea-' + i + '-nombre'" formControlName="nomTareaPlan" type="text" maxlength="150" [readonly]="isViewMode" placeholder="Ej: Cambio de aceite motor"></ion-input>
                 </div>
                 <div class="error-container">
                   <div class="error-message" [class.visible]="tareaCtrl.get('nomTareaPlan')?.invalid && (tareaCtrl.get('nomTareaPlan')?.dirty || tareaCtrl.get('nomTareaPlan')?.touched || isSubmitted)">
@@ -161,7 +161,7 @@
           
                 <div class="input-wrapper">
                   <ion-label position="floating">Descripción Tarea</ion-label>
-                  <ion-textarea formControlName="descTareaPlan" rows="2" autoGrow="true" maxlength="500" [readonly]="isViewMode" placeholder="Ej: Drenar aceite usado, reemplazar filtro, añadir aceite nuevo según especificaciones."></ion-textarea>
+                  <ion-textarea [id]="'tarea-' + i + '-descripcion'" formControlName="descTareaPlan" rows="2" autoGrow="true" maxlength="500" [readonly]="isViewMode" placeholder="Ej: Drenar aceite usado, reemplazar filtro, añadir aceite nuevo según especificaciones."></ion-textarea>
                 </div>
                 <div class="error-container">
                   <div class="error-message" [class.visible]="tareaCtrl.get('descTareaPlan')?.invalid && (tareaCtrl.get('descTareaPlan')?.dirty || tareaCtrl.get('descTareaPlan')?.touched || isSubmitted)">
@@ -187,8 +187,12 @@
 
   
   <div class="ion-text-center">
-      <ion-button *ngIf="!isViewMode" type="submit" expand="block" (click)="onSubmit()">
-        <ion-icon [name]="isEditMode ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
-        {{ isEditMode ? 'Actualizar Mantenimiento' : 'Crear Mantenimiento' }}
-      </ion-button>
-    </div>
+    <ion-button *ngIf="!isViewMode" type="submit" expand="block" (click)="onSubmit()" style="--background: #008000; --background-hover: #006600;">
+      <ion-icon [name]="isEditMode ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
+      {{ isEditMode ? 'Actualizar Mantenimiento' : 'Crear Mantenimiento' }}
+    </ion-button>
+    <ion-button *ngIf="isViewMode" expand="block" (click)="closeModal()" color="medium">
+      <ion-icon name="close-outline" slot="start"></ion-icon>
+      Cancelar
+    </ion-button>
+  </div>

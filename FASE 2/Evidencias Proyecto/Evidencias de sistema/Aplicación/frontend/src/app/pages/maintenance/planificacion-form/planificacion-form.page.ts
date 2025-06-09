@@ -164,12 +164,38 @@ export class PlanificacionFormPage implements OnInit {
     this.planForm.markAllAsTouched();
 
     if (this.planForm.invalid) {
-      let errorMsg = 'Por favor, revise el formulario. Hay campos incompletos o con errores.';
-      if (this.tareas.invalid && this.tareas.hasError('minlength')) {
-        errorMsg += ' Debe agregar al menos una tarea válida.';
+      const firstError = this.getFirstError();
+      if (firstError) {
+        // Obtener referencia a los tabs
+        const tabs = document.querySelector('ion-tabs');
+        
+        // Primero, asegurar que estamos en el tab correcto
+        await tabs?.select(firstError.tab);
+
+        // Esperar a que cambie el tab y la vista se actualice
+        setTimeout(() => {
+          const errorElement = document.getElementById(firstError.id);
+          if (errorElement) {
+            // Asegurar que el elemento es visible después del cambio de tab
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            errorElement.classList.add('shake-animation');
+            setTimeout(() => errorElement.classList.remove('shake-animation'), 1000);
+
+            // Generar mensaje específico según el tipo de error
+            let fieldName = '';
+            switch (firstError.id) {
+              case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
+              case 'tipoFrecuencia': fieldName = 'tipo de frecuencia'; break;
+              case 'frecuencia': fieldName = 'frecuencia'; break;
+              case 'vehiculosIds': fieldName = 'vehículos asignados'; break;
+              default: fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
+            }
+            this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
+          }
+        }, 300); // Dar más tiempo para que el cambio de tab sea efectivo
+        
+        return;
       }
-      this.mostrarToast(errorMsg, 'warning', 4000);
-      return;
     }
 
     const isEditMode = this.isEditMode && this.planId;
@@ -233,6 +259,28 @@ export class PlanificacionFormPage implements OnInit {
         this.mostrarToast(error.message || errorMessage, 'danger', 5000);
       }
     });
+  }
+
+  getFirstError(): { id: string, tab: string } | null {
+    // Verificar campos del tab de información general
+    if (this.f['descPlan'].invalid) return { id: 'descPlan', tab: 'infoGeneral' };
+    if (this.f['tipoFrecuencia'].invalid) return { id: 'tipoFrecuencia', tab: 'infoGeneral' };
+    if (this.f['frecuencia'].invalid) return { id: 'frecuencia', tab: 'infoGeneral' };
+    if (this.f['vehiculosIds'].invalid) return { id: 'vehiculosIds', tab: 'infoGeneral' };
+
+    // Verificar tareas
+    const tareas = this.tareas.controls;
+    for (let i = 0; i < tareas.length; i++) {
+      const tarea = tareas[i];
+      if (tarea.get('nomTareaPlan')?.invalid) {
+        return { id: `tarea-${i}-nombre`, tab: 'tareasPlanificacion' };
+      }
+      if (tarea.get('descTareaPlan')?.invalid) {
+        return { id: `tarea-${i}-descripcion`, tab: 'tareasPlanificacion' };
+      }
+    }
+
+    return null;
   }
 
   async mostrarToast(mensaje: string, color: string = 'dark', duracion: number = 3000) {
