@@ -1,0 +1,18 @@
+.form-title-icon {
+    margin-bottom: 20px;
+    .large-icon {
+      font-size: 3em;
+    }
+    h3 {
+      margin-top: 5px;
+      font-weight: 600;
+    }
+  }
+  
+  ion-item {
+    --padding-start: 0;
+  }
+  
+  .ion-text-caption {
+    color: var(--ion-color-medium);
+  }

@@ -1,13 +1,46 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>home-movil</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>Sistema Integral de Flota</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="notifications"></ion-icon>
+      </ion-button>
+      <ion-button>
+        <ion-icon slot="icon-only" name="person-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">home-movil</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="page-container">
+    <ion-button expand="block" color="warning" class="inicio-main-button">
+      INICIO
+    </ion-button>
+
+    <p class="instruccion-text">
+      Haz click en el logo predeterminado, si cargarás combustible <ion-icon name="color-palette"></ion-icon>,
+      o si ocurre un accidente o desperfecto <ion-icon name="warning"></ion-icon> en mitad del viaje.
+    </p>
+
+    <ion-card class="action-card" (click)="irACombustible()" button="true">
+      <ion-card-content class="ion-text-center">
+        <ion-icon name="water" color="secondary" class="action-icon"></ion-icon>
+        <ion-card-title>Cargar Combustible</ion-card-title>
+        <p class="action-description">
+          Al cargar combustible, debes registrarlo aquí y adjuntar tu boleta o factura <ion-icon name="document-text"></ion-icon>.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="action-card" (click)="irAIncidente()" button="true">
+      <ion-card-content class="ion-text-center">
+        <ion-icon name="warning" color="danger" class="action-icon"></ion-icon>
+        <ion-card-title>Notificar Incidente</ion-card-title>
+        <p class="action-description">
+          Si tienes un accidente a mitad del recorrido, o te das cuenta de un desperfecto, infórmalo aquí, y adjunta la fotografía del mismo <ion-icon name="camera"></ion-icon>.
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
