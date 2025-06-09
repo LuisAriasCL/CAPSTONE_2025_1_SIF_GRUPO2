@@ -22,16 +22,12 @@ import { ApiService, PlanificacionMantenimientoResumen } from '../../../services
     RouterModule,
     IonicModule,
   ],
-    CommonModule,
-    RouterModule,
-    IonicModule,
-  ],
+
 })
 export class PlanificacionListPage implements OnInit {
   @ViewChildren(IonItemSliding) slidingItems!: QueryList<IonItemSliding>;
   planificaciones: PlanificacionMantenimientoResumen[] = [];
   isLoading: boolean = false;
-  pageTitle = 'Planes de Mantenimiento';
   pageTitle = 'Planes de Mantenimiento';
 
   constructor(
