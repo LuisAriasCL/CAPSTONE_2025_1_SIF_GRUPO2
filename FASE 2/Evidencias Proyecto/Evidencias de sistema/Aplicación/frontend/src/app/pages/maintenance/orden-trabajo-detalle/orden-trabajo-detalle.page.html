@@ -63,7 +63,13 @@
             Asignar Técnico
           </ion-button>
           <ion-label slot="end" class="ion-text-right">
-              <p>Técnico: {{ tarea.tecnico?.pri_nom_usu || 'Sin asignar' }}</p>
+            <p>
+              Técnico: 
+              <span *ngIf="tarea.tecnico; else noAsignado">
+                {{ tarea.tecnico.pri_nom_usu }} {{ tarea.tecnico.pri_ape_usu }}
+              </span>
+              <ng-template #noAsignado>Sin asignar</ng-template>
+            </p>
           </ion-label>
       </ion-item>
     </ion-card>
