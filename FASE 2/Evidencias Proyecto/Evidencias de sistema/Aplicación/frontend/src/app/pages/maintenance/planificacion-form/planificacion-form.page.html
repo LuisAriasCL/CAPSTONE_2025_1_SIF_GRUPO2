@@ -55,8 +55,8 @@
               <ion-text color="danger">*</ion-text>
             </ion-label>
             <ion-input formControlName="frecuencia" type="number" min="1"
-              [readonly]="isViewMode"
-              [disabled]="!tipoFrecuenciaSeleccionado || isViewMode"></ion-input>
+              [readonly]="isViewMode || !tipoFrecuenciaSeleccionado"
+              [disabled]="isViewMode"></ion-input>
           </div>
           <div *ngIf="f['frecuencia'].invalid && (f['frecuencia'].dirty || f['frecuencia'].touched || isSubmitted)" class="error-message">
             <div *ngIf="f['frecuencia'].errors?.['required']">La frecuencia es requerida.</div>

@@ -134,6 +134,12 @@ ion-input {
     --color: var(--ion-color-medium-shade);
     opacity: 0.7;
   }
+
+  /* Estado disabled */
+  &[disabled] {
+    --color: var(--ion-color-medium-shade);
+    opacity: 0.7;
+  }
 }
 
 /* ===== ESTILOS PARA TODOS LOS TEXTAREAS ===== */
