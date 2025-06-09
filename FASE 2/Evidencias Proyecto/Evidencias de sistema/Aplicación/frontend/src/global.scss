@@ -401,7 +401,6 @@ ion-header {
     background-color: #ffff !important;
     border: 1px solid #d1d5db !important;
     border-radius: 12px !important;
-    padding: 20px !important;
     
     --padding-end: 20px;
     --border-radius: 12px;
@@ -501,7 +500,6 @@ ion-action-sheet {
 .input-wrapper {
   ion-select[multiple] {
     font-size: 18px !important;
-    min-height: 50px !important;
     
     .select-text {
       font-size: 18px !important;

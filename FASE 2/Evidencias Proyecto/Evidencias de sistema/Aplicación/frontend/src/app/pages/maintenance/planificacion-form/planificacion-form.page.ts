@@ -19,7 +19,7 @@ import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, Pla
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule
+    IonicModule,
   ]
 })
 export class PlanificacionFormPage implements OnInit {
@@ -36,10 +36,6 @@ export class PlanificacionFormPage implements OnInit {
   loadedTareas: any[] = [];
   loadedVehiculosIds: number[] = [];tareasDisponibles: any;
   tipoFrecuenciaSeleccionado: string | null = null;
-
-  // Drag & Drop y Modal Vehículos
-  modalVehiculosAbierto = false;
-  vehiculosSeleccionados: VehiculoAsignacionInfo[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -302,49 +298,5 @@ export class PlanificacionFormPage implements OnInit {
     if (!this.tipoFrecuenciaSeleccionado) {
       this.planForm.get('frecuencia')?.reset();
     }
-  }
-
-  abrirModalVehiculos() {
-    // Inicializa la selección con los vehículos del formulario
-    const ids = this.planForm.value.vehiculosIds || [];
-    this.vehiculosSeleccionados = this.vehiculosDisponibles.filter(v => ids.includes(v.idVehi));
-    this.modalVehiculosAbierto = true;
-  }
-
-  cerrarModalVehiculos() {
-    this.modalVehiculosAbierto = false;
-  }
-
-  guardarVehiculosSeleccionados() {
-    // Actualiza el formulario con los IDs seleccionados
-    this.planForm.patchValue({ vehiculosIds: this.vehiculosSeleccionados.map(v => v.idVehi) });
-    this.cerrarModalVehiculos();
-  }
-
-  onDropVehiculo(event: any, aSeleccionados: boolean) {
-    if (event.previousContainer === event.container) {
-      // Reordenar dentro de la misma lista
-      const arr = aSeleccionados ? this.vehiculosSeleccionados : this.vehiculosDisponibles;
-      const [moved] = arr.splice(event.previousIndex, 1);
-      arr.splice(event.currentIndex, 0, moved);
-    } else {
-      // Mover entre listas
-      if (aSeleccionados) {
-        // De disponibles a seleccionados
-        const vehiculo = this.vehiculosDisponibles[event.previousIndex];
-        if (!this.vehiculosSeleccionados.some(v => v.idVehi === vehiculo.idVehi)) {
-          this.vehiculosSeleccionados.splice(event.currentIndex, 0, vehiculo);
-        }
-      } else {
-        // De seleccionados a disponibles
-        const vehiculo = this.vehiculosSeleccionados[event.previousIndex];
-        this.vehiculosSeleccionados = this.vehiculosSeleccionados.filter(v => v.idVehi !== vehiculo.idVehi);
-      }
-    }
-  }
-
-  get vehiculosDisponiblesFiltrados() {
-    // Excluye los ya seleccionados
-    return this.vehiculosDisponibles.filter(v => !this.vehiculosSeleccionados.some(sel => sel.idVehi === v.idVehi));
   }
 }

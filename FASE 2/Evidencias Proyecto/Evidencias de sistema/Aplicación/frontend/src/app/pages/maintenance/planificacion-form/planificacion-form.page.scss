@@ -13,7 +13,6 @@
   --form-input-border-success: var(--ion-color-success);
   --form-input-padding: 20px; /* ✅ Más padding */
   --form-input-border-radius: 12px; /* ✅ Esquinas más suavizadas */
-  --form-input-min-height: 48px;
   --form-label-color: var(--ion-color-dark);
   --form-label-color-floating: var(--ion-color-medium-shade);
   --form-label-color-focus: var(--ion-color-primary);
@@ -22,6 +21,22 @@
 /* Contenido del formulario */
 ion-content {
   --background: #f5f6f9; /* ✅ Color gris claro como el sidebar */
+}
+
+/* ===== ESTILOS PARA EL ICONO DE CIERRE DEL MODAL ===== */
+ion-header {
+  ion-toolbar[color="primary"] {
+    ion-buttons[slot="end"] {
+      ion-button {
+        ion-icon[name="close"] { // El atributo color="light" ya está en el HTML
+          // Forzar el color blanco usando la variable CSS --color que ion-icon podría usar internamente,
+          // y también la propiedad CSS 'color'.
+          --color: #ffffff !important; 
+          color: #ffffff !important;
+        }
+      }
+    }
+  }
 }
 
 /* ===== ESTILOS PARA TODOS LOS ITEMS DEL FORMULARIO ===== */
@@ -118,6 +133,18 @@ ion-label {
   }
 }
 
+// Estilos para el label de frecuencia cuando el input está efectivamente deshabilitado
+// por falta de selección de tipo de frecuencia (y no estamos en isViewMode)
+.input-wrapper ion-label.label-frecuencia-disabled {
+  color: var(--ion-color-medium-shade) !important; // Color gris
+  opacity: 0.7; // Misma opacidad que los inputs readonly/disabled
+
+  // Asegurar que el asterisco también se ponga gris
+  ion-text[color="danger"] {
+    color: var(--ion-color-medium-shade) !important;
+  }
+}
+
 /* ===== ESTILOS PARA TODOS LOS INPUTS ===== */
 ion-input {
   --background: transparent;
@@ -151,7 +178,6 @@ ion-textarea {
   --padding-top: 12px;
   --padding-bottom: 12px;
   font-size: 18px !important; /* MUCHO MÁS GRANDE - aumentado de 15px */
-  min-height: 80px;
   
   /* Estado readonly */
   &[readonly] {
@@ -332,7 +358,6 @@ ion-list-header {
 @media (max-width: 767px) {
   :root {
     --form-input-padding: 12px;
-    --form-input-min-height: 44px;
   }
   
   ion-label {
@@ -365,7 +390,6 @@ ion-list-header {
 @media (min-width: 768px) and (max-width: 1199px) {
   :root {
     --form-input-padding: 18px;
-    --form-input-min-height: 52px;
   }
   
   ion-label {
@@ -386,7 +410,6 @@ ion-list-header {
 @media (min-width: 1200px) {
   :root {
     --form-input-padding: 20px;
-    --form-input-min-height: 56px;
   }
   
   ion-label {
@@ -415,7 +438,6 @@ ion-list-header {
 /* ===== MEJORAS PARA DISPOSITIVOS TÁCTILES ===== */
 @media (hover: none) and (pointer: coarse) {
   ion-item {
-    --min-height: 48px;
   }
   
   ion-button {
@@ -486,6 +508,66 @@ ion-textarea .native-textarea::placeholder {
   opacity: 0.8;
 }
 
+/* Estilos para placeholder de ion-select */
+ion-select::part(placeholder) {
+  color: #9ca3af !important;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Estilo para el texto de la opción seleccionada en ion-select */
+ion-select::part(text) {
+  color: var(--ion-color-dark) !important; // Color de texto normal (negro o el definido para el tema oscuro)
+  font-style: normal !important;
+  opacity: 1 !important;
+}
+
+/* ===== ESTILOS PARA EL POPOVER DE ION-SELECT ===== */
+ion-popover.select-popover {
+  --background: var(--ion-color-light, #ffffff); // Fondo claro para el popover
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); // Sombra más pronunciada
+  border-radius: var(--form-input-border-radius, 12px); // Bordes redondeados consistentes
+
+  ion-list {
+    background: transparent; // Heredar el fondo del popover
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  ion-item {
+    --background: transparent;
+    --color: var(--ion-color-dark-shade, #333333); // Color de texto oscuro para las opciones
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --inner-border-width: 0; // Sin bordes internos entre opciones
+    font-size: 16px; // Tamaño de fuente para las opciones
+
+    &:hover,
+    &.item-hover { // Estilo al pasar el mouse
+      --background: var(--ion-color-primary-tint, #ebf3ff);
+      --color: var(--ion-color-primary, #3880ff);
+    }
+
+    // Estilo para la opción seleccionada (aria-checked es usado por ion-select multiple)
+    &[aria-checked="true"], 
+    &.item-selected { // .item-selected es más común para single select
+      --background: var(--ion-color-primary, #3880ff);
+      --color: var(--ion-color-primary-contrast, #ffffff);
+      font-weight: 500;
+
+      ion-icon { // Si hay iconos en las opciones seleccionadas
+        color: var(--ion-color-primary-contrast, #ffffff);
+      }
+    }
+
+    // Para select múltiple, el radio (checkbox visual)
+    ion-radio {
+      --color-checked: var(--ion-color-primary-contrast, #ffffff);
+      margin-right: 10px;
+    }
+  }
+}
+
 /* Select specific styling */
 ion-select .select-text {
   padding-left: 4px !important;
@@ -514,18 +596,15 @@ ion-select.select-expanded .select-text {
     --padding-top: 8px !important; /* Muy reducido */
     --padding-bottom: 8px !important;
     font-size: 13px !important; /* Texto más pequeño */
-    min-height: 36px !important; /* Altura mucho menor */
   }
   
   /* Textareas específicamente más compactos */
   ion-textarea {
-    min-height: 60px !important; /* Altura muy reducida para textareas */
     --padding-top: 6px !important;
     --padding-bottom: 6px !important;
     
     /* Reducir el tamaño interno del textarea */
     .native-textarea {
-      min-height: 40px !important;
       padding: 4px !important;
     }
   }
@@ -556,11 +635,9 @@ ion-select.select-expanded .select-text {
     --padding-top: 6px !important;
     --padding-bottom: 6px !important;
     font-size: 12px !important;
-    min-height: 32px !important; /* Muy compacto */
   }
   
   ion-textarea {
-    min-height: 50px !important; /* Textarea muy compacto */
   }
 }
 
@@ -575,14 +652,11 @@ ion-select.select-expanded .select-text {
     --padding-top: 6px !important;
     --padding-bottom: 6px !important;
     font-size: 12px !important;
-    min-height: 30px !important; /* Muy pequeño para campos de tarea */
   }
   
   ion-textarea[formControlName="descTareaPlan"] {
-    min-height: 45px !important; /* Textarea de descripción de tarea muy compacto */
     
     .native-textarea {
-      min-height: 30px !important;
     }
   }
 }
@@ -596,8 +670,6 @@ ion-select.select-expanded .select-text {
   }
   
   .task-card-header {
-    min-height: 40px !important; /* Header más compacto */
-    --min-height: 40px !important;
     
     ion-label {
       font-size: 12px !important;
@@ -619,29 +691,43 @@ ion-col {
   font-size: 10px !important; /* Muy pequeño */
   margin-top: 2px !important;
   margin-bottom: 4px !important;
-  padding-left: 12px !important;
+  padding-left: 12px !important; /* Asegurar que el padding se aplique aquí si es necesario */
   line-height: 1.2 !important;
 }
 
-/* Hacer los toggles más compactos */
+/* Estilos para el contenedor de ion-toggle, para que se asemeje a otros campos de entrada */
 .input-wrapper:has(ion-toggle) {
-  min-height: 35px !important;
-  margin-bottom: 8px !important;
-  
-  ion-toggle {
-    --width: 40px !important; /* Toggle más pequeño */
-    --height: 20px !important;
-  }
-}
+  background: #ffffff; /* ✅ Fondo blanco */
+  border: 1px solid var(--form-input-border); /* ✅ Borde gris (usando la variable existente) */
+  border-radius: 16px; /* ✅ Esquinas más suavizadas (aumentado de 12px) */
+  padding: 0 var(--form-input-padding); // Padding horizontal, la alineación vertical se maneja con align-items
+  display: flex;
+  align-items: center; // Centrar verticalmente label y toggle
+  justify-content: space-between; // Label a la izquierda, toggle a la derecha
+  margin-bottom: 16px !important; // Espaciado inferior consistente
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Sombra sutil como en ion-item
+  transition: all 0.3s ease; // Transición suave para hover
 
-/* List header más compacto */
-ion-list-header {
-  --padding-start: 12px !important;
-  --padding-end: 12px !important;
-  --padding-top: 8px !important;
-  --padding-bottom: 8px !important;
-  margin: 12px 0 8px 0 !important;
-  font-size: 13px !important;
+  ion-label {
+    padding-left: 0 !important; // El padding del wrapper maneja el espaciado izquierdo
+    margin-bottom: 0 !important; // No es necesario si está alineado verticalmente
+    flex-grow: 1; // Permite que la etiqueta ocupe el espacio disponible
+    margin-right: var(--form-input-padding); // Espacio entre la etiqueta y el toggle
+    // Los estilos globales de ion-label (tamaño, color, fuente) se aplican
+  }
+
+  ion-toggle {
+    flex-shrink: 0; // Evita que el toggle se encoja
+    --width: 50px !important; // Tamaño base para el toggle (grande)
+    --height: 24px !important; // Tamaño base para el toggle (grande)
+    margin-right: 0 !important; // El padding del wrapper maneja el espaciado derecho
+    // Otros estilos de ion-toggle (colores, etc.) se heredan o se definen globalmente
+  }
+
+  &:hover {
+    border-color: var(--ion-color-primary-tint);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
 }
 
 /* ===== RESPONSIVIDAD PARA ELEMENTOS COMPACTOS ===== */
@@ -660,11 +746,9 @@ ion-list-header {
       --padding-top: 4px !important;
       --padding-bottom: 4px !important;
       font-size: 11px !important;
-      min-height: 40px !important; /* Ultra compacto */
       line-height: 1.3 !important;
       
       .native-textarea {
-        min-height: 25px !important;
         padding: 2px !important;
         font-size: 11px !important;
       }
@@ -687,7 +771,6 @@ ion-list-header {
       --padding-top: 4px !important;
       --padding-bottom: 4px !important;
       font-size: 11px !important;
-      min-height: 28px !important; /* Ultra compacto */
       
       .native-input {
         padding: 0 !important;
@@ -711,7 +794,6 @@ ion-list-header {
       --padding-top: 4px !important;
       --padding-bottom: 4px !important;
       font-size: 11px !important;
-      min-height: 28px !important; /* Ultra compacto */
       
       .select-text {
         padding: 0 !important;
@@ -732,7 +814,6 @@ ion-list-header {
     border-radius: 8px !important;
     
     .task-card-header {
-      min-height: 32px !important;
       --min-height: 32px !important;
       padding: 6px 8px !important;
       
@@ -756,7 +837,6 @@ ion-list-header {
         --padding-top: 3px !important;
         --padding-bottom: 3px !important;
         font-size: 10px !important;
-        min-height: 25px !important; /* Ultra compacto */
         
         .native-input {
           padding: 0 !important;
@@ -781,11 +861,9 @@ ion-list-header {
         --padding-top: 3px !important;
         --padding-bottom: 3px !important;
         font-size: 10px !important;
-        min-height: 35px !important; /* Ultra compacto */
         line-height: 1.2 !important;
         
         .native-textarea {
-          min-height: 20px !important;
           padding: 1px !important;
           font-size: 10px !important;
         }
@@ -838,7 +916,6 @@ ion-list-header {
   
   /* Toggle más compacto dentro de input-wrapper */
   .input-wrapper:has(ion-toggle) {
-    min-height: 28px !important;
     margin-bottom: 6px !important;
     
     ion-toggle {
@@ -868,11 +945,9 @@ ion-list-header {
         --padding-top: 3px !important;
         --padding-bottom: 3px !important;
         font-size: 10px !important;
-        min-height: 24px !important;
       }
       
       ion-textarea {
-        min-height: 32px !important;
       }
       
       ion-label {
@@ -954,8 +1029,8 @@ ion-list-header {
       min-height: 24px !important; /* Extremadamente pequeño */
       
       .native-input {
-        padding: 0 !important;
         font-size: 10px !important;
+        padding: 0 !important;
         line-height: 1.2 !important;
       }
     }
@@ -1227,27 +1302,26 @@ ion-list-header {
 .ultra-compact {
   /* SOBREESCRIBIR TODOS LOS TAMAÑOS PEQUEÑOS CON TAMAÑOS GRANDES */
   
-  .input-wrapper:has(ion-textarea[formControlName="descPlan"]) {
+  .input-wrapper:has(ion-input[formControlName="descPlan"]) {
     margin-bottom: 16px !important; /* MÁS ESPACIADO */
     
-    ion-textarea {
-      font-size: 18px !important; /* GRANDE */
-      min-height: 100px !important; /* ALTO ADECUADO */
-      --padding-start: 20px !important;
-      --padding-end: 20px !important;
-      --padding-top: 12px !important;
-      --padding-bottom: 12px !important;
+    ion-input {
+      font-size: 18px !important; /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
+      // min-height: 100px !important; // Comentado
+      --padding-start: 20px !important; /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
+      --padding-end: 20px !important;   /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
+      --padding-top: 12px !important;    /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
+      --padding-bottom: 12px !important; /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
       
-      .native-textarea {
-        min-height: 80px !important;
-        font-size: 18px !important;
-        padding: 8px !important;
+      .native-input {
+        font-size: 18px !important; /* Ajustado para coincidir con el ion-input padre */
+        padding: 4px !important;
       }
     }
     
     ion-label {
-      font-size: 18px !important; /* GRANDE */
-      margin-bottom: 8px !important;
+      font-size: 18px !important; /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
+      margin-bottom: 8px !important; /* Ajustado para coincidir con frecuencia/tipoFrecuencia */
       font-weight: 500 !important;
     }
   }
@@ -1319,7 +1393,7 @@ ion-list-header {
       margin-bottom: 16px !important;
       
       ion-input {
-        font-size: 16px !important; /* GRANDE */
+        font-size: 18px !important; /* GRANDE */
         min-height: 45px !important;
         --padding-start: 16px !important;
         --padding-end: 16px !important;
@@ -1327,14 +1401,14 @@ ion-list-header {
         --padding-bottom: 10px !important;
         
         .native-input {
-          font-size: 16px !important;
+          font-size: 18px !important;
           padding: 4px !important;
         }
       }
       
       ion-label {
-        font-size: 16px !important; /* GRANDE */
-        margin-bottom: 6px !important;
+        font-size: 18px !important; /* GRANDE */
+        margin-bottom: 8px !important;
         font-weight: 500 !important;
       }
     }
@@ -1343,7 +1417,7 @@ ion-list-header {
       margin-bottom: 16px !important;
       
       ion-textarea {
-        font-size: 16px !important; /* GRANDE */
+        font-size: 18px !important; /* GRANDE */
         min-height: 80px !important;
         --padding-start: 16px !important;
         --padding-end: 16px !important;
@@ -1352,14 +1426,14 @@ ion-list-header {
         
         .native-textarea {
           min-height: 60px !important;
-          font-size: 16px !important;
+          font-size: 18px !important;
           padding: 4px !important;
         }
       }
       
       ion-label {
-        font-size: 16px !important; /* GRANDE */
-        margin-bottom: 6px !important;
+        font-size: 18px !important; /* GRANDE */
+        margin-bottom: 8px !important;
         font-weight: 500 !important;
       }
     }
@@ -1470,9 +1544,9 @@ ion-list-header {
 
 
 /* ===== ESTILO ESPECÍFICO PARA EL TEXTAREA "Nombre del Mantenimiento" ===== */
-.input-wrapper:has(ion-textarea[formControlName="descPlan"]) ion-textarea {
-  border: 1px solid #d1d5db !important; /* borde gris siempre */
-}
+/* .input-wrapper:has(ion-textarea[formControlName="descPlan"]) ion-textarea { // Eliminada esta regla
+  border: 1px solid #d1d5db !important; 
+} */
 
 /* ===== ESTILOS PARA EL MODAL DE VEHÍCULOS ===== */
 .vehiculos-modal-container {
@@ -1507,7 +1581,6 @@ ion-list-header {
   border-radius: var(--form-input-border-radius);
   background: var(--ion-color-light);
   padding: 8px;
-  min-height: 200px;
   overflow-y: auto;
 }
 

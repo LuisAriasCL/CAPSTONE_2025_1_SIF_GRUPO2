@@ -3,4 +3,18 @@
 :root {
     --ion-color-tertiary: #a5a5a8;
     // ...otros colores
+
+    // Si en tu archivo completo existe una variable CSS personalizada para la altura mínima 
+    // de los inputs/textareas (por ejemplo, --form-input-min-height), 
+    // puedes comentarla o establecerla a un valor mínimo.
+    // A continuación, un ejemplo hipotético:
+
+    // Ejemplo de cómo podría estar definida originalmente:
+    // --form-input-min-height: 40px; 
+
+    // Opción 1: Comentar la variable para eliminar su efecto si no se desea un min-height específico.
+    /* --form-input-min-height: 40px; */
+
+    // Opción 2: Establecerla a un valor mínimo si es necesario que la variable exista.
+    // --form-input-min-height: 0px; // O 'unset', 'auto', etc., según el comportamiento deseado.
   }

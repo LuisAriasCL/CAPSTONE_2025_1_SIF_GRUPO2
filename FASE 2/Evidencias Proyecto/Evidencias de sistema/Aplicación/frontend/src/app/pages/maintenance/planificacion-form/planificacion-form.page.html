@@ -1,25 +1,27 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/planificaciones"></ion-back-button>
-    </ion-buttons>
     <ion-title>{{ pageTitle }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()" fill="clear">
-        <ion-icon name="close" slot="icon-only"></ion-icon>
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline" color="light" ></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding ultra-compact">  <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
+
+   <ion-list-header class="ion-margin-top">
+      <ion-label>Información General <ion-text color="danger">*</ion-text></ion-label>
+    </ion-list-header>
+
       <div class="input-wrapper">
         <ion-label position="floating">Nombre del Mantenimiento <ion-text color="danger">*</ion-text></ion-label>
-        <ion-textarea class="bordered-textarea" formControlName="descPlan" rows="3" autoGrow="true" maxlength="255" [readonly]="isViewMode" placeholder="Ej: Mantenimiento General de Vehículos Pesados"></ion-textarea>
+        <ion-input formControlName="descPlan" type="text" maxlength="255" [readonly]="isViewMode" placeholder="Ej: Mantenimiento General de Vehículos Pesados"></ion-input>
       </div>
       <div *ngIf="f['descPlan'].invalid && (f['descPlan'].dirty || f['descPlan'].touched || isSubmitted)" class="error-message">
-        <div *ngIf="f['descPlan'].errors?.['required']">La descripción es requerida.</div>
-        <div *ngIf="f['descPlan'].errors?.['minlength']">La descripción debe tener al menos 5 caracteres.</div>
+        <div *ngIf="f['descPlan'].errors?.['required']">El nombre del mantenimiento es requerido.</div>
+        <div *ngIf="f['descPlan'].errors?.['minlength']">El nombre del mantenimiento debe tener al menos 5 caracteres.</div>
       </div>
       
       <ion-row>
@@ -41,7 +43,7 @@
         </ion-col>
         <ion-col size-xs="12" size-sm="6">
           <div class="input-wrapper">
-            <ion-label>
+            <ion-label [ngClass]="{'label-frecuencia-disabled': !tipoFrecuenciaSeleccionado && !isViewMode}">
               Frecuencia
               <ng-container *ngIf="tipoFrecuenciaSeleccionado">
                 en
