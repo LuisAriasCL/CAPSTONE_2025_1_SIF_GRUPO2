@@ -181,7 +181,6 @@ ion-card {
 /* Suavizar modales */
 ion-modal .modal-wrapper {
   border-radius: 16px;
-  overflow: hidden;
 }
 
 /* Suavizar alertas */
@@ -465,6 +464,8 @@ ion-header {
 .planificacion-form-modal .modal-wrapper {
   border-radius: 16px;
   overflow: hidden;
+  --height: auto;
+  --max-height: 80vh;    /* no pase del 80% de la pantalla */
 }
 
 .planificacion-form-modal ion-header {
@@ -477,6 +478,10 @@ ion-header {
     --height: 100%;
     --border-radius: 0;
   }
+}
+
+ion-modal.planificacion-form-modal {
+  align-items: center;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -663,6 +668,56 @@ ion-select {
         }
       }
     }
+  }
+}
+
+/* Para todos los modales con cssClass 'custom-alert-modal' */
+ion-modal.custom-alert-modal .modal-wrapper {
+  --min-width: 280px;
+  --max-width: 360px;
+  --height: auto;
+  --max-height: 50vh;     /* no supere la mitad de la pantalla */
+}
+
+/* Dentro de tu alerta, que el contenedor ajuste al contenido */
+.modal-container {
+  width: 100%;
+  max-height: 100%;       /* hereda del wrapper */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ===== ESTILOS PARA MODALES DE FORMULARIOS ===== */
+.vehicle-form-modal {
+  --width: 90%;
+  --max-width: 800px;
+  --height: 90%;
+  --max-height: 900px;
+  --border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+  .vehicle-form-modal {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+  }
+}
+
+.planificacion-form-modal {
+  --width: 95%;
+  --max-width: 1000px;
+  --height: 95%;
+  --max-height: 1000px;
+  --border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+  .planificacion-form-modal {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
   }
 }
 

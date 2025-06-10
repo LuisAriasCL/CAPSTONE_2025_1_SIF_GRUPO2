@@ -175,4 +175,15 @@ export class DataTableComponent implements OnInit, OnChanges {
     
     return value.toString();
   }
+
+  // nuevo helper
+  getCellClass(column: Column, row: any): string {
+    if (column.field === 'estado_vehi' && row.estadoVehi) {
+      return 'status-' + row.estadoVehi;
+    }
+    return '';
+  }
+
+  
+
 }

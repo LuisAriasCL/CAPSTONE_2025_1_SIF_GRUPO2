@@ -2,12 +2,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController } from '@ionic/angular';
+import { IonicModule, LoadingController, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { saveOutline, closeCircleOutline, calendarOutline, speedometerOutline, listOutline, peopleOutline, carSportOutline } from 'ionicons/icons';
+import { AlertaPersonalizadaComponent } from 'src/app/componentes/alerta-personalizada/alerta-personalizada.component';
 
 import { ApiService, AsignacionRecorrido, AsignacionRecorridoData, Route as RutaPlantilla, VehiculoAsignacionInfo, UsuarioConductorInfo } from '../../services/api.service'; // Asegúrate que las interfaces estén bien importadas
+import { RouteSimulationModalComponent } from '../../modals/route-simulation-modal.component';
 
 @Component({
   selector: 'app-asignacion-form',
@@ -19,10 +21,16 @@ import { ApiService, AsignacionRecorrido, AsignacionRecorridoData, Route as Ruta
     CommonModule,
     ReactiveFormsModule, 
     FormsModule,        
-    DatePipe           
+    DatePipe,
+    RouteSimulationModalComponent, // Permite abrir el modal de simulación de ruta
+    AlertaPersonalizadaComponent
+ 
+    
   ]
 })
 export class AsignacionFormPage implements OnInit {
+  // Servicio de ModalController para alertas personalizadas
+  private modalCtrl = inject(ModalController);
 
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
@@ -174,12 +182,29 @@ export class AsignacionFormPage implements OnInit {
 
     if (!this.asignacionForm.valid) {
       this.presentToast('Por favor, completa todos los campos requeridos.', 'warning');
-      this.isSubmitting = false; // Resetear si la validación del formulario falla
+      this.isSubmitting = false;
       Object.values(this.asignacionForm.controls).forEach(control => {
         control.markAsTouched();
       });
       return;
     }
+    // Confirmación antes de crear/editar
+    const confirm = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: this.isEditMode ? 'Confirmar Edición' : 'Confirmar Creación',
+        message: this.isEditMode ? '¿Estás seguro de editar esta asignación?' : '¿Estás seguro de crear esta asignación?',
+        icon: this.isEditMode ? 'warning' : 'info',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: this.isEditMode ? 'Editar' : 'Crear', role: 'confirm', cssClass: 'confirm-button' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
+    }).then(m =>  m.onDidDismiss());
+    const { data } = await confirm;
+    if (data !== 'confirm') { this.isSubmitting = false; return; }
 
     const loading = await this.loadingCtrl.create({
       message: this.isEditMode ? 'Actualizando asignación...' : 'Creando asignación...'
@@ -253,14 +278,28 @@ export class AsignacionFormPage implements OnInit {
       await operation.toPromise(); // Convierte el Observable a Promesa para usar con await
 
       // Si llegamos aquí, la operación fue exitosa (toPromise() resuelve o rechaza)
-      this.presentToast(`Asignación ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
+      await loading.dismiss();
+      // Mostrar notificación de éxito
+      const ok = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: '¡Éxito!',
+          message: `Asignación ${this.isEditMode ? 'actualizada' : 'creada'} correctamente.`,
+          icon: 'success',
+          buttons: [ { text: 'OK', role: 'confirm', cssClass: 'confirm-button' } ]
+        }, backdropDismiss: false, cssClass: 'custom-alert-modal'
+      }).then(m =>  m.onDidDismiss());
       this.navCtrl.navigateBack('/asignacion-lis');
 
     } catch (error: any) { // Captura errores de la promesa o de validaciones previas
-      console.error('Error al guardar asignación:', error);
-      // El error de ApiService ya debería ser un objeto con 'message'
-      const errorMsg = error && error.message ? error.message : 'No se pudo guardar la asignación.';
-      this.presentToast(errorMsg, 'danger');
+      await loading.dismiss(); console.error('Error guardando asignación:', error);
+      // Mostrar alerta de error personalizada
+      await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Error', message: error.error?.message || 'No se pudo guardar la asignación.', icon: 'error', buttons: [ { text: 'OK', role: 'cancel', cssClass: 'button-cancel' } ]
+        }, backdropDismiss: true, cssClass: 'custom-alert-modal'
+      }).then(m => m.present());
     } finally {
       // Este bloque finally se ejecutará SIEMPRE, haya éxito o error,
       // asegurando que el loading se cierre.

@@ -10,6 +10,7 @@ import {
   closeCircleOutline 
 } from 'ionicons/icons';
 import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
+import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-planificacion-form',
@@ -21,6 +22,7 @@ import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, Pla
     ReactiveFormsModule,
     IonicModule,
     FormsModule,
+    AlertaPersonalizadaComponent
   ]
 })
 export class PlanificacionFormPage implements OnInit {
@@ -160,6 +162,27 @@ export class PlanificacionFormPage implements OnInit {
     );
   }
   async onSubmit() {
+    // Confirmación en modo edición
+    if (this.isEditMode) {
+      const confirmModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Confirmar Edición',
+          message: `¿Estás seguro de editar <strong>${this.pageTitle}</strong>?`,
+          icon: 'warning',
+          buttons: [
+            { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+            { text: 'Editar', role: 'confirm', cssClass: 'confirm-button' }
+          ]
+        },
+        backdropDismiss: false,
+        cssClass: 'custom-alert-modal'
+      });
+      await confirmModal.present();
+      const { data } = await confirmModal.onDidDismiss();
+      if (data !== 'confirm') return;
+    }
+
     this.isSubmitted = true;
     this.planForm.markAllAsTouched();
 
@@ -195,6 +218,29 @@ export class PlanificacionFormPage implements OnInit {
         }, 300); // Dar más tiempo para que el cambio de tab sea efectivo
         
         return;
+      }
+    }
+
+    // Confirmación antes de crear una nueva planificación
+    if (!this.isEditMode) {
+      const confirmModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Confirmar Creación',
+          message: `¿Estás seguro de crear la planificación "${this.planForm.value.descPlan}"?`,
+          icon: 'info',
+          buttons: [
+            { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' }
+          ]
+        },
+        backdropDismiss: false,
+        cssClass: 'custom-alert-modal'
+      });
+      await confirmModal.present();
+      const { data } = await confirmModal.onDidDismiss();
+      if (data !== 'confirm') {
+        return; // Cancelar creación si no confirma
       }
     }
 

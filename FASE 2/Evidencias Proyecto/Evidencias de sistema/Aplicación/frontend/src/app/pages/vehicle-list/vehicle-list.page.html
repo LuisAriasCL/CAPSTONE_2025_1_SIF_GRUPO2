@@ -2,7 +2,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   <!-- Integración del componente DataTable reemplazando el listado actual -->
-  <div class="data-table-container ion-padding-top" *ngIf="vehiculos.length > 0">
+  <div class="data-table-container" *ngIf="vehiculos.length > 0">
     <div class="header-row ion-padding-bottom">
       <h1 class="page-title">{{ pageTitle }}</h1>
       <ion-button (click)="goToAddVehicle()" fill="solid" class="add-button">
@@ -10,7 +10,7 @@
         Registrar Nuevo Vehículo
       </ion-button>
     </div>
-    <app-data-table 
+    <app-data-table  
       [columns]="tableColumns"
       [data]="vehiculos"
       [pageSize]="pageSize"

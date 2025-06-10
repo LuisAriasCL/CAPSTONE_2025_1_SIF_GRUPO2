@@ -20,11 +20,10 @@
     background-color: var(--ion-color-light-tint);
     border-radius: var(--card-border-radius);
     padding: var(--list-padding-mobile);
-    margin-bottom: 16px;
     box-shadow: var(--card-shadow);
     border-left: 4px solid var(--ion-color-primary);
     transition: all 0.3s ease;
-    min-height: var(--header-height-mobile);
+    min-height: var(--header-height-mobile);;
   
     .page-title {
       margin: 0;
@@ -102,8 +101,11 @@ ion-col {
 }
 
 .add-button {
-  --background: var(--ion-color-success);
+  /* color de fondo fijo en verde oscuro */
+  --background: #008000;
+  --background-variant: #006600;
   --color: white;
+  /* conservar el resto de estilos */
   --border-radius: 50px;
   --padding-start: 20px;
   --padding-end: 20px;
@@ -146,33 +148,44 @@ ion-col {
     letter-spacing: 0.3px;
 }
 
-// Estilos de soporte para DataTable
+// Soporte para DataTable con estados de celda
 ::ng-deep {
   app-data-table {
-    .sortable {
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      
-      &:hover {
-        background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+    table {
+      th, td {
+        font-weight: 600;
       }
-    }
-    
-    .page-btn {
-      transition: all 0.2s ease;
-      
-      &.active {
-        font-weight: bold;
-        background-color: var(--ion-color-primary);
-        color: white;
+      td {
+        color: #1a1313;
       }
-      
-      &:hover:not(.active) {
-        background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+      td.status-activo {
+        color: var(--ion-color-success);
+        background-color: rgba(var(--ion-color-success-rgb), 0.1);
+      }
+      td.status-inactivo {
+        color: var(--ion-color-medium);
+        background-color: rgba(var(--ion-color-medium-rgb), 0.1);
+      }
+      td.status-mantenimiento {
+        color: var(--ion-color-warning);
+        background-color: rgba(var(--ion-color-warning-rgb), 0.1);
       }
     }
   }
 }
+
+::ng-deep app-data-table table td.status-activo,
+::ng-deep app-data-table table ion-badge.status-activo {
+  color: var(--ion-color-success);
+  background-color: rgba(var(--ion-color-success-rgb), 0.1);
+}
+
+::ng-deep app-data-table table td.status-inactivo,
+::ng-deep app-data-table table ion-badge.status-inactivo {
+  color: var(--ion-color-medium);
+  background-color: rgba(var(--ion-color-medium-rgb), 0.1);
+}
+::ng-deep app-data-table table ion-badge.status-mantenimiento { color: var(--ion-color-warning); background: rgba(var(--ion-color-warning-rgb),0.1); }
 
 // --- Responsive Design ---
 
@@ -383,7 +396,7 @@ ion-col {
   }
   
   .data-table-container {
-    background-color: var(--ion-color-dark);
+    background-color: var(--ion-color-dark-shade);
   }
   
   .data-row {

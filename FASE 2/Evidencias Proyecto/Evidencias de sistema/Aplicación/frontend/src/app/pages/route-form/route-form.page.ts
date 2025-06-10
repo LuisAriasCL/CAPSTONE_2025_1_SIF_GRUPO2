@@ -21,7 +21,7 @@ import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashO
     IonicModule,
     CommonModule,
     ReactiveFormsModule,
-    DecimalPipe // <--- DecimalPipe AÑADIDO AQUÍ
+    DecimalPipe,
   ]
 })
 export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
@@ -63,7 +63,7 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   constructor() {
     addIcons({
       save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline,
-      speedometerOutline, close // <--- Icono close añadido
+      speedometerOutline, close // Asegúrate de que `close` esté incluido aquí
     });
   }
   ngOnInit() {
@@ -76,6 +76,11 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     if (this.routeId && this.isEditMode) {
       this.pageTitle = 'Editar Ruta';
       this.loadRouteData();
+
+      // Calcular distancia automáticamente si es modo edición
+      if (this.origenCoords && this.destinoCoords) {
+        this.calculateRouteAutomatically();
+      }
     } else {
       // Fallback: verificar parámetros de ruta (para navegación directa)
       const idParam = this.activatedRoute.snapshot.paramMap.get('id');
@@ -84,6 +89,11 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         this.routeId = parseInt(idParam, 10);
         this.pageTitle = 'Editar Ruta';
         this.loadRouteData();
+
+        // Calcular distancia automáticamente si es modo edición
+        if (this.origenCoords && this.destinoCoords) {
+          this.calculateRouteAutomatically();
+        }
       }
     }
   }
@@ -408,5 +418,36 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   async presentToast(message: string, color: 'success'|'warning'|'danger'|'medium' = 'medium') {
     const toast = await this.toastCtrl.create({ message, duration: 3000, position: 'bottom', color });
     await toast.present();
+  }
+
+  expandMap(): void {
+    if (this.routeMap) {
+      this.routeMap.invalidateSize();
+      this.routeMap.setView(this.routeMap.getCenter(), 16); // Aumenta el zoom al hacer clic
+      const mapContainer = this.routeMap.getContainer();
+      mapContainer.style.height = '500px'; // Aumenta el tamaño del mapa
+      mapContainer.style.width = '100%';
+      mapContainer.style.position = 'fixed';
+      mapContainer.style.top = '0';
+      mapContainer.style.left = '0';
+      mapContainer.style.zIndex = '1000';
+      mapContainer.style.backgroundColor = 'white';
+      document.body.style.overflow = 'hidden'; // Evita el scroll en el fondo
+
+      // Agregar un listener para restaurar el tamaño original al hacer clic fuera del mapa
+      const restoreMap = () => {
+        mapContainer.style.height = '300px';
+        mapContainer.style.position = 'relative';
+        mapContainer.style.top = '';
+        mapContainer.style.left = '';
+        mapContainer.style.zIndex = '';
+        document.body.style.overflow = '';
+        document.removeEventListener('click', restoreMap);
+      };
+
+      setTimeout(() => {
+        document.addEventListener('click', restoreMap);
+      }, 0);
+    }
   }
 }

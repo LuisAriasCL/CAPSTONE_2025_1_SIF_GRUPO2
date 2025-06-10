@@ -1,4 +1,3 @@
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
 crossorigin=""/>
@@ -7,11 +6,11 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
 crossorigin=""></script>
 
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>{{ pageTitle }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="closeModal()">
-        <ion-icon name="close" color="medium"></ion-icon>
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close" color="light"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -37,7 +36,10 @@ crossorigin=""></script>
            Limpiar Puntos
        </ion-button>
     </ion-item-divider>
-    <p class="ion-padding-start ion-padding-end"><small>Haz clic en el mapa para marcar el Origen y luego el Destino. La ruta se calculará automáticamente.</small></p><div id="routeFormMap" #routeMap style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>    <!-- Indicadores de estado del cálculo -->
+    <p class="ion-padding-start ion-padding-end"><small>Haz clic en el mapa para marcar el Origen y luego el Destino. La ruta se calculará automáticamente.</small></p>
+    <div id="routeFormMapContainer" class="map-container">
+      <div id="routeFormMap" #routeMap (click)="expandMap()" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+    </div>    <!-- Indicadores de estado del cálculo -->
     <ion-loading [isOpen]="isCalculatingRoute" message="Calculando ruta automáticamente..."></ion-loading>
     <ion-text color="danger" *ngIf="routeCalculationError" class="ion-padding">
         <small>{{ routeCalculationError }}</small>
@@ -55,10 +57,10 @@ crossorigin=""></script>
            <ion-note slot="end">{{ destinoCoords[0] | number:'1.5-5' }}, {{ destinoCoords[1] | number:'1.5-5' }}</ion-note>
         </ion-item>    </ion-list>
 
-     <ion-item *ngIf="calculatedDistance !== null" class="ion-margin-top ion-text-center" lines="none">
+     <ion-item class="ion-margin-top ion-text-center" lines="none">
         <ion-icon name="speedometer-outline" slot="start" color="primary" style="margin-right: 8px;"></ion-icon>
         <ion-label color="primary">
-            Distancia Estimada: <strong>{{ calculatedDistance | number:'1.1-2' }} km</strong>
+            Distancia Estimada: <strong>{{ calculatedDistance !== null ? (calculatedDistance | number:'1.1-2') + ' km' : 'N/A' }}</strong>
         </ion-label>
         </ion-item>
      <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="routeForm.invalid || !calculatedPoints">

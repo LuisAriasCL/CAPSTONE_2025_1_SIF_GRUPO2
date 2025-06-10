@@ -12,6 +12,7 @@ import {
 
 import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service';
 import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.page';
+import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-planificacion-list',
@@ -22,6 +23,8 @@ import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.
     CommonModule,
     RouterModule,
     IonicModule,
+    DatePipe,
+    AlertaPersonalizadaComponent  // modal personalizado
   ],
 
 })
@@ -89,34 +92,38 @@ export class PlanificacionListPage implements OnInit {
     const vehiculo = plan.vehiculosEnPlan[0];
     const idUsuario = 1;
 
-    const alert = await this.alertCtrl.create({
-      header: 'Generar Orden de Trabajo',
-      message: `Se creará una OT para el vehículo <strong>${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})</strong> a partir del plan <strong>"${plan.descPlan}"</strong>. ¿Continuar?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Generar',
-          role: 'confirm',
-          handler: async () => {
-            const loading = await this.loadingCtrl.create({ message: 'Generando OT...' });
-            await loading.present();
-
-            this.apiService.generarOt(plan.idPlan, vehiculo.idVehi, idUsuario).subscribe({
-              next: async (res) => {
-                await loading.dismiss();
-                this.mostrarToast(`¡Orden de Trabajo #${res.id_ot} generada con éxito!`, 'success');
-              },
-              error: async (err) => {
-                await loading.dismiss();
-                console.error('Error al generar la OT:', err);
-                this.mostrarToast(err.error?.error || 'No se pudo generar la OT.', 'danger');
-              }
-            });
-          }
-        }
-      ]
+    // Mostrar confirmación de generación con modal personalizado
+    const modal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Generar Orden de Trabajo',
+        message: `Se creará una OT para el vehículo <strong>${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})</strong> a partir del plan "${plan.descPlan}". ¿Continuar?`,
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Generar', role: 'confirm', cssClass: 'confirm-button' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
     });
-    await alert.present();
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data === 'confirm') {
+      const loading = await this.loadingCtrl.create({ message: 'Generando OT...' });
+      await loading.present();
+      this.apiService.generarOt(plan.idPlan, vehiculo.idVehi, idUsuario).subscribe({
+        next: async (res) => {
+          await loading.dismiss();
+          this.mostrarToast(`¡Orden de Trabajo #${res.id_ot} generada con éxito!`, 'success');
+        },
+        error: async (err) => {
+          await loading.dismiss();
+          console.error('Error al generar la OT:', err);
+          this.mostrarToast(err.error?.error || 'No se pudo generar la OT.', 'danger');
+        }
+      });
+    }
   }
   async irACrearPlan() {
     const modal = await this.modalCtrl.create({
@@ -175,19 +182,26 @@ export class PlanificacionListPage implements OnInit {
 
   async confirmarEliminar(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
-    const alert = await this.alertCtrl.create({
-      header: 'Confirmar Eliminación',
-      message: `¿Está seguro de que desea eliminar el plan "${plan.descPlan}"? Esta acción no se puede deshacer.`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Eliminar',
-          role: 'destructive',
-          handler: () => { this.eliminarPlan(plan.idPlan); },
-        },
-      ],
+    const modal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Confirmar Eliminación',
+        message: `¿Está seguro de que desea eliminar el plan "<strong>${plan.descPlan}</strong>"? Esta acción no se puede deshacer.`,
+        icon: 'info',  // Cambiado de 'warning' a 'info' para mostrar '?' en lugar de advertencia
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
     });
-    await alert.present();
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data === 'confirm') {
+      this.eliminarPlan(plan.idPlan);
+    }
   }
 
   async eliminarPlan(planId: number) {

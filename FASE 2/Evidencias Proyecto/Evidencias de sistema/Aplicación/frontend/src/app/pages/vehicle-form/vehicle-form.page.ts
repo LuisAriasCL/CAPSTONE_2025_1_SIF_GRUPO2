@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController } from '@ionic/angular';
+import { IonicModule, LoadingController, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-// Importamos el icono de save y el de la flecha para el botón de retroceso
-import { save, arrowBackOutline as ionArrowBackOutline } from 'ionicons/icons';
+// Importamos los iconos necesarios para el modal
+import { save, arrowBackOutline as ionArrowBackOutline, closeOutline } from 'ionicons/icons';
 
 // Asegúrate de que ApiService ahora exporta Vehiculo y los tipos relacionados,
 // o créalos en un archivo .interface.ts e impórtalos desde allí.
@@ -23,6 +23,9 @@ import { DataTableComponent, Column, PageEvent } from '../../componentes/data-ta
   imports: [IonicModule, CommonModule, ReactiveFormsModule, DataTableComponent]
 })
 export class VehicleFormPage implements OnInit {
+  @Input() vehicleId?: number;
+  @Input() isEditMode: boolean = false;
+  @Input() isViewMode: boolean = false;
 
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
@@ -32,10 +35,9 @@ export class VehicleFormPage implements OnInit {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
 
   vehicleForm!: FormGroup;
-  isEditMode = false;
-  vehicleId: number | null = null;
   pageTitle = 'Nuevo Vehículo';
   // isLoading e isSubmitted se manejaban en tu código, los mantengo si son útiles para tu lógica de UI
   isLoading = false; 
@@ -48,6 +50,8 @@ export class VehicleFormPage implements OnInit {
   tiposCombustibleOptions: Array<TipoCombustibleVehiculo | null> = [
     null, 'gasolina_93', 'gasolina_95', 'gasolina_97', 'diesel', 'electrico', 'otro'
   ];
+  // Variable para controlar las pestañas
+  selectedTab = 'infoBasica';
 
   // Variables para el DataTable de historial de mantenimiento
   mantenimientos: any[] = [];
@@ -58,14 +62,44 @@ export class VehicleFormPage implements OnInit {
     { header: 'Kilometraje', field: 'kilometraje', sortable: true },
     { header: 'Costo', field: 'costo', sortable: true }
   ];
-  
-  constructor() {
+    constructor() {
     // Registramos los iconos para que Ionic los reconozca por nombre
-    addIcons({ save, 'arrow-back-outline': ionArrowBackOutline });
+    addIcons({ save, 'arrow-back-outline': ionArrowBackOutline, closeOutline });
   }
 
   ngOnInit() {
-    this.vehicleForm = this.fb.group({
+    // Support for both modal parameters and route parameters
+    if (!this.vehicleId) {
+      const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+      if (idParam) {
+        this.vehicleId = parseInt(idParam, 10);
+        this.isEditMode = true;
+      }
+    }
+
+    this.updatePageTitle();
+    this.initForm();
+    
+    // Si tenemos un ID de vehículo (ya sea del modal o de la ruta), cargar los datos
+    if (this.vehicleId && (this.isEditMode || this.isViewMode)) {
+      this.loadVehicleData();
+    } else {
+      // Cargar historial vacío para vehículos nuevos
+      this.cargarHistorialMantenimiento();
+    }
+  }
+
+  updatePageTitle() {
+    if (this.isViewMode) {
+      this.pageTitle = 'Ver Vehículo';
+    } else if (this.isEditMode) {
+      this.pageTitle = 'Editar Vehículo';
+    } else {
+      this.pageTitle = 'Nuevo Vehículo';
+    }
+  }
+
+  initForm() {    this.vehicleForm = this.fb.group({
       // Campos basados en la nueva interfaz Vehiculo (camelCase español)
       // Campos eliminados: name, proyecto
       // Campos renombrados: plate -> patente, status -> estadoVehi, kilometraje -> kmVehi, tipoVehiculo -> tipoVehi
@@ -88,21 +122,11 @@ export class VehicleFormPage implements OnInit {
       longitud: [null, [Validators.min(-180), Validators.max(180)]] // Ya existía, pero ahora es opcional
     });
 
-    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.isEditMode = true;
-      this.vehicleId = parseInt(idParam, 10);
-      this.pageTitle = 'Editar Vehículo';
-      if (!isNaN(this.vehicleId)) {
-        this.loadVehicleData();
-      } else {
-        console.error("ID de vehículo inválido recibido para editar:", idParam);
-        this.presentAlert('Error', 'ID de vehículo inválido.');
-        this.navCtrl.navigateBack('/vehicle-list'); // Ajusta la ruta si es diferente
-      }
+    // Deshabilitar formulario en modo solo lectura
+    if (this.isViewMode) {
+      this.vehicleForm.disable();
     }
   }
-
   async loadVehicleData() {
     if (!this.vehicleId) return;
 
@@ -146,7 +170,7 @@ export class VehicleFormPage implements OnInit {
         console.error("Error cargando datos del vehículo:", err);
         const message = (err instanceof HttpErrorResponse) ? (err.error?.message || err.message) : err.message;
         await this.presentAlert('Error', `No se pudieron cargar los datos del vehículo. ${message}`);
-        this.navCtrl.navigateBack('/vehicle-list'); // Usar navigateBack con la ruta correcta
+        this.closeModal(); // Cerrar modal en caso de error
       }
     });
   }
@@ -237,12 +261,11 @@ export class VehicleFormPage implements OnInit {
       latitud: vehicleDataFromForm.latitud !== null && vehicleDataFromForm.latitud !== '' ? Number(vehicleDataFromForm.latitud) : null,
       longitud: vehicleDataFromForm.longitud !== null && vehicleDataFromForm.longitud !== '' ? Number(vehicleDataFromForm.longitud) : null,
     };
-    
-    // Si es edición, incluimos el idVehi (aunque no esté en el form directamente)
+      // Si es edición, incluimos el idVehi (aunque no esté en el form directamente)
     // El ApiService espera el ID como parámetro separado para updateVehicle,
     // y no necesita idVehi en el payload para createVehicle.
 
-    const saveObservable = this.isEditMode && this.vehicleId !== null
+    const saveObservable = this.isEditMode && this.vehicleId !== undefined
       ? this.apiService.updateVehicle(this.vehicleId, vehicleDataToSend as Partial<Vehiculo>) // Cast a Partial<Vehiculo>
       : this.apiService.createVehicle(vehicleDataToSend as Vehiculo); // Cast a Vehiculo
 
@@ -250,7 +273,7 @@ export class VehicleFormPage implements OnInit {
       next: async (savedVehicle: Vehiculo) => {
         await loading.dismiss();
         await this.presentToast(`Vehículo ${this.isEditMode ? 'actualizado' : 'creado'} exitosamente.`, 'success');
-        this.navCtrl.navigateBack('/vehicle-list'); // Navegar a la lista
+        this.closeModal(savedVehicle); // Cerrar modal con el vehículo guardado
       },
       error: async (error: HttpErrorResponse | Error) => {
         await loading.dismiss();
@@ -265,14 +288,26 @@ export class VehicleFormPage implements OnInit {
     const alert = await this.alertCtrl.create({ header, message, buttons: ['OK'] });
     await alert.present();
   }
-
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
     const toast = await this.toastCtrl.create({ message, duration: 2500, position: 'bottom', color });
     toast.present();
   }
 
+  async closeModal(data?: any) {
+    await this.modalCtrl.dismiss(data);
+  }
   // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
   get f() {
     return this.vehicleForm.controls;
+  }
+
+  // Getter para el año máximo válido
+  get maxValidYear() {
+    return new Date().getFullYear() + 5;
+  }
+
+  // Método para cambiar entre pestañas
+  segmentChanged(event: any) {
+    this.selectedTab = event.detail.value;
   }
 }

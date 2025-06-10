@@ -11,9 +11,9 @@
   --form-input-border-focus: var(--ion-color-primary);
   --form-input-border-error: var(--ion-color-danger);
   --form-input-border-success: var(--ion-color-success);
-  --form-input-padding: 20px; /* ✅ Más padding */
+  --form-input-padding: 24px; /* ✅ Aumentado para textos más grandes */
   --form-input-border-radius: 12px; /* ✅ Esquinas más suavizadas */
-  --form-input-min-height: 48px;
+  --form-input-min-height: 54px; /* ✅ Aumentado para textos más grandes */
   --form-label-color: var(--ion-color-dark);
   --form-label-color-floating: var(--ion-color-medium-shade);
   --form-label-color-focus: var(--ion-color-primary);
@@ -22,6 +22,43 @@
 /* Contenido del formulario */
 ion-content {
   --background: #f8f9fa;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+/* ===== ESTILOS PARA EL ICONO DE CIERRE DEL MODAL ===== */
+ion-header {
+  ion-toolbar {
+    ion-title {
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+    
+    ion-buttons[slot="end"] {
+      ion-button {
+        --color: white;
+        --border-radius: 50%;
+        --padding-start: 8px;
+        --padding-end: 8px;
+        
+        &:hover {
+          --background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+  }
+}
+
+/* ===== ESTILOS PARA ENCABEZADOS DE SECCIÓN ===== */
+.tab-header {
+  color: var(--ion-color-primary);
+  font-size: 1.3rem; /* Aumentado para mejor legibilidad */
+  font-weight: 600;
+  margin: 20px 0 12px 0; /* Más espacio */
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ion-color-primary-tint);
 }
 
 /* ===== ESTILOS PARA TODOS LOS ITEMS DEL FORMULARIO ===== */
@@ -35,7 +72,7 @@ ion-item {
   --padding-start: 0;
   --padding-end: 0;
   --min-height: var(--form-input-min-height);
-  margin-bottom: 16px;
+  margin-bottom: 20px; /* Aumentado para más espacio entre campos */
   border: 1px solid var(--form-input-border);
   border-radius: var(--form-input-border-radius);
   transition: all 0.3s ease;
@@ -72,16 +109,16 @@ ion-item {
 
 /* ===== ESTILOS PARA TODOS LOS LABELS ===== */
 ion-label {
-  font-weight: 500 !important;
-  font-size: 13px !important; /* Tamaño reducido */
+  font-weight: normal !important; /* Cambiado de 400 a normal para quitar negrita */
+  font-size: 20px !important;
   color: var(--form-label-color) !important;
-  margin-bottom: 4px !important;
-  line-height: 1.4 !important;
+  margin-bottom: 8px !important;
+  line-height: 1.5 !important;
   padding-left: var(--form-input-padding) !important;
   
   /* Labels flotantes */
   &[position="floating"] {
-    font-size: 11px !important; /* Tamaño aún más pequeño para flotantes */
+    font-size: 20px !important; /* Ajustado para que todos los labels flotantes tengan el mismo tamaño */
     color: var(--form-label-color-floating) !important;
     transition: all 0.3s ease !important;
     padding-left: var(--form-input-padding) !important;
@@ -90,13 +127,14 @@ ion-label {
   /* Labels con estado activo/focus */
   &.label-floating {
     color: var(--form-label-color-focus) !important;
-    font-weight: 600 !important;
+    font-weight: normal !important; /* Cambiado de 500 a normal para quitar negrita */
   }
-  
   /* Texto requerido (*) */
   ion-text[color="danger"] {
-    font-weight: 700 !important;
+    font-weight: normal !important; /* Cambiado de 500 a normal para quitar negrita */
     margin-left: 2px !important;
+    font-size: inherit !important;
+    color: var(--ion-color-danger) !important;
   }
 }
 
@@ -106,9 +144,9 @@ ion-input {
   --color: var(--ion-color-dark);
   --padding-start: var(--form-input-padding);
   --padding-end: var(--form-input-padding);
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  font-size: 15px;
+  --padding-top: 14px; /* Aumentado */
+  --padding-bottom: 14px; /* Aumentado */
+  font-size: 18px !important; /* Aumentado a 18px para mayor legibilidad */
   min-height: var(--form-input-min-height);
   
   /* Estado readonly */
@@ -126,7 +164,7 @@ ion-textarea {
   --padding-end: var(--form-input-padding);
   --padding-top: 12px;
   --padding-bottom: 12px;
-  font-size: 15px;
+  font-size: 18px !important; /* Aumentado a 18px para mayor legibilidad */
   min-height: 80px;
   
   /* Estado readonly */
@@ -144,7 +182,7 @@ ion-select {
   --padding-end: var(--form-input-padding);
   --padding-top: 12px;
   --padding-bottom: 12px;
-  font-size: 15px;
+  font-size: 18px !important; /* Aumentado a 18px para mayor legibilidad */
   min-height: var(--form-input-min-height);
   
   /* Estado disabled */
@@ -171,7 +209,7 @@ ion-toggle {
 /* ===== MENSAJES DE ERROR UNIFICADOS ===== */
 .error-message {
   color: var(--ion-color-danger);
-  font-size: 12px;
+  font-size: 16px !important; /* Aumentado para mejor legibilidad */
   margin-top: 4px;
   padding-left: var(--form-input-padding);
   display: flex;
@@ -229,10 +267,10 @@ ion-button[type="submit"] {
   --background: linear-gradient(135deg, var(--ion-color-success), var(--ion-color-success-tint));
   --border-radius: 12px;
   --box-shadow: 0 4px 12px rgba(var(--ion-color-success-rgb), 0.3);
-  margin-top: 20px;
-  height: 48px;
+  margin-top: 24px; /* Aumentado */
+  height: 56px; /* Aumentado */
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px; /* Aumentado */
   transition: all 0.3s ease;
   
   &:hover {
@@ -243,12 +281,31 @@ ion-button[type="submit"] {
 
 ion-button[color="medium"] {
   --border-radius: var(--form-input-border-radius);
-  height: 44px;
+  height: 52px; /* Aumentado */
   font-weight: 500;
+  font-size: 18px; /* Aumentado */
   transition: all 0.3s ease;
   
   &:hover {
     transform: translateY(-1px);
+  }
+}
+
+/* ===== ESTILOS PARA FOOTER CON BOTONES ===== */
+.ion-text-center {
+  padding: 20px 24px; /* Aumentado */
+  background: #f8f9fa;
+  border-top: 1px solid var(--ion-color-light-shade);
+  margin-top: 10px;
+  
+  ion-button {
+    margin: 0 auto;
+    max-width: 500px; /* Aumentado */
+    width: 100%;
+    height: 56px; /* Aumentado */
+    font-weight: 600;
+    font-size: 18px; /* Aumentado */
+    --border-radius: 12px;
   }
 }
 
@@ -262,11 +319,51 @@ ion-list-header {
   --padding-bottom: 12px;
   margin: 20px 0 16px 0;
   border-radius: var(--form-input-border-radius);
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: normal; /* Cambiado de 600 a normal para quitar negrita */
+  font-size: 18px !important; /* Tamaño igual a planificación móvil */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== ESTILOS PARA SEGMENTOS/TABS ===== */
+ion-segment {
+  --background: #f8f9fa;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  ion-segment-button {
+    --color: #6c757d;
+    --color-checked: #ffffff;
+    --background-checked: var(--ion-color-primary);
+    --border-radius: 8px;
+    --indicator-color: transparent;
+    margin: 4px;
+    font-weight: 500;
+    
+    &.segment-button-checked {
+      box-shadow: 0 2px 8px rgba(0, 92, 147, 0.3);
+    }
+  }
+}
+
+/* ===== ESTILOS PARA FOOTER CON BOTONES ===== */
+.ion-text-center {
+  padding: 20px 24px; /* Aumentado */
+  background: #f8f9fa;
+  border-top: 1px solid var(--ion-color-light-shade);
+  margin-top: 10px;
+  
+  ion-button {
+    margin: 0 auto;
+    max-width: 500px; /* Aumentado */
+    width: 100%;
+    height: 56px; /* Aumentado */
+    font-weight: 600;
+    font-size: 18px; /* Aumentado */
+    --border-radius: 12px;
+  }
 }
 
 /* ===== RESPONSIVIDAD ===== */
@@ -277,28 +374,51 @@ ion-list-header {
   }
   
   ion-label {
-    font-size: 12px !important; /* Tamaño aún más pequeño para móvil */
+    font-size: 20px !important; 
     
     &[position="floating"] {
-      font-size: 10px !important;
+      font-size: 20px !important;
     }
   }
   
   ion-input,
   ion-textarea,
   ion-select {
-    font-size: 14px;
+    font-size: 18px !important;
   }
   
   ion-item {
     margin-bottom: 12px;
   }
+  
+  .error-message {
+    font-size: 16px !important;
+  }
+  
+  ion-list-header {
+    font-size: 18px !important;
+  }
 }
+
 
 @media (min-width: 768px) and (max-width: 1199px) {
   :root {
     --form-input-padding: 18px;
     --form-input-min-height: 52px;
+  }
+  
+  ion-label {
+    font-size: 20px !important;
+    
+    &[position="floating"] {
+      font-size: 20px !important;
+    }
+  }
+  
+  ion-input,
+  ion-textarea,
+  ion-select {
+    font-size: 20px !important;
   }
 }
 
@@ -309,13 +429,25 @@ ion-list-header {
   }
   
   ion-label {
-    font-size: 14px !important; /* Tamaño ligeramente mayor para pantallas grandes */
+    font-size: 20px !important;
+    
+    &[position="floating"] {
+      font-size: 20px !important;
+    }
   }
   
   ion-input,
   ion-textarea,
   ion-select {
-    font-size: 16px;
+    font-size: 22px !important;
+  }
+  
+  .error-message {
+    font-size: 18px !important;
+  }
+  
+  ion-list-header {
+    font-size: 22px !important;
   }
 }
 
@@ -406,6 +538,48 @@ ion-select.select-expanded .select-text {
   color: var(--ion-color-dark) !important;
 }
 
+/* ===== ESTILOS ESPECÍFICOS PARA INPUT WRAPPER ===== */
+.input-wrapper {
+  margin-bottom: 10px;
+  
+  ion-label {
+    margin-bottom: 8px !important;
+    font-size: 20px !important;
+    font-weight: normal !important; /* Añadido para asegurar que no hay negrita */
+  }
+  
+  /* Estilos para labels dentro de input wrapper */
+  ion-label:not([position="floating"]) {
+    font-size: 20px !important;
+    margin-bottom: 10px !important;
+    line-height: 1.3 !important;
+    font-weight: normal !important; /* Añadido para asegurar que no hay negrita */
+  }
+  
+  /* Asegurar que las etiquetas flotantes tengan el mismo tamaño */
+  ion-label[position="floating"] {
+    font-size: 20px !important;
+    font-weight: normal !important; /* Añadido para asegurar que no hay negrita */
+  }
+}
+
+/* Estilos para todos los inputs dentro de wrapper */
+.input-wrapper ion-input,
+.input-wrapper ion-select,
+.input-wrapper ion-textarea {
+  --padding-top: 15px;
+  --padding-bottom: 15px;
+  font-size: 18px !important;
+}
+
+/* Asegurarse que todos los tipos de inputs mantengan el mismo estilo */
+.input-wrapper:has(ion-select) ion-label,
+.input-wrapper:has(ion-input) ion-label,
+.input-wrapper:has(ion-textarea) ion-label {
+  font-size: 20px !important;
+  margin-bottom: 8px !important;
+}
+
 /* ===== ESTILOS ESPECÍFICOS PARA TEXTAREAS ===== */
 /* Aplicar borde transparente solo a items que contienen textareas */
 ion-item:has(ion-textarea) {
@@ -430,5 +604,23 @@ ion-textarea {
   
   &.has-focus {
     border-color: rgba(var(--ion-color-primary-rgb), 0.6) !important;
+  }
+}
+
+/* ===== ESTILOS PARA FOOTER CON BOTONES ===== */
+.ion-text-center {
+  padding: 20px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid var(--ion-color-light-shade);
+  margin-top: 10px;
+  
+  ion-button {
+    margin: 0 auto;
+    max-width: 500px;
+    width: 100%;
+    height: 56px;
+    font-weight: 600;
+    font-size: 18px;
+    --border-radius: 12px;
   }
 }

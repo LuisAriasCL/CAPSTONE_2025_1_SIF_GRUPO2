@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent, NavController } from '@ionic/angular'; // NavController puede ser útil
+import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent, NavController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline } from 'ionicons/icons';
@@ -15,6 +15,9 @@ import { HttpErrorResponse } from '@angular/common/http'; // Para tipar errores
 // Importamos el componente DataTable y sus interfaces
 import { DataTableComponent, Column, PageEvent, ActionButton } from '../../componentes/data-table/data-table.component';
 
+// Importamos el formulario de vehículos para usarlo como modal
+import { VehicleFormPage } from '../vehicle-form/vehicle-form.page';
+
 @Component({  
   selector: 'app-vehicle-list',
   templateUrl: './vehicle-list.page.html',
@@ -23,12 +26,12 @@ import { DataTableComponent, Column, PageEvent, ActionButton } from '../../compo
   imports: [IonicModule, CommonModule, FormsModule, DataTableComponent]
 })
 export class VehicleListPage implements OnInit {
-
   private apiService = inject(ApiService);
   private router = inject(Router);
   private alertController = inject(AlertController);
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
+  private modalController = inject(ModalController);
   // private navCtrl = inject(NavController); // Opcional, si prefieres usar NavController
 
   vehiculos: Vehiculo[] = []; // CORREGIDO: Usar la nueva interfaz Vehiculo
@@ -121,23 +124,60 @@ export class VehicleListPage implements OnInit {
     });
   }
 
+
+  getStatusBadge(estadoVehi: EstadoVehiculo|string|undefined): string {
+  const estado = estadoVehi ?? 'desconocido';
+  const color = this.getStatusColor(estado);
+  // Inyectamos la clase directamente
+  return `<ion-badge class="status-${estado}" color="${color}">${estado}</ion-badge>`;
+}
+
+
   handleRefresh(event: RefresherCustomEvent) {
     console.log('Recargando lista de vehículos...');
     this.loadVehicles(false, event);
   }
+  async goToAddVehicle() {
+    // Crear el modal para nuevo vehículo
+    console.log('Abriendo modal para nuevo vehículo');
+    const modal = await this.modalController.create({
+      component: VehicleFormPage,
+      cssClass: 'vehicle-form-modal'
+    });
 
-  goToAddVehicle() {
-    // Asegúrate que esta ruta coincida con la definición en tu app.routes.ts para el formulario
-    console.log('Navegando a /vehicle-form (para nuevo vehículo)');
-    this.router.navigateByUrl('/vehicle-form');
+    modal.onDidDismiss().then((result) => {
+      if (result.data) {
+        // Si se creó un vehículo, recargar la lista
+        console.log('Vehículo creado:', result.data);
+        this.loadVehicles(false);
+      }
+    });
+
+    return await modal.present();
   }
-
   // idVehi es la PK de la interfaz Vehiculo (antes era 'id')
-  goToEditVehicle(idVehi?: number) {
+  async goToEditVehicle(idVehi?: number) {
     if (idVehi !== undefined) {
-      console.log('Navegando a /vehicle-form/edit/' + idVehi);
-      // Asegúrate que esta ruta coincida con la definición para editar en tu app.routes.ts
-      this.router.navigate(['/vehiculos/edit', idVehi]);
+      console.log('Abriendo modal para editar vehículo con ID:', idVehi);
+      
+      const modal = await this.modalController.create({
+        component: VehicleFormPage,
+        componentProps: {
+          vehicleId: idVehi,
+          isEditMode: true
+        },
+        cssClass: 'vehicle-form-modal'
+      });
+
+      modal.onDidDismiss().then((result) => {
+        if (result.data) {
+          // Si se actualizó un vehículo, recargar la lista
+          console.log('Vehículo actualizado:', result.data);
+          this.loadVehicles(false);
+        }
+      });
+
+      return await modal.present();
     } else {
       this.presentToast('No se especificó un ID para editar.', 'danger');
     }
@@ -289,14 +329,7 @@ export class VehicleListPage implements OnInit {
     // Por ejemplo, abrir un selector de archivos y procesar el archivo seleccionado
     this.presentToast('Funcionalidad de importación en desarrollo', 'warning');
   }
-  // Helper para renderizar celdas personalizadas con ion-badge para estado
-  getStatusBadge(estadoVehi: EstadoVehiculo | string | undefined): string {
-    if (estadoVehi === undefined) {
-      return '<ion-badge color="medium">Desconocido</ion-badge>';
-    }
-    const color = this.getStatusColor(estadoVehi);
-    return `<ion-badge color="${color}">${estadoVehi}</ion-badge>`;
-  }
+
   // Helper para manejar botones de acción en la tabla
   getActionButtons(idVehi: number | undefined, patente: string | undefined): string {
     if (idVehi === undefined || patente === undefined) {
