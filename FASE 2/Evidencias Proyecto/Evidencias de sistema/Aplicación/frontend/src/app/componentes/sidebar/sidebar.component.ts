@@ -58,7 +58,7 @@ export class SidebarComponent {
     // { title: 'Conductores', url: '/conductores', icon: 'people' }, // Página no existe aún
     { title: 'Asignación de recorridos', url: '/asignacion-list', icon: 'navigate' },
     // { title: 'Incidentes', url: '/siniestros', icon: 'warning' }, // Página no existe aún
-    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'list' },
+    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'construct-outline' },
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'map' },
     { title: 'Recorridos', url: '/recorridos', icon: 'navigate' },
   ];

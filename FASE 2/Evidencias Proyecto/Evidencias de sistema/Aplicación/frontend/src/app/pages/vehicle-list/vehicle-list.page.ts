@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, RefresherCustomEvent, NavController, ModalController } from '@ionic/angular';
+import { IonicModule, LoadingController, ToastController, RefresherCustomEvent, NavController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline } from 'ionicons/icons';
@@ -18,17 +18,19 @@ import { DataTableComponent, Column, PageEvent, ActionButton } from '../../compo
 // Importamos el formulario de vehículos para usarlo como modal
 import { VehicleFormPage } from '../vehicle-form/vehicle-form.page';
 
+// Importamos el componente de alerta personalizada
+import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
+
 @Component({  
   selector: 'app-vehicle-list',
   templateUrl: './vehicle-list.page.html',
   styleUrls: ['./vehicle-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent]
+  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent, AlertaPersonalizadaComponent]
 })
 export class VehicleListPage implements OnInit {
   private apiService = inject(ApiService);
   private router = inject(Router);
-  private alertController = inject(AlertController);
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
   private modalController = inject(ModalController);
@@ -65,6 +67,12 @@ export class VehicleListPage implements OnInit {
   ];
   // Configuración de los botones de acción
   actionButtons = [
+    {
+      icon: 'eye-outline',
+      color: 'primary',
+      tooltip: 'Ver detalles',
+      onClick: (row: Vehiculo) => this.goToViewVehicle(row.idVehi)
+    },
     {
       icon: 'pencil-outline',
       color: 'primary',
@@ -104,8 +112,8 @@ export class VehicleListPage implements OnInit {
     }
 
 
-    this.apiService.getVehicles().subscribe({ // getVehicles ahora devuelve Observable<Vehiculo[]>
-      next: (data: Vehiculo[]) => { // data es ahora Vehiculo[]
+    this.apiService.getVehicles().subscribe({ 
+      next: (data: Vehiculo[]) => { 
         this.vehiculos = data;
         this.totalPages = Math.ceil(this.vehiculos.length / this.pageSize); // Actualizar total de páginas
         if (showLoading && !event) this.isLoading = false;
@@ -113,13 +121,25 @@ export class VehicleListPage implements OnInit {
         event?.target.complete();
         console.log('Vehículos cargados:', this.vehiculos);
       },
-      error: async (error: HttpErrorResponse | Error) => { // Tipar el error
+      error: async (error: HttpErrorResponse | Error) => { 
         console.error('Error al cargar vehículos:', error);
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
         const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        await this.presentAlert('Error', `No se pudo cargar la lista de vehículos. ${message}`);
+        
+        // Cambiamos presentAlert por modal personalizado
+        const modal = await this.modalController.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
+            message: `No se pudo cargar la lista de vehículos. ${message}`,
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
       }
     });
   }
@@ -183,6 +203,25 @@ export class VehicleListPage implements OnInit {
     }
   }
 
+  async goToViewVehicle(idVehi?: number) {
+    if (idVehi !== undefined) {
+      console.log('Abriendo modal para ver vehículo con ID:', idVehi);
+      
+      const modal = await this.modalController.create({
+        component: VehicleFormPage,
+        componentProps: {
+          vehicleId: idVehi,
+          isViewMode: true
+        },
+        cssClass: 'vehicle-form-modal'
+      });
+
+      return await modal.present();
+    } else {
+      this.presentToast('No se especificó un ID para visualizar.', 'danger');
+    }
+  }
+
   // idVehi es la PK, patente es vehiculo.patente
   async confirmDeleteVehicle(idVehi: number | undefined, patente: string | undefined) {
     if (idVehi === undefined || patente === undefined) {
@@ -190,15 +229,28 @@ export class VehicleListPage implements OnInit {
       this.presentToast('Error: Datos del vehículo no válidos para eliminar.', 'danger');
       return;
     }
-    const alert = await this.alertController.create({
-      header: 'Confirmar Eliminación',
-      message: `¿Seguro que quieres eliminar el vehículo patente ${patente}?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        { text: 'Eliminar', cssClass: 'danger', handler: () => this.deleteVehicle(idVehi) }
-      ]
+    
+    // Reemplazamos AlertController por el modal personalizado
+    const modal = await this.modalController.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Confirmar Eliminación',
+        message: `¿Seguro que quieres eliminar el vehículo patente <strong>${patente}</strong>?`,
+        icon: 'warning',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
     });
-    await alert.present();
+    await modal.present();
+    
+    const { data } = await modal.onDidDismiss();
+    if (data === 'confirm') {
+      this.deleteVehicle(idVehi);
+    }
   }
 
   private async deleteVehicle(idVehi: number) { // idVehi es la PK
@@ -206,18 +258,29 @@ export class VehicleListPage implements OnInit {
     await loading.present();
 
     this.apiService.deleteVehicle(idVehi).subscribe({
-      next: async (res: { message: string }) => { // Tipar la respuesta
+      next: async (res: { message: string }) => { 
         console.log('Vehículo eliminado:', res.message);
         await loading.dismiss();
         this.presentToast('Vehículo eliminado exitosamente.', 'success');
-        // CORREGIDO: Llamada correcta a loadVehicles para recargar la lista
         this.loadVehicles(false);
       },
-      error: async (error: HttpErrorResponse | Error) => { // Tipar el error
+      error: async (error: HttpErrorResponse | Error) => { 
         await loading.dismiss();
         console.error('Error al eliminar vehículo:', error);
         const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        await this.presentAlert('Error al Eliminar', `No se pudo eliminar el vehículo. ${message}`);
+        
+        // Cambiamos presentAlert por modal personalizado
+        const modal = await this.modalController.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error al Eliminar',
+            message: `No se pudo eliminar el vehículo. ${message}`,
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
       }
     });
   }
@@ -244,9 +307,20 @@ export class VehicleListPage implements OnInit {
   }
 
   async presentAlert(header: string, message: string) {
-    const alert = await this.alertController.create({ header, message, buttons: ['OK'] });
-    await alert.present();
+    // Reemplazamos este método por el modal personalizado
+    const modal = await this.modalController.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: header,
+        message: message,
+        icon: 'info',
+        buttons: [{ text: 'Aceptar', role: 'confirm' }]
+      },
+      cssClass: 'custom-alert-modal'
+    });
+    await modal.present();
   }
+
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
     const toast = await this.toastController.create({ message, duration: 2500, position: 'bottom', color });
     toast.present();
@@ -278,13 +352,41 @@ export class VehicleListPage implements OnInit {
     // mostrar un modal o navegar a detalles
   }
 
+  // Helper para manejar botones de acción en la tabla
+  getActionButtons(idVehi: number | undefined, patente: string | undefined): string {
+    if (idVehi === undefined || patente === undefined) {
+      return '<div>ID o patente no disponible</div>';
+    }
+    
+    return `
+      <div class="action-buttons">
+        <ion-button fill="clear" size="small" class="view-btn" data-id="${idVehi}">
+          <ion-icon name="eye-outline" color="primary"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" class="edit-btn" data-id="${idVehi}">
+          <ion-icon name="pencil-outline" color="primary"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" class="delete-btn" data-id="${idVehi}" data-patente="${patente}">
+          <ion-icon name="trash-outline" color="danger"></ion-icon>
+        </ion-button>
+      </div>
+    `;
+  }
+
   // Manejador para eventos del DataTable
   handleTableEvent(event: MouseEvent) {
     const target = event.target as HTMLElement;
+    const viewBtn = target.closest('.view-btn');
     const editBtn = target.closest('.edit-btn');
     const deleteBtn = target.closest('.delete-btn');
     
-    if (editBtn) {
+    if (viewBtn) {
+      event.stopPropagation(); // Evitar que se active onRowClick
+      const idVehi = Number(viewBtn.getAttribute('data-id'));
+      if (!isNaN(idVehi)) {
+        this.goToViewVehicle(idVehi);
+      }
+    } else if (editBtn) {
       event.stopPropagation(); // Evitar que se active onRowClick
       const idVehi = Number(editBtn.getAttribute('data-id'));
       if (!isNaN(idVehi)) {
@@ -328,23 +430,5 @@ export class VehicleListPage implements OnInit {
     // Aquí implementaríamos la lógica para importar datos
     // Por ejemplo, abrir un selector de archivos y procesar el archivo seleccionado
     this.presentToast('Funcionalidad de importación en desarrollo', 'warning');
-  }
-
-  // Helper para manejar botones de acción en la tabla
-  getActionButtons(idVehi: number | undefined, patente: string | undefined): string {
-    if (idVehi === undefined || patente === undefined) {
-      return '<div>ID o patente no disponible</div>';
-    }
-    
-    return `
-      <div class="action-buttons">
-        <ion-button fill="clear" size="small" class="edit-btn" data-id="${idVehi}">
-          <ion-icon name="pencil-outline" color="primary"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" class="delete-btn" data-id="${idVehi}" data-patente="${patente}">
-          <ion-icon name="trash-outline" color="danger"></ion-icon>
-        </ion-button>
-      </div>
-    `;
   }
 }

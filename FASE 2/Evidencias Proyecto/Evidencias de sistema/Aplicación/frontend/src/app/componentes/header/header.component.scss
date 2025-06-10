@@ -64,8 +64,25 @@
   }
 }
 
+/* Clases de utilidad para visibilidad */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
 /* Responsividad para móviles */
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: flex;
+  }
+
   .header-container {
     padding: 0 8px;
   }
@@ -81,6 +98,32 @@
   
   .header-left {
     gap: 4px;
+  }
+
+  ion-back-button {
+    --color: #ff6b00;
+  }
+
+  /* Modificaciones para el dropdown de usuario en móvil */
+  app-dropdown-usuario {
+    ::ng-deep {
+      .user-info-text {
+        display: none; /* Oculta el nombre y rol */
+      }
+      
+      ion-avatar {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  /* Estilos para el back button móvil */
+  .back-button-mobile {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
   }
 }
 

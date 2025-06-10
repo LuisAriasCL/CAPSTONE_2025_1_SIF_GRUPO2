@@ -224,6 +224,15 @@ ion-toggle {
   }
 }
 
+/* ===== TEXTO DE AYUDA ===== */
+.helper-text {
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  margin-top: 4px;
+  padding-left: var(--form-input-padding);
+  font-style: italic;
+}
+
 /* ===== ESTILOS PARA CARDS GENERALES ===== */
 ion-card {
   margin: 8px 0;

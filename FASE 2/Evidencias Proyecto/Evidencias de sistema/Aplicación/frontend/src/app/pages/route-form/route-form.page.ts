@@ -1,16 +1,17 @@
 // src/app/pages/route-form/route-form.page.ts
 
 import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, inject, ChangeDetectorRef, Input } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common'; // <--- ASEGÚRATE DE IMPORTAR DecimalPipe
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule, LoadingController, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as L from 'leaflet';
-// Importa OsrmRouteData y asegúrate que la interfaz Route incluya kilometrosRuta
-import { ApiService, Route, OsrmRouteData } from '../../services/api.service'; // <--- OsrmRouteData AÑADIDO
+import { ApiService, Route, OsrmRouteData } from '../../services/api.service';
 import { addIcons } from 'ionicons';
-// Añade el icono para la distancia, por ejemplo, speedometerOutline
-import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline, speedometerOutline, close } from 'ionicons/icons'; // <--- close AÑADIDO
+import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashOutline, closeCircleOutline, speedometerOutline, close } from 'ionicons/icons';
+
+// Importar el componente de alertas personalizadas
+import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-route-form',
@@ -22,6 +23,7 @@ import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashO
     CommonModule,
     ReactiveFormsModule,
     DecimalPipe,
+    AlertaPersonalizadaComponent // Añadir a los imports
   ]
 })
 export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
@@ -252,7 +254,25 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         }
         this.changeDetectorRef.detectChanges(); // Actualizar la UI
       },
-      error: async (err) => { /* ... tu manejo de error ... */ }
+      error: async (err) => {
+        loading.dismiss();
+        this.isLoading = false;
+        console.error("Error cargando datos de la ruta:", err);
+        
+        // Usar el componente de alerta personalizada
+        const modal = await this.modalCtrl.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
+            message: 'No se pudieron cargar los datos de la ruta.',
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
+        this.closeModal(); // Cerrar el formulario en caso de error
+      }
     });
   }
 
@@ -364,57 +384,120 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   async saveRoute() {
     this.isSubmitted = true;
     if (this.routeForm.invalid || !this.calculatedPoints || this.calculatedPoints.length === 0) {
-       this.presentToast('Asigna un nombre y calcula una ruta válida (con puntos).', 'warning'); return;
+      this.presentToast('Asigna un nombre y calcula una ruta válida (con puntos).', 'warning'); 
+      return;
     }
+    
+    // Añadir confirmación con alerta personalizada antes de guardar
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: this.isEditMode ? 'Confirmar Edición' : 'Confirmar Creación',
+        message: `¿Estás seguro de ${this.isEditMode ? 'actualizar' : 'crear'} la ruta <strong>"${this.routeForm.value.nombre}"</strong>?`,
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: this.isEditMode ? 'Actualizar' : 'Crear', role: 'confirm', cssClass: 'confirm-button' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
+    });
+    await confirmModal.present();
+    
+    const { data } = await confirmModal.onDidDismiss();
+    if (data !== 'confirm') {
+      return; // Cancelar si no se confirma
+    }
+    
     const loading = await this.loadingCtrl.create({ message: this.isEditMode ? 'Actualizando...' : 'Creando...' });
     await loading.present();
+    
     try {
-        const puntosParaGuardar: Array<[number, number]> = this.calculatedPoints.map(p => [p[0], p[1]]);
+      const puntosParaGuardar: Array<[number, number]> = this.calculatedPoints.map(p => [p[0], p[1]]);
 
-        // Asegúrate que la interfaz Route en api.service.ts incluya kilometrosRuta
-        const routeData: Partial<Route> = {
-            nombreRuta: this.routeForm.value.nombre,       // Usa el nombre de propiedad de tu interfaz Route
-            descripcionRuta: this.routeForm.value.descripcion, // Usa el nombre de propiedad de tu interfaz Route
-            puntosRuta: puntosParaGuardar,                  // Usa el nombre de propiedad de tu interfaz Route
-            kilometrosRuta: this.calculatedDistance        // <--- GUARDAR LA DISTANCIA
-        };
+      const routeData: Partial<Route> = {
+        nombreRuta: this.routeForm.value.nombre,
+        descripcionRuta: this.routeForm.value.descripcion,
+        puntosRuta: puntosParaGuardar,
+        kilometrosRuta: this.calculatedDistance
+      };
 
-        const saveObservable = this.isEditMode
-            ? this.apiService.updateRoute(this.routeId!, routeData)
-            : this.apiService.createRoute(routeData);        saveObservable.subscribe({
-            next: async (savedRoute) => {
-                await this.presentToast(`Ruta ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
-                // Si es modal, cerrar con datos de éxito
-                if (this.modalCtrl) {
-                  this.modalCtrl.dismiss({ routeCreated: true }, 'success');
-                } else {
-                  this.navCtrl.navigateBack('/rutas'); // Fallback para navegación normal
-                }
+      const saveObservable = this.isEditMode
+        ? this.apiService.updateRoute(this.routeId!, routeData)
+        : this.apiService.createRoute(routeData);
+        
+      saveObservable.subscribe({
+        next: async (savedRoute) => {
+          await loading.dismiss();
+          await this.presentToast(`Ruta ${this.isEditMode ? 'actualizada' : 'creada'} exitosamente.`, 'success');
+          if (this.modalCtrl) {
+            this.modalCtrl.dismiss({ routeCreated: true }, 'success');
+          } else {
+            this.navCtrl.navigateBack('/rutas');
+          }
+        },
+        error: async (error) => {
+          await loading.dismiss();
+          console.error("Error guardando ruta:", error);
+          let detailMessage = 'Error desconocido.';
+          if (error && error.message) {
+            const match = error.message.match(/Detalle: (.*)/);
+            detailMessage = match && match[1] ? match[1] : error.message;
+          }
+          
+          // Usar alerta personalizada para el error
+          const errorModal = await this.modalCtrl.create({
+            component: AlertaPersonalizadaComponent,
+            componentProps: {
+              title: 'Error al Guardar',
+              message: `No se pudo guardar la ruta. ${detailMessage}`,
+              icon: 'error',
+              buttons: [{ text: 'Aceptar', role: 'confirm' }]
             },
-            error: async (error) => {
-                console.error("Error guardando ruta:", error);
-                let detailMessage = 'Error desconocido.';
-                 if (error && error.message) {
-                     const match = error.message.match(/Detalle: (.*)/);
-                     detailMessage = match && match[1] ? match[1] : error.message;
-                 }
-                await this.presentAlert('Error al Guardar', `No se pudo guardar la ruta. ${detailMessage}`);
-            },
-            complete: async () => { if (loading) await loading.dismiss(); }
-        });
+            cssClass: 'custom-alert-modal'
+          });
+          await errorModal.present();
+        }
+      });
     } catch (error) {
-        if (loading) await loading.dismiss();
-        console.error("Error inesperado en saveRoute:", error);        await this.presentAlert('Error', 'Ocurrió un error inesperado al guardar.');
-    }  }
-
+      await loading.dismiss();
+      console.error("Error inesperado en saveRoute:", error);
+      
+      // Usar alerta personalizada para error inesperado
+      const errorModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Error',
+          message: 'Ocurrió un error inesperado al guardar.',
+          icon: 'error',
+          buttons: [{ text: 'Aceptar', role: 'confirm' }]
+        },
+        cssClass: 'custom-alert-modal'
+      });
+      await errorModal.present();
+    }
+  }
+  
   async closeModal() {
     await this.modalCtrl.dismiss();
   }
 
   async presentAlert(header: string, message: string) {
-    const alert = await this.alertCtrl.create({ header, message, buttons: ['OK'] });
-    await alert.present();
+    // Reemplazar este método con el uso de alerta personalizada
+    const modal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: header,
+        message: message,
+        icon: 'info',
+        buttons: [{ text: 'Aceptar', role: 'confirm' }]
+      },
+      cssClass: 'custom-alert-modal'
+    });
+    await modal.present();
   }
+
   async presentToast(message: string, color: 'success'|'warning'|'danger'|'medium' = 'medium') {
     const toast = await this.toastCtrl.create({ message, duration: 3000, position: 'bottom', color });
     await toast.present();

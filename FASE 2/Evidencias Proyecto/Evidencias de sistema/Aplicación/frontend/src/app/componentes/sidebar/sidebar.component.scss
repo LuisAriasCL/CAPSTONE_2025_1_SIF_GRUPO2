@@ -1,6 +1,6 @@
 /* Estilos principales para la lista de navegación */
 #menu-list {
-  padding: 16px 0;
+  padding: 80px 0;
   background: transparent;
 }
 
@@ -21,15 +21,16 @@
   .app-info {
     h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 18px; /* Aumentado de 16px a 18px */
       font-weight: 700;
       color: var(--ion-color-dark);
     }
     
     p {
       margin: 0;
-      font-size: 12px;
+      font-size: 14px; /* Aumentado de 12px a 14px */
       color: var(--ion-color-medium-shade);
+      font-weight: 500; /* Añadido peso de fuente */
     }
   }
 }
@@ -47,7 +48,8 @@ ion-item.selected {
   }
   
   ion-label {
-    font-weight: 600;
+    font-weight: 700; /* Aumentado de 600 a 700 */
+    font-size: 18px; /* Añadido tamaño específico para seleccionado */
   }
 }
 
@@ -62,6 +64,7 @@ ion-item {
   border-radius: 8px;
   --border-radius: 8px;
   transition: all 0.2s ease-in-out;
+  --min-height: 52px; /* Aumentado para acomodar texto más grande */
   
   &:hover {
     --background: rgba(var(--ion-color-primary-rgb), 0.08);
@@ -72,16 +75,18 @@ ion-item {
 /* Estilos para los iconos */
 ion-item ion-icon {
   margin-right: 16px;
-  font-size: 20px;
+  font-size: 24px; /* Aumentado de 20px a 24px */
   color: var(--ion-color-medium-shade);
   transition: color 0.2s ease-in-out;
 }
 
 /* Estilos para las etiquetas */
 ion-item ion-label {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px; /* Aumentado de 14px a 16px */
+  font-weight: 600; /* Aumentado de 500 a 600 */
   color: var(--ion-color-dark);
+  letter-spacing: 0.3px; /* Añadido espaciado entre letras para mejor legibilidad */
+  line-height: 1.4; /* Añadido altura de línea para mejor espaciado */
 }
 
 /* Separador visual entre grupos de menú */

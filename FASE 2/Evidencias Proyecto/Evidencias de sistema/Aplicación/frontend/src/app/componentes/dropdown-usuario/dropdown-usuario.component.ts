@@ -75,13 +75,13 @@ export class DropdownUsuarioComponent  {
       componentProps: {
         title: 'Confirmar cierre de sesión',
         message: '¿Estás seguro que deseas cerrar sesión?',
-        icon: 'warning', // 'warning', 'success', 'error', 'info'
+        icon: 'logout', // Cambiado de 'warning' a 'logout'
         buttons: [
           { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' }, // Botón gris/claro
           { text: 'Cerrar sesión', role: 'confirm', cssClass: 'button-danger' } // Botón rojo
         ] as AlertButton[] // Asegura el tipo
       },
-      cssClass: 'custom-alert-modal-wrapper', // Clase para el backdrop y posicionamiento
+      cssClass: 'custom-alert-modal', // Clase para el backdrop y posicionamiento
       backdropDismiss: false // Evita cerrar al hacer clic fuera
     });
 
@@ -92,7 +92,8 @@ export class DropdownUsuarioComponent  {
 
     if (data === 'confirm') {
       console.log('Cerrando sesión...');
-      // Aquí tu lógica de logout
+      // Aquí ejecutamos el logout real
+      this.authService.logout();
       this.mostrarAlertaExito(); // Muestra alerta de éxito
     } else {
       console.log('Cierre de sesión cancelado (role:', data, ')');
@@ -124,7 +125,7 @@ export class DropdownUsuarioComponent  {
   }
 
   logout(): void {
+    // Solo muestra el modal de confirmación, NO ejecuta el logout
     this.mostrarAlertaLogout();
-    this.authService.logout();
   }
 }

@@ -2,6 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 
+
 export const routes: Routes = [
   // --- Rutas Públicas (fuera del sidebar principal) ---
   {
@@ -12,6 +13,22 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./pages/register/register.page').then( m => m.RegisterPage)
   },
+
+  {
+    path: 'vista-movil/home',
+    loadComponent: () => import('./pages/vista-movil/home-movil/home-movil.page').then( m => m.HomeMovilPage)
+  },
+  {
+    path: 'vista-movil/combustible',
+    loadComponent: () => import('./pages/vista-movil/combustible-movil/combustible-movil.page').then( m => m.CombustibleMovilPage)
+  },
+  {
+    path: 'vista-movil/incidente',
+    loadComponent: () => import('./pages/vista-movil/incidente-movil/incidente-movil.page').then( m => m.IncidenteMovilPage)
+  },
+
+  
+  
 
   // --- Rutas Privadas (protegidas por authGuard) ---
   {

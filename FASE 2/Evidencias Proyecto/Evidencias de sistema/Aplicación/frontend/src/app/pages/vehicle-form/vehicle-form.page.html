@@ -30,24 +30,21 @@
     <!-- Tab: Información Básica -->
     <div *ngIf="selectedTab === 'infoBasica'">
       <ion-grid class="ultra-compact">        <!-- Patente y Chasis -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Patente <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="patente" 
                 type="text" 
                 required 
-                maxlength="6" 
-                autocapitalize="characters"
-                placeholder="AA1234 o AAAA12"
+                placeholder="XXXX-XX (Ej: ABCD-12)"
                 [readonly]="isViewMode">
               </ion-input>
             </div>
             <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched)" class="error-container">
               <div class="error-message">
                 <small *ngIf="f['patente'].errors?.['required']">Patente es requerida.</small>
-                <small *ngIf="f['patente'].errors?.['minlength'] || f['patente'].errors?.['maxlength']">Patente debe tener 6 caracteres.</small>
+                <small *ngIf="f['patente'].errors?.['pattern']">Formato debe ser XXXX-XX, con los últimos dos caracteres numéricos.</small>
               </div>
             </div>
           </ion-col>
@@ -111,34 +108,37 @@
         </ion-row>
 
         <!-- Año y Kilometraje -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Año <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="anio" 
                 type="number" 
                 inputmode="numeric" 
+                min="1970"
+                max="2025"
                 required
+                placeholder="Entre 1970 y 2025"
                 [readonly]="isViewMode">
               </ion-input>
             </div>
             <div *ngIf="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched)" class="error-container">
               <div class="error-message">
                 <small *ngIf="f['anio'].errors?.['required']">Año es requerido.</small>
-                <small *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']">Año debe estar entre 1900 y {{ maxValidYear }}.</small>
+                <small *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']">Año debe estar entre 1970 y 2025.</small>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
+          </ion-col>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Kilometraje <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="kmVehi" 
                 type="number" 
                 inputmode="numeric" 
+                min="0"
+                max="1000000"
                 required
+                placeholder="Máximo 1.000.000 km"
                 [readonly]="isViewMode">
               </ion-input>
             </div>
@@ -146,14 +146,14 @@
               <div class="error-message">
                 <small *ngIf="f['kmVehi'].errors?.['required']">Kilometraje es requerido.</small>
                 <small *ngIf="f['kmVehi'].errors?.['min']">Kilometraje debe ser positivo.</small>
+                <small *ngIf="f['kmVehi'].errors?.['max']">Kilometraje no puede superar 1.000.000 km.</small>
               </div>
             </div>
           </ion-col>
         </ion-row>
 
         <!-- Fecha de Adquisición y Estado -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Fecha de Adquisición <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
@@ -162,8 +162,10 @@
                 required 
                 displayFormat="YYYY-MM-DD" 
                 pickerFormat="YYYY-MM-DD"
+                placeholder="Fecha de adquisición"
                 [readonly]="isViewMode">
               </ion-input>
+              <small class="helper-text">Por defecto se usa la fecha actual</small>
             </div>
             <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched)" class="error-container">
               <div class="error-message">
@@ -198,19 +200,21 @@
     <!-- Tab: Información Adicional -->
     <div *ngIf="selectedTab === 'infoAdicional'">
       <ion-grid class="ultra-compact">        <!-- Tipo de Vehículo y Tipo de Combustible -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Tipo de Vehículo</ion-label>
-              <ion-input 
+              <ion-select 
                 formControlName="tipoVehi" 
-                type="text"
-                [readonly]="isViewMode">
-              </ion-input>
+                interface="popover" 
+                placeholder="Selecciona tipo de vehículo"
+                [disabled]="isViewMode">
+                <ion-select-option value="Camioneta">Camioneta</ion-select-option>
+                <ion-select-option value="Furgón">Furgón</ion-select-option>
+                <ion-select-option value="Camión Liviano">Camión Liviano</ion-select-option>
+                <ion-select-option value="Camión Pesado">Camión Pesado</ion-select-option>
+              </ion-select>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
+          </ion-col>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Tipo de Combustible</ion-label>
               <ion-select 
@@ -219,34 +223,37 @@
                 placeholder="Selecciona combustible"
                 [disabled]="isViewMode">
                 <ion-select-option value="">Ninguno</ion-select-option>
-                <ion-select-option *ngFor="let tipo of tiposCombustibleOptions" [value]="tipo">
-                  {{ tipo === null ? 'Ninguno' : (tipo | titlecase) }}
-                </ion-select-option>
+                <ion-select-option value="gasolina_93">93 Octanos</ion-select-option>
+                <ion-select-option value="gasolina_95">95 Octanos</ion-select-option>
+                <ion-select-option value="gasolina_97">97 Octanos</ion-select-option>
+                <ion-select-option value="diesel">Diesel</ion-select-option>
+                <ion-select-option value="electrico">Eléctrico</ion-select-option>
               </ion-select>
             </div>
           </ion-col>
         </ion-row>
 
         <!-- Kilometraje Vida Útil y Eficiencia Combustible -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
+        <ion-row>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Kilometraje Vida Útil</ion-label>
               <ion-input 
                 formControlName="kmVidaUtil" 
                 type="number" 
                 inputmode="numeric"
+                min="1000"
+                max="5000000"
+                placeholder="Entre 1.000 y 5.000.000 km"
                 [readonly]="isViewMode">
               </ion-input>
             </div>
             <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['kmVidaUtil'].errors?.['min']">Debe ser un valor positivo.</small>
+                <small *ngIf="f['kmVidaUtil'].errors?.['min']">Kilometraje vida útil debe ser al menos 1.000 km.</small>
+                <small *ngIf="f['kmVidaUtil'].errors?.['max']">Kilometraje vida útil no puede superar 5.000.000 km.</small>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
+          </ion-col>          <ion-col size="12" size-md="6">
             <div class="input-wrapper">
               <ion-label position="floating">Eficiencia Combustible (km/L)</ion-label>
               <ion-input 
@@ -254,13 +261,16 @@
                 type="number" 
                 inputmode="decimal" 
                 step="0.01" 
-                placeholder="Ej: 10.50"
+                min="2"
+                max="30"
+                placeholder="Entre 2 y 30 km/L"
                 [readonly]="isViewMode">
               </ion-input>
             </div>
             <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['efiComb'].errors?.['min']">Debe ser un valor positivo.</small>
+                <small *ngIf="f['efiComb'].errors?.['min']">Eficiencia debe ser al menos 2 km/L.</small>
+                <small *ngIf="f['efiComb'].errors?.['max']">Eficiencia no puede superar 30 km/L.</small>
               </div>
             </div>
           </ion-col>
