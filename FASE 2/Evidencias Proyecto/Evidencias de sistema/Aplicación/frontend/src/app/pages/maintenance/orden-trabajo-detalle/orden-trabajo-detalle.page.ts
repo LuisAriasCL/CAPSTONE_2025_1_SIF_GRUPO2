@@ -1,60 +1,90 @@
 // frontend/src/app/pages/maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page.ts
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, LoadingController, AlertController, ToastController } from '@ionic/angular';
-import { ActivatedRoute, Router } from '@angular/router';
+import { IonicModule, LoadingController, ToastController, ModalController } from '@ionic/angular';
 import { ApiService, OrdenTrabajoDetalle, DetalleOtData, UsuarioResumen } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { addIcons } from 'ionicons';
+import { checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, saveOutline, flagOutline, personAddOutline, 
+         personCircleOutline, carSportOutline, speedometerOutline } from 'ionicons/icons';
+import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-orden-trabajo-detalle',
   templateUrl: './orden-trabajo-detalle.page.html',
   styleUrls: ['./orden-trabajo-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, AlertaPersonalizadaComponent]
 })
 export class OrdenTrabajoDetallePage implements OnInit {
+  @Input() ordenTrabajoId: number | null = null;
+  @Input() isViewMode: boolean = false;
 
   ordenTrabajo: OrdenTrabajoDetalle | null = null;
   isLoading: boolean = false;
   tecnicos: UsuarioResumen[] = [];
+  pageTitle: string = 'Detalle de Orden de Trabajo';
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
     private apiService: ApiService,
     private authService: AuthService,
-    private navCtrl: NavController,
     private loadingCtrl: LoadingController,
-    private alertCtrl: AlertController,
-    private toastCtrl: ToastController
-  ) { }
+    private toastCtrl: ToastController,
+    private modalCtrl: ModalController
+  ) {
+    // Registrar iconos necesarios
+    addIcons({ 
+      checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, 
+      saveOutline, flagOutline, personAddOutline, personCircleOutline,
+      carSportOutline, speedometerOutline
+    });
+  }
 
-  ngOnInit() { }
-
-  ionViewWillEnter() {
-    this.cargarDatosDePagina();
+  ngOnInit() {
+    if (this.ordenTrabajoId) {
+      this.cargarDatosDePagina();
+    }
   }
 
   async cargarDatosDePagina() {
-    const idOt = this.route.snapshot.paramMap.get('id');
-    if (!idOt) {
-      this.navCtrl.back();
+    if (!this.ordenTrabajoId) {
+      this.closeModal();
       return;
     }
+    
     this.isLoading = true;
-    this.apiService.getOrdenTrabajoById(+idOt).subscribe({
+    
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando datos...'
+    });
+    await loading.present();
+    
+    this.apiService.getOrdenTrabajoById(this.ordenTrabajoId).subscribe({
       next: (data) => {
         this.ordenTrabajo = data;
         this.isLoading = false;
+        loading.dismiss();
         this.cargarTecnicos();
       },
-      error: (error) => {
+      error: async (error) => {
         this.isLoading = false;
-        this.mostrarToast('Error al cargar la Orden de Trabajo.', 'danger');
-        this.navCtrl.back();
+        loading.dismiss();
+        
+        // Mostrar alerta personalizada para el error
+        const modal = await this.modalCtrl.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
+            message: 'No se pudo cargar la información de la orden de trabajo.',
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
+        this.closeModal();
       }
     });
   }
@@ -62,124 +92,234 @@ export class OrdenTrabajoDetallePage implements OnInit {
   cargarTecnicos() {
     this.apiService.getUsuariosPorRol('tecnico').subscribe({
       next: (data) => this.tecnicos = data,
-      error: (err) => this.mostrarToast('No se pudieron cargar los técnicos.', 'danger')
+      error: async (err) => {
+        // Mostrar alerta personalizada para el error
+        const modal = await this.modalCtrl.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Advertencia',
+            message: 'No se pudieron cargar los técnicos disponibles.',
+            icon: 'warning',
+            buttons: [{ text: 'Entendido', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
+      }
     });
   }
 
-  // ===== LÓGICA COMPLETA Y FUNCIONAL PARA SELECCIONAR TÉCNICOS =====
   async abrirSelectorTecnicos(tarea: DetalleOtData) {
     if (this.tecnicos.length === 0) {
-      this.mostrarToast('No hay técnicos disponibles para asignar.', 'warning');
+      // Mostrar alerta personalizada
+      const modal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Sin Técnicos',
+          message: 'No hay técnicos disponibles para asignar.',
+          icon: 'info',
+          buttons: [{ text: 'Aceptar', role: 'confirm' }]
+        },
+        cssClass: 'custom-alert-modal'
+      });
+      await modal.present();
       return;
     }
-    const alert = await this.alertCtrl.create({
-      header: 'Asignar Técnico',
-      inputs: this.tecnicos.map(t => ({
-        name: `tecnico-radio`,
-        type: 'radio',
-        label: `${t.pri_nom_usu} ${t.pri_ape_usu}`,
-        value: t,
-        checked: tarea.tecnico?.id_usu === t.id_usu
-      })),
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Asignar',
-          handler: (tecnicoSeleccionado) => {
-            if (tecnicoSeleccionado) {
-              tarea.tecnico = tecnicoSeleccionado;
-            }
-          }
-        }
-      ]
+
+    const alert = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Asignar Técnico',
+        message: 'Seleccione el técnico para esta tarea:',
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          ...this.tecnicos.map(t => ({
+            text: `${t.pri_nom_usu} ${t.pri_ape_usu}`,
+            role: t.id_usu.toString(),
+            cssClass: tarea.tecnico?.id_usu === t.id_usu ? 'confirm-button' : ''
+          }))
+        ]
+      },
+      cssClass: 'custom-alert-modal'
     });
+    
     await alert.present();
-  }
-
-  // ===== LÓGICA COMPLETA Y FUNCIONAL PARA EL CICLO DE VIDA DE LA OT =====
-  async iniciarOrdenDeTrabajo() {
-  if (!this.ordenTrabajo) return;
-
-  // --- ASEGÚRATE DE QUE ESTA LÍNEA USE TU FUNCIÓN ---
-  const currentUser = this.authService.getCurrentUser();
-  // --- FIN DE LA LÍNEA CRÍTICA ---
-
-  if (!currentUser) {
-    this.mostrarToast('No se pudo identificar al usuario actual.', 'danger');
-    return;
-  }
-
-  const alert = await this.alertCtrl.create({
-    header: 'Iniciar Orden de Trabajo',
-    message: `¿Confirmas iniciar la OT #${this.ordenTrabajo.id_ot}? Serás asignado como encargado.`,
-    buttons: [
-      { text: 'Cancelar', role: 'cancel' },
-      {
-        text: 'Sí, Iniciar',
-        handler: () => {
-          // Aquí usamos la propiedad correcta 'idUsu' de tu interfaz UserInfo
-          this.apiService.actualizarEstadoOt(this.ordenTrabajo!.id_ot, 'en_progreso', currentUser.idUsu).subscribe({
-            next: () => {
-              this.mostrarToast('Orden de Trabajo iniciada.', 'success');
-              this.cargarDatosDePagina();
-            },
-            error: (err) => this.mostrarToast('Error al iniciar la OT.', 'danger')
-          });
-        }
+    const { data } = await alert.onDidDismiss();
+    
+    if (data && !isNaN(parseInt(data))) {
+      const tecnicoId = parseInt(data);
+      const tecnicoSeleccionado = this.tecnicos.find(t => t.id_usu === tecnicoId);
+      if (tecnicoSeleccionado) {
+        tarea.tecnico = tecnicoSeleccionado;
       }
-    ]
-  });
-  await alert.present();
-}
+    }
+  }
+
+  async iniciarOrdenDeTrabajo() {
+    if (!this.ordenTrabajo) return;
+  
+    const currentUser = this.authService.getCurrentUser();
+  
+    if (!currentUser) {
+      this.presentToast('No se pudo identificar al usuario actual.', 'danger');
+      return;
+    }
+  
+    // Mostrar alerta personalizada de confirmación
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Iniciar Orden de Trabajo',
+        message: `¿Confirmas iniciar la OT #${this.ordenTrabajo.id_ot}? Serás asignado como encargado.`,
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Sí, Iniciar', role: 'confirm', cssClass: 'confirm-button' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
+    });
+    
+    await confirmModal.present();
+    const { data } = await confirmModal.onDidDismiss();
+    
+    if (data === 'confirm') {
+      const loading = await this.loadingCtrl.create({
+        message: 'Iniciando orden de trabajo...'
+      });
+      await loading.present();
+      
+      this.apiService.actualizarEstadoOt(this.ordenTrabajo.id_ot, 'en_progreso', currentUser.idUsu).subscribe({
+        next: async () => {
+          await loading.dismiss();
+          this.presentToast('Orden de Trabajo iniciada.', 'success');
+          this.cargarDatosDePagina();
+        },
+        error: async (err) => {
+          await loading.dismiss();
+          // Mostrar alerta personalizada para el error
+          const errorModal = await this.modalCtrl.create({
+            component: AlertaPersonalizadaComponent,
+            componentProps: {
+              title: 'Error',
+              message: 'No se pudo iniciar la orden de trabajo.',
+              icon: 'error',
+              buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            },
+            cssClass: 'custom-alert-modal'
+          });
+          await errorModal.present();
+        }
+      });
+    }
+  }
   
   async guardarProgresoTareas() {
     if (!this.ordenTrabajo || !this.ordenTrabajo.detalles) { return; }
+    
     const loading = await this.loadingCtrl.create({ message: 'Guardando progreso...' });
     await loading.present();
+    
     const detallesParaActualizar = this.ordenTrabajo.detalles.map(t => ({
       id_det: t.id_det,
       checklist: t.checklist,
       usuario_id_usu_tecnico: t.tecnico ? t.tecnico.id_usu : null
     }));
+    
     this.apiService.actualizarDetallesOt(this.ordenTrabajo.id_ot, detallesParaActualizar).subscribe({
       next: async () => {
         await loading.dismiss();
-        this.mostrarToast('Progreso guardado con éxito.', 'success');
+        this.presentToast('Progreso guardado con éxito.', 'success');
       },
       error: async (err) => {
         await loading.dismiss();
-        this.mostrarToast('No se pudieron guardar los cambios.', 'danger');
+        // Mostrar alerta personalizada para el error
+        const errorModal = await this.modalCtrl.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
+            message: 'No se pudieron guardar los cambios.',
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await errorModal.present();
       }
     });
   }
 
   async finalizarOrdenDeTrabajo() {
     if (!this.ordenTrabajo) return;
+    
     const todasCompletas = this.ordenTrabajo.detalles.every(t => t.checklist);
+    
     if (!todasCompletas) {
-      this.mostrarToast('Debes completar todas las tareas para poder finalizar la OT.', 'warning');
+      // Mostrar alerta personalizada
+      const warnModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Advertencia',
+          message: 'Debes completar todas las tareas para poder finalizar la OT.',
+          icon: 'warning',
+          buttons: [{ text: 'Entendido', role: 'confirm' }]
+        },
+        cssClass: 'custom-alert-modal'
+      });
+      await warnModal.present();
       return;
     }
-    const alert = await this.alertCtrl.create({
-      header: 'Finalizar Orden de Trabajo',
-      message: '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Sí, Finalizar',
-          handler: () => {
-            this.apiService.actualizarEstadoOt(this.ordenTrabajo!.id_ot, 'completado').subscribe({
-              next: () => {
-                this.mostrarToast('Orden de Trabajo finalizada.', 'success');
-                this.router.navigate(['/orden-trabajo-list']);
-              },
-              error: (err) => this.mostrarToast('Error al finalizar la OT.', 'danger')
-            });
-          }
-        }
-      ]
+    
+    // Mostrar alerta personalizada de confirmación
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Finalizar Orden de Trabajo',
+        message: '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Sí, Finalizar', role: 'confirm', cssClass: 'confirm-button' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
     });
-    await alert.present();
+    
+    await confirmModal.present();
+    const { data } = await confirmModal.onDidDismiss();
+    
+    if (data === 'confirm') {
+      const loading = await this.loadingCtrl.create({
+        message: 'Finalizando orden de trabajo...'
+      });
+      await loading.present();
+      
+      this.apiService.actualizarEstadoOt(this.ordenTrabajo.id_ot, 'completado').subscribe({
+        next: async () => {
+          await loading.dismiss();
+          this.presentToast('Orden de Trabajo finalizada.', 'success');
+          this.closeModal(true);
+        },
+        error: async (err) => {
+          await loading.dismiss();
+          // Mostrar alerta personalizada para el error
+          const errorModal = await this.modalCtrl.create({
+            component: AlertaPersonalizadaComponent,
+            componentProps: {
+              title: 'Error',
+              message: 'No se pudo finalizar la orden de trabajo.',
+              icon: 'error',
+              buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            },
+            cssClass: 'custom-alert-modal'
+          });
+          await errorModal.present();
+        }
+      });
+    }
   }
 
   getColorForStatus(estado: string | undefined): string {
@@ -189,8 +329,27 @@ export class OrdenTrabajoDetallePage implements OnInit {
     };
     return colores[estado] || 'medium';
   }
+  
+  // Añadir método para validar fechas antes de aplicar el pipe date
+  isValidDate(dateStr: any): boolean {
+    if (!dateStr) return false;
+    
+    // Si es un string, verificar que tenga formato de fecha válido
+    if (typeof dateStr === 'string') {
+      // Intentar convertirlo a fecha
+      const date = new Date(dateStr);
+      return !isNaN(date.getTime());
+    }
+    
+    // Si ya es un objeto Date
+    if (dateStr instanceof Date) {
+      return !isNaN(dateStr.getTime());
+    }
+    
+    return false;
+  }
 
-  async mostrarToast(mensaje: string, color: string = 'dark', duracion: number = 2000) {
+  async presentToast(mensaje: string, color: string = 'dark', duracion: number = 2000) {
     const toast = await this.toastCtrl.create({
       message: mensaje,
       duration: duracion,
@@ -198,5 +357,11 @@ export class OrdenTrabajoDetallePage implements OnInit {
       position: 'bottom'
     });
     toast.present();
+  }
+  
+  async closeModal(updated: boolean = false) {
+    await this.modalCtrl.dismiss({
+      updated: updated
+    });
   }
 }

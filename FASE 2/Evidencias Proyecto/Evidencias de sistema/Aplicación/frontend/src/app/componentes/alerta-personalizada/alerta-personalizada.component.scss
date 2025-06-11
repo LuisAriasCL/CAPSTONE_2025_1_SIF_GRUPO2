@@ -96,6 +96,10 @@ ion-content.custom-modal-content {
     &.icon-help-outline {
       color: #008000;
     }
+    // Cambiado: ícono de logout en color rojo blanquecino
+    &.icon-logout {
+      color: #ff6b6b; // Rojo blanquecino suave
+    }
 
     // Aplicar animación al icono con un ligero retraso
     animation: popIcon 0.5s ease-out 0.1s forwards; // 0.1s delay

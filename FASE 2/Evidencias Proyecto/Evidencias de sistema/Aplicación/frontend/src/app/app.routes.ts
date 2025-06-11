@@ -19,6 +19,10 @@ export const routes: Routes = [
     path: 'combustible-movil',
     loadComponent: () => import('./pages/vista-movil/combustible-movil/combustible-movil.page').then(m => m.CombustibleMovilPage)
   },
+  {
+    path: 'incidente-movil', // Nueva ruta para la vista móvil de incidente
+    loadComponent: () => import('./pages/vista-movil/incidente-movil/incidente-movil.page').then(m => m.IncidenteMovilPage)
+  },
 
   // --- Rutas Privadas ---
   {

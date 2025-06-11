@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonIcon, IonButton } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { warningOutline, checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, informationCircleOutline } from 'ionicons/icons'; // Importa iconos comunes
+import { warningOutline, checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, informationCircleOutline, logOutOutline } from 'ionicons/icons'; // Añadido logOutOutline
 
 // Define una interfaz para los botones
 export interface AlertButton {
@@ -28,14 +28,14 @@ export class AlertaPersonalizadaComponent implements OnInit {
 
   @Input() title: string = 'Alerta'; // Título por defecto
   @Input() message: string = ''; // Mensaje
-  @Input() icon?: 'warning' | 'success' | 'error' | 'info' | 'help'; // Añadir 'help'
+  @Input() icon?: 'warning' | 'success' | 'error' | 'info' | 'help' | 'logout'; // Añadido 'logout'
   @Input() buttons: AlertButton[] = [{ text: 'Aceptar', role: 'confirm' }]; // Botón por defecto
 
   iconName: string = ''; // Nombre del icono de Ionicons
 
   constructor(private modalCtrl: ModalController) {
     // Registra los iconos que podrías usar
-    addIcons({ warningOutline, checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, informationCircleOutline });
+    addIcons({ warningOutline, checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, informationCircleOutline, logOutOutline });
   }
 
   ngOnInit() {
@@ -55,6 +55,9 @@ export class AlertaPersonalizadaComponent implements OnInit {
         break;
       case 'help':
         this.iconName = 'help-circle-outline';
+        break;
+      case 'logout':
+        this.iconName = 'log-out-outline';
         break;
       default:
         this.iconName = ''; // Sin icono si no se especifica o no coincide

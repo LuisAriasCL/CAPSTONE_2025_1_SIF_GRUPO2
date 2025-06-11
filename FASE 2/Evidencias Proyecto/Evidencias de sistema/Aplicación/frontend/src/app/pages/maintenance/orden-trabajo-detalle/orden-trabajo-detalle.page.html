@@ -1,22 +1,25 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/orden-trabajo-list"></ion-back-button>
+  <ion-toolbar color="primary">
+    <ion-title>{{ ordenTrabajo ? 'OT #' + ordenTrabajo.id_ot : 'Orden de Trabajo' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()" fill="clear" color="light">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
     </ion-buttons>
-    <ion-title>OT #{{ ordenTrabajo?.id_ot }}</ion-title>
     
     <ion-buttons slot="end" *ngIf="ordenTrabajo?.encargado">
-      <ion-chip color="primary" outline>
+      <ion-chip color="light" outline>
         <ion-icon name="person-circle"></ion-icon>
-       <ion-label>{{ ordenTrabajo?.encargado?.pri_nom_usu }}</ion-label>
+        <ion-label>{{ ordenTrabajo?.encargado?.pri_nom_usu }}</ion-label>
       </ion-chip>
     </ion-buttons>
-    </ion-toolbar>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando información...</p>
   </div>
 
   <div *ngIf="!isLoading && ordenTrabajo">
@@ -45,7 +48,26 @@
             <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
             <ion-label>
               <h3>Solicitante</h3>
-              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu }} {{ ordenTrabajo.solicitante?.pri_ape_usu }}</p>
+              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'N/A' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || '' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label>
+              <h3>Estado</h3>
+              <p>{{ ordenTrabajo.estado_ot | titlecase }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label>
+              <h3>Fechas</h3>
+              <p *ngIf="ordenTrabajo.fec_ini_ot && isValidDate(ordenTrabajo.fec_ini_ot)">
+                <ion-icon name="calendar-outline" class="align-middle"></ion-icon>
+                <strong>Fecha Inicio:</strong> {{ ordenTrabajo.fec_ini_ot | date:'dd/MM/yy HH:mm' }}
+              </p>
+              <p *ngIf="ordenTrabajo.fec_fin_ot && isValidDate(ordenTrabajo.fec_fin_ot)">
+                <ion-icon name="checkmark-done-outline" class="align-middle"></ion-icon>
+                <strong>Fecha Cierre:</strong> {{ ordenTrabajo.fec_fin_ot | date:'dd/MM/yy HH:mm' }}
+              </p>
             </ion-label>
           </ion-item>
         </ion-list>
@@ -56,20 +78,20 @@
       <ion-list-header>
         <ion-label>Tareas a Realizar</ion-label>
       </ion-list-header>
-      <ion-card *ngFor="let tarea of ordenTrabajo.detalles">
-        <ion-item lines="none">
+      <ion-card *ngFor="let tarea of ordenTrabajo.detalles" class="task-card">
+        <ion-item lines="none" class="task-card-header">
           <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
           <ion-label class="ion-text-wrap">
             <p>{{ tarea.desc_det }}</p>
           </ion-label>
-          <ion-checkbox slot="end" [(ngModel)]="tarea.checklist" [disabled]="ordenTrabajo.estado_ot !== 'en_progreso'"></ion-checkbox>
+          <ion-checkbox slot="end" [(ngModel)]="tarea.checklist" [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"></ion-checkbox>
         </ion-item>
-        <ion-item lines="full" *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
+        <ion-item lines="full" *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode">
           <ion-button (click)="abrirSelectorTecnicos(tarea)" fill="clear" size="small">
             <ion-icon name="person-add-outline" slot="start"></ion-icon>
             Asignar Técnico
           </ion-button>
-          <ion-label slot="end" class="ion-text-right">
+          <ion-label slot="end" class="ion-text-right info-col">
             <p>
               Técnico:
               <span *ngIf="tarea.tecnico; else noAsignado">
@@ -89,23 +111,29 @@
   </div>
 </ion-content>
 
-<ion-footer class="ion-no-border" *ngIf="!isLoading && ordenTrabajo">
-  <ion-toolbar>
-    <div class="ion-padding">
-      <ion-button *ngIf="ordenTrabajo.estado_ot === 'solicitado'" (click)="iniciarOrdenDeTrabajo()" expand="block" color="primary">
-        <ion-icon name="play-circle-outline" slot="start"></ion-icon>
-        Iniciar Orden de Trabajo
-      </ion-button>
-      <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
-        <ion-button (click)="guardarProgresoTareas()" expand="block" color="secondary">
-          <ion-icon name="save-outline" slot="start"></ion-icon>
-          Guardar Progreso
-        </ion-button>
-        <ion-button (click)="finalizarOrdenDeTrabajo()" expand="block" color="success" class="ion-margin-top">
-          <ion-icon name="flag-outline" slot="start"></ion-icon>
-          Finalizar Orden de Trabajo
-        </ion-button>
-      </div>
-    </div>
-  </ion-toolbar>
-</ion-footer>
+<!-- Footer con botones -->
+<div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && !isViewMode">
+  <!-- Botones según el estado -->
+  <ion-button *ngIf="ordenTrabajo.estado_ot === 'solicitado'" (click)="iniciarOrdenDeTrabajo()" expand="block" style="--background: #008000; --background-hover: #006600;">
+    <ion-icon name="play-circle-outline" slot="start"></ion-icon>
+    Iniciar Orden de Trabajo
+  </ion-button>
+
+  <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
+    <ion-button (click)="guardarProgresoTareas()" expand="block" color="secondary">
+      <ion-icon name="save-outline" slot="start"></ion-icon>
+      Guardar Progreso
+    </ion-button>
+    <ion-button (click)="finalizarOrdenDeTrabajo()" expand="block" style="--background: #008000; --background-hover: #006600;" class="ion-margin-top">
+      <ion-icon name="flag-outline" slot="start"></ion-icon>
+      Finalizar Orden de Trabajo
+    </ion-button>
+  </div>
+</div>
+
+<div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && (isViewMode || ordenTrabajo.estado_ot === 'completado')">
+  <ion-button expand="block" (click)="closeModal()" color="medium">
+    <ion-icon name="close-outline" slot="start"></ion-icon>
+    Cerrar
+  </ion-button>
+</div>

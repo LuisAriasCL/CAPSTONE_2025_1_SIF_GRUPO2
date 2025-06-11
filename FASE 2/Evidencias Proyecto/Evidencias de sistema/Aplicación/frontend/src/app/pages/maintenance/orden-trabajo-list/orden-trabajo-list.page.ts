@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, LoadingController } from '@ionic/angular';
+import { IonicModule, NavController, LoadingController, ToastController, AlertController, ModalController } from '@ionic/angular';
 import { ApiService, OrdenTrabajoResumen } from 'src/app/services/api.service';
+import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { OrdenTrabajoDetallePage } from '../orden-trabajo-detalle/orden-trabajo-detalle.page';
 
 @Component({
   selector: 'app-orden-trabajo-list',
   templateUrl: './orden-trabajo-list.page.html',
   styleUrls: ['./orden-trabajo-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DatePipe, TitleCasePipe]
+  imports: [IonicModule, CommonModule, FormsModule, DatePipe, TitleCasePipe, AlertaPersonalizadaComponent]
 })
 export class OrdenTrabajoListPage implements OnInit {
 
@@ -19,7 +21,10 @@ export class OrdenTrabajoListPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private navCtrl: NavController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
+    private modalController: ModalController
   ) { }
 
   ngOnInit() {
@@ -42,19 +47,47 @@ export class OrdenTrabajoListPage implements OnInit {
           event.target.complete();
         }
       },
-      error: (error) => {
+      error: async (error) => {
         console.error('Error al cargar las órdenes de trabajo', error);
         this.isLoading = false;
         if (event) {
           event.target.complete();
         }
         
+        // Mostrar alerta personalizada en caso de error
+        const modal = await this.modalController.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
+            message: 'No se pudo cargar la lista de órdenes de trabajo. ' + (error.message || 'Inténtelo nuevamente.'),
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
       }
     });
   }
 
-  verDetalle(idOt: number) {
-    this.navCtrl.navigateForward(`/orden-trabajo-detalle/${idOt}`);
+  async verDetalle(idOt: number) {
+    // En lugar de navegar a otra página, abrir un modal
+    const modal = await this.modalController.create({
+      component: OrdenTrabajoDetallePage,
+      componentProps: {
+        ordenTrabajoId: idOt
+      },
+      cssClass: 'orden-trabajo-modal',
+      backdropDismiss: false
+    });
+
+    await modal.present();
+
+    // Manejar el cierre del modal
+    const { data } = await modal.onDidDismiss();
+    if (data && data.updated) {
+      this.cargarOrdenes(); // Recargar la lista si se actualizó algo
+    }
   }
 
   getIconForStatus(estado: string): string {
@@ -85,5 +118,35 @@ export class OrdenTrabajoListPage implements OnInit {
       default:
         return 'medium';
     }
+  }
+
+  // Método para validar fechas antes de aplicar el pipe date
+  isValidDate(dateStr: any): boolean {
+    if (!dateStr) return false;
+    
+    // Si es un string, verificar que tenga formato de fecha válido
+    if (typeof dateStr === 'string') {
+      // Intentar convertirlo a fecha
+      const date = new Date(dateStr);
+      return !isNaN(date.getTime());
+    }
+    
+    // Si ya es un objeto Date
+    if (dateStr instanceof Date) {
+      return !isNaN(dateStr.getTime());
+    }
+    
+    return false;
+  }
+
+  // Método para mostrar mensajes toast
+  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 2500,
+      position: 'bottom',
+      color: color
+    });
+    toast.present();
   }
 }

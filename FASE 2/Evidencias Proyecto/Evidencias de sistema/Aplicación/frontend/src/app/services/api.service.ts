@@ -124,6 +124,7 @@ export interface OrdenTrabajoResumen {
   descripcion_ot: string;
   vehiculo: VehiculoResumen;
   solicitante?: UsuarioResumen;
+  fec_fin_ot?: string; // Fecha de finalización opcional
 }
 export interface UsuarioResumen {
   id_usu: number; // <-- AÑADE ESTA LÍNEA

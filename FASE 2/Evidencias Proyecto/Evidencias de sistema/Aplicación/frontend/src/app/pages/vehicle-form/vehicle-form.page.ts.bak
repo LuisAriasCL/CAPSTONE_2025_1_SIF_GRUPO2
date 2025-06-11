@@ -15,15 +15,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 // Importamos el componente DataTable y sus interfaces
 import { DataTableComponent, Column, PageEvent } from '../../componentes/data-table/data-table.component';
 
-// Importamos el componente de alerta personalizada
-import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
-
 @Component({
   selector: 'app-vehicle-form',
   templateUrl: './vehicle-form.page.html',
   styleUrls: ['./vehicle-form.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, DataTableComponent, AlertaPersonalizadaComponent]
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, DataTableComponent]
 })
 export class VehicleFormPage implements OnInit {
   @Input() vehicleId?: number;
@@ -99,8 +96,7 @@ export class VehicleFormPage implements OnInit {
     } else {
       this.pageTitle = 'Nuevo Vehículo';
     }
-  }
-  initForm() {
+  }  initForm() {
     // Obtener la fecha actual en formato YYYY-MM-DD para valor por defecto
     const today = new Date().toISOString().split('T')[0];
     
@@ -110,7 +106,7 @@ export class VehicleFormPage implements OnInit {
       // Campos renombrados: plate -> patente, status -> estadoVehi, kilometraje -> kmVehi, tipoVehiculo -> tipoVehi
       // Campos nuevos: fecAdqui, tipoCombVehi, kmVidaUtil, efiComb
 
-      patente: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{4}-[0-9]{2}$/)]], // Formato XXXX-XX con los 2 últimos numéricos
+      patente: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{2}$/)]], // Formato XX-XX-XX con los 2 últimos numéricos
       chasis: ['', [Validators.required, Validators.minLength(17), Validators.maxLength(17)]], // Ya existía, se mantiene
       marca: ['', Validators.required], // Ya existía, se mantiene (agregamos required)
       modelo: ['', Validators.required], // Ya existía, se mantiene (agregamos required)
@@ -135,7 +131,7 @@ export class VehicleFormPage implements OnInit {
   async loadVehicleData() {
     if (!this.vehicleId) return;
 
-    this.isLoading = true;
+    this.isLoading = true; // Manteniendo tu lógica de isLoading
     const loading = await this.loadingCtrl.create({ message: 'Cargando datos...' });
     await loading.present();
 
@@ -174,19 +170,7 @@ export class VehicleFormPage implements OnInit {
         loading.dismiss();
         console.error("Error cargando datos del vehículo:", err);
         const message = (err instanceof HttpErrorResponse) ? (err.error?.message || err.message) : err.message;
-        
-        // Reemplazar alert por modal personalizado
-        const modal = await this.modalCtrl.create({
-          component: AlertaPersonalizadaComponent,
-          componentProps: {
-            title: 'Error',
-            message: `No se pudieron cargar los datos del vehículo. ${message}`,
-            icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
-          },
-          cssClass: 'custom-alert-modal'
-        });
-        await modal.present();
+        await this.presentAlert('Error', `No se pudieron cargar los datos del vehículo. ${message}`);
         this.closeModal(); // Cerrar modal en caso de error
       }
     });
@@ -253,47 +237,6 @@ export class VehicleFormPage implements OnInit {
       return;
     }
 
-    // Si es edición, mostrar confirmación personalizada
-    if (this.isEditMode) {
-      const confirmModal = await this.modalCtrl.create({
-        component: AlertaPersonalizadaComponent,
-        componentProps: {
-          title: 'Confirmar Edición',
-          message: `¿Estás seguro de editar el vehículo <strong>${this.vehicleForm.value.patente}</strong>?`,
-          icon: 'help',
-          buttons: [
-            { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Actualizar', role: 'confirm', cssClass: 'confirm-button' }
-          ]
-        },
-        backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
-      });
-      await confirmModal.present();
-      const { data } = await confirmModal.onDidDismiss();
-      if (data !== 'confirm') return;
-    }
-    // Si es creación, mostrar confirmación personalizada
-    else {
-      const confirmModal = await this.modalCtrl.create({
-        component: AlertaPersonalizadaComponent,
-        componentProps: {
-          title: 'Confirmar Creación',
-          message: `¿Estás seguro de crear el vehículo con patente <strong>${this.vehicleForm.value.patente}</strong>?`,
-          icon: 'info',
-          buttons: [
-            { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' }
-          ]
-        },
-        backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
-      });
-      await confirmModal.present();
-      const { data } = await confirmModal.onDidDismiss();
-      if (data !== 'confirm') return;
-    }
-
     const loading = await this.loadingCtrl.create({
       message: this.isEditMode ? 'Actualizando Vehículo...' : 'Creando Vehículo...'
     });
@@ -324,51 +267,28 @@ export class VehicleFormPage implements OnInit {
     // y no necesita idVehi en el payload para createVehicle.
 
     const saveObservable = this.isEditMode && this.vehicleId !== undefined
-      ? this.apiService.updateVehicle(this.vehicleId, vehicleDataToSend as Partial<Vehiculo>)
-      : this.apiService.createVehicle(vehicleDataToSend as Vehiculo);
+      ? this.apiService.updateVehicle(this.vehicleId, vehicleDataToSend as Partial<Vehiculo>) // Cast a Partial<Vehiculo>
+      : this.apiService.createVehicle(vehicleDataToSend as Vehiculo); // Cast a Vehiculo
 
     saveObservable.subscribe({
       next: async (savedVehicle: Vehiculo) => {
         await loading.dismiss();
         await this.presentToast(`Vehículo ${this.isEditMode ? 'actualizado' : 'creado'} exitosamente.`, 'success');
-        this.closeModal(savedVehicle);
+        this.closeModal(savedVehicle); // Cerrar modal con el vehículo guardado
       },
       error: async (error: HttpErrorResponse | Error) => {
         await loading.dismiss();
         console.error("Error guardando vehículo:", error);
         const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        
-        // Reemplazar alert por modal personalizado
-        const modal = await this.modalCtrl.create({
-          component: AlertaPersonalizadaComponent,
-          componentProps: {
-            title: 'Error al Guardar',
-            message: `No se pudo guardar el vehículo. ${message}`,
-            icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
-          },
-          cssClass: 'custom-alert-modal'
-        });
-        await modal.present();
+        await this.presentAlert('Error al Guardar', `No se pudo guardar el vehículo. ${message}`);
       }
     });
   }
 
   async presentAlert(header: string, message: string) {
-    // Reemplazar alert por modal personalizado
-    const modal = await this.modalCtrl.create({
-      component: AlertaPersonalizadaComponent,
-      componentProps: {
-        title: header,
-        message: message,
-        icon: 'info',
-        buttons: [{ text: 'Aceptar', role: 'confirm' }]
-      },
-      cssClass: 'custom-alert-modal'
-    });
-    await modal.present();
+    const alert = await this.alertCtrl.create({ header, message, buttons: ['OK'] });
+    await alert.present();
   }
-
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
     const toast = await this.toastCtrl.create({ message, duration: 2500, position: 'bottom', color });
     toast.present();
@@ -382,13 +302,99 @@ export class VehicleFormPage implements OnInit {
     return this.vehicleForm.controls;
   }
 
-  // Getter para el año máximo válido
-  get maxValidYear() {
+  // Getter para el año máximo válido  get maxValidYear() {
     return new Date().getFullYear() + 5;
   }
-
   // Método para cambiar entre pestañas
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
+  }
+
+  // Método para formatear automáticamente la patente mientras se escribe
+  formatPatente(event: any) {
+    // Obtener el valor actual sin guiones
+    let value = event.target.value.replace(/-/g, '');
+    
+    // Convertir a mayúsculas
+    value = value.toUpperCase();
+    
+    // Filtrar para limitar a 6 caracteres
+    if (value.length > 6) {
+      value = value.substring(0, 6);
+    }
+    
+    // Asegurar que los últimos 2 caracteres sean números (posiciones 4 y 5)
+    if (value.length > 4) {
+      const letras = value.substring(0, 4);
+      let numeros = '';
+      
+      // Extraer solo los números de los últimos caracteres
+      for (let i = 4; i < value.length; i++) {
+        if (/[0-9]/.test(value[i])) {
+          numeros += value[i];
+        }
+      }
+      
+      value = letras + numeros;
+    }
+    
+    // Aplicar formato XX-XX-XX
+    let formattedValue = '';
+    if (value.length > 0) {
+      if (value.length <= 2) {
+        formattedValue = value;
+      } else if (value.length <= 4) {
+        formattedValue = value.substring(0, 2) + '-' + value.substring(2);
+      } else {
+        formattedValue = value.substring(0, 2) + '-' + value.substring(2, 4) + '-' + value.substring(4);
+      }
+    }
+    
+    // Actualizar el valor en el formulario
+    this.vehicleForm.get('patente')?.setValue(formattedValue, { emitEvent: false });
+  }
+
+  // Método para formatear automáticamente la patente mientras se escribe
+  formatPatente(event: any) {
+    // Obtener el valor actual sin guiones
+    let value = event.target.value.replace(/-/g, '');
+    
+    // Convertir a mayúsculas
+    value = value.toUpperCase();
+    
+    // Filtrar para limitar a 6 caracteres
+    if (value.length > 6) {
+      value = value.substring(0, 6);
+    }
+    
+    // Asegurar que los últimos 2 caracteres sean números (posiciones 4 y 5)
+    if (value.length > 4) {
+      const letras = value.substring(0, 4);
+      let numeros = '';
+      
+      // Extraer solo los números de los últimos caracteres
+      for (let i = 4; i < value.length; i++) {
+        if (/[0-9]/.test(value[i])) {
+          numeros += value[i];
+        }
+      }
+      
+      value = letras + numeros;
+    }
+    
+    // Aplicar formato XX-XX-XX
+    let formattedValue = '';
+    if (value.length > 0) {
+      if (value.length <= 2) {
+        formattedValue = value;
+      } else if (value.length <= 4) {
+        formattedValue = value.substring(0, 2) + '-' + value.substring(2);
+      } else {
+        formattedValue = value.substring(0, 2) + '-' + value.substring(2, 4) + '-' + value.substring(4);
+      }
+    }
+    
+    // Actualizar el valor en el formulario
+    this.vehicleForm.get('patente')?.setValue(formattedValue, { emitEvent: false });
   }
 }

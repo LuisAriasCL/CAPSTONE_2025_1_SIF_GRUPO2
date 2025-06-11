@@ -297,6 +297,10 @@ table {
       transform: translateY(-2px);
     }
 
+    &.view-btn {
+      color: var(--ion-color-primary);
+    }
+
     ion-icon {
       font-size: 18px;
     }

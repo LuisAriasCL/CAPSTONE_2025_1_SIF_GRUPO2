@@ -10,12 +10,14 @@ import { ApiService, Route } from '../../services/api.service';
 import { SidebarComponent } from '../../componentes/sidebar/sidebar.component'; 
 import { SocketService } from '../../services/socket.service';
 import { RouteFormPage } from '../route-form/route-form.page';
+import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
+
 @Component({
   selector: 'app-route-list',
   templateUrl: './route-list.page.html',
   styleUrls: ['./route-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, UpperCasePipe, DecimalPipe] // Imports necesarios para el template
+  imports: [IonicModule, CommonModule, FormsModule, UpperCasePipe, DecimalPipe, AlertaPersonalizadaComponent]
 })
 export class RouteListPage implements OnInit {
   // Inyección de dependencias (estilo moderno)
@@ -69,13 +71,18 @@ export class RouteListPage implements OnInit {
         this.isLoading = false;
         loadingIndicator?.dismiss();
          event?.target.complete();
-        // Mostrar error al usuario
-        const alert = await this.alertController.create({
-            header: 'Error',
+        
+        const modal = await this.modalController.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error',
             message: 'No se pudo cargar la lista de rutas. ' + error.message,
-            buttons: ['OK']
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
         });
-        await alert.present();
+        await modal.present();
       }
     });
   }
@@ -179,24 +186,26 @@ export class RouteListPage implements OnInit {
 
   // --- Eliminación ---
   async confirmDeleteRoute(id: number, name: string) {
-    const alert = await this.alertController.create({
-      header: 'Confirmar Eliminación',
-      message: `¿Estás seguro de que quieres eliminar la ruta "${name}"? Esta acción no se puede deshacer.`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-          cssClass: 'secondary',
-        }, {
-          text: 'Eliminar',
-          cssClass: 'danger',
-          handler: () => {
-            this.deleteRoute(id); 
-          }
-        }
-      ]
+    const modal = await this.modalController.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Confirmar Eliminación',
+        message: `¿Estás seguro de que quieres eliminar la ruta "<strong>${name}</strong>"? Esta acción no se puede deshacer.`,
+        icon: 'warning',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' }
+        ]
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal'
     });
-    await alert.present();
+    await modal.present();
+    
+    const { data } = await modal.onDidDismiss();
+    if (data === 'confirm') {
+      this.deleteRoute(id); 
+    }
   }
 
   private async deleteRoute(id: number) {
@@ -213,12 +222,18 @@ export class RouteListPage implements OnInit {
       error: async (error) => {
          await loading.dismiss();
          console.error('Error al eliminar ruta:', error);
-          const alert = await this.alertController.create({
-              header: 'Error al Eliminar',
-              message: 'No se pudo eliminar la ruta. ' + error.message,
-              buttons: ['OK']
-          });
-          await alert.present();
+         
+         const modal = await this.modalController.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Error al Eliminar',
+            message: 'No se pudo eliminar la ruta. ' + error.message,
+            icon: 'error',
+            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+          },
+          cssClass: 'custom-alert-modal'
+        });
+        await modal.present();
       }
     });
   }
