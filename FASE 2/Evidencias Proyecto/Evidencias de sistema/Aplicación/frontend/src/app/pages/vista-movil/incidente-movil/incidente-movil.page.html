@@ -1,12 +1,3 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/mobile/home"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Notificación de Incidente</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="ion-text-center form-title-icon">
      <ion-icon name="warning" color="danger" class="large-icon"></ion-icon>
@@ -31,10 +22,9 @@
 
       <ion-item>
         <ion-label position="floating">Fecha</ion-label>
-        <ion-input id="fechaIncidente" type="text" formControlName="fecha" placeholder="DD/MM/AAAA"></ion-input>
+        <ion-input id="fechaIncidente" type="text" formControlName="fecha" placeholder="DD/MM/AAAA" readonly></ion-input>
         <ion-popover trigger="fechaIncidente" size="cover">
           <ng-template>
-            <!-- AHORA LLAMA AL NUEVO MÉTODO DEL .TS -->
             <ion-datetime presentation="date"
                           (ionChange)="handleDateChange($event)"
                           [showDefaultButtons]="true" doneText="Hecho" cancelText="Cancelar">
@@ -45,10 +35,9 @@
 
       <ion-item>
         <ion-label position="floating">Hora del incidente</ion-label>
-        <ion-input id="horaIncidente" type="text" formControlName="hora" placeholder="HH:MM"></ion-input>
+        <ion-input id="horaIncidente" type="text" formControlName="hora" placeholder="HH:MM" readonly></ion-input>
          <ion-popover trigger="horaIncidente" size="cover">
           <ng-template>
-            <!-- AHORA LLAMA AL NUEVO MÉTODO DEL .TS -->
             <ion-datetime presentation="time"
                           (ionChange)="handleTimeChange($event)"
                           [showDefaultButtons]="true" doneText="Hecho" cancelText="Cancelar">
