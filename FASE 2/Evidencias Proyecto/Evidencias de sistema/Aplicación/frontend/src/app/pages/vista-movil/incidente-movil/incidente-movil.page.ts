@@ -18,7 +18,7 @@ import { warningOutline, cameraOutline, arrowBackOutline } from 'ionicons/icons'
     CommonModule,
     ReactiveFormsModule
   ],
-  providers: [DatePipe] // Necesario para el pipe 'date' que usa ion-datetime
+  providers: [DatePipe] // Necesario para el pipe 'date'
 })
 export class IncidenteMovilPage implements OnInit {
   incidenteForm: FormGroup;
@@ -27,16 +27,15 @@ export class IncidenteMovilPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private location: Location,
-    public platform: Platform
+    public platform: Platform,
+    private datePipe: DatePipe // <-- Inyectamos DatePipe para usarlo en el TS
   ) {
-    // Registra los íconos que se usarán en esta página
     addIcons({
       warning: warningOutline,
       camera: cameraOutline,
-      'arrow-back': arrowBackOutline // Para el botón de atrás si no usas ion-back-button
+      'arrow-back': arrowBackOutline
     });
 
-    // Inicializa el formulario con sus campos y validaciones
     this.incidenteForm = this.fb.group({
       vehiculo: ['', Validators.required],
       conductor: ['', Validators.required],
@@ -50,30 +49,38 @@ export class IncidenteMovilPage implements OnInit {
   ngOnInit(): void {
   }
 
-  // Método para manejar la selección de un archivo
+  // MÉTODO NUEVO: Para manejar el cambio de fecha
+  handleDateChange(event: any) {
+    const dateValue = event.detail.value;
+    // Usamos el DatePipe inyectado para formatear el valor
+    const formattedDate = this.datePipe.transform(dateValue, 'dd/MM/yyyy');
+    // Asignamos el valor formateado al control del formulario
+    this.incidenteForm.controls['fecha'].setValue(formattedDate);
+  }
+
+  // MÉTODO NUEVO: Para manejar el cambio de hora
+  handleTimeChange(event: any) {
+    const timeValue = event.detail.value;
+    const formattedTime = this.datePipe.transform(timeValue, 'HH:mm');
+    this.incidenteForm.controls['hora'].setValue(formattedTime);
+  }
+
   onIncidenteFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
       this.selectedIncidenteFileName = file.name;
-      // Aquí agregarías la lógica para manejar el archivo,
-      // por ejemplo, guardándolo en una variable para subirlo después.
     }
   }
 
-  // Método que se llama al presionar el botón de registrar
   registrarIncidente(): void {
     if (this.incidenteForm.valid) {
       console.log('Formulario Incidente Válido:', this.incidenteForm.value);
-      // Aquí llamarías a tu servicio para guardar los datos en el backend
-      // ej: this.incidenteService.registrar(this.incidenteForm.value).subscribe(...);
     } else {
       console.log('Formulario de incidente inválido');
-      // Marcar todos los campos como "tocados" para que se muestren los errores de validación
       this.incidenteForm.markAllAsTouched();
     }
   }
 
-  // Método para el botón de volver atrás
   volver(): void {
     this.location.back();
   }

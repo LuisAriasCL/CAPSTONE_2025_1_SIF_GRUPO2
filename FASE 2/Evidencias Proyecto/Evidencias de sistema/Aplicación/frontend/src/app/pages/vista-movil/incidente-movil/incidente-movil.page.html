@@ -34,8 +34,9 @@
         <ion-input id="fechaIncidente" type="text" formControlName="fecha" placeholder="DD/MM/AAAA"></ion-input>
         <ion-popover trigger="fechaIncidente" size="cover">
           <ng-template>
+            <!-- AHORA LLAMA AL NUEVO MÉTODO DEL .TS -->
             <ion-datetime presentation="date"
-                          (ionChange)="incidenteForm.controls['fecha'].setValue($event.detail.value ? ($any($event.detail.value)| date:'dd/MM/yyyy') : '')"
+                          (ionChange)="handleDateChange($event)"
                           [showDefaultButtons]="true" doneText="Hecho" cancelText="Cancelar">
             </ion-datetime>
           </ng-template>
@@ -47,8 +48,9 @@
         <ion-input id="horaIncidente" type="text" formControlName="hora" placeholder="HH:MM"></ion-input>
          <ion-popover trigger="horaIncidente" size="cover">
           <ng-template>
+            <!-- AHORA LLAMA AL NUEVO MÉTODO DEL .TS -->
             <ion-datetime presentation="time"
-                          (ionChange)="incidenteForm.controls['hora'].setValue($event.detail.value ? ($any($event.detail.value)| date:'HH:mm') : '')"
+                          (ionChange)="handleTimeChange($event)"
                           [showDefaultButtons]="true" doneText="Hecho" cancelText="Cancelar">
             </ion-datetime>
           </ng-template>
