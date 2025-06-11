@@ -2,6 +2,7 @@ const db = require('../models');
 const sequelize = db.sequelize;
 const { OrdenTrabajo, DetalleOt, PlanificacionMantenimiento, Vehiculo, VehiculoPlanificacion, Usuario, TareaPlanificacion } = db;
 
+// ... (las demás funciones como generarOtDesdePlan, listarOrdenesTrabajo, etc. permanecen igual) ...
 exports.generarOtDesdePlan = async (req, res) => {
     const { id_plan, id_vehi, id_usuario_solicitante } = req.body;
 
@@ -82,17 +83,21 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
   const { id } = req.params;
   try {
     const ordenTrabajo = await OrdenTrabajo.findByPk(id, {
-      // ESTA ES LA SECCIÓN CORREGIDA Y COMPLETA
       include: [
         {
           model: Vehiculo,
-          as: 'vehiculo', // 1. Incluye el objeto completo del Vehículo
+          as: 'vehiculo', 
           attributes: ['patente', 'marca', 'modelo']
         },
         {
           model: Usuario,
-          as: 'solicitante', // 2. Incluye el objeto completo del Solicitante
+          as: 'solicitante', 
           attributes: ['pri_nom_usu', 'pri_ape_usu']
+        },
+        {
+          model: Usuario,
+          as: 'encargado',
+          attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu']
         },
         {
           model: DetalleOt,
@@ -100,7 +105,7 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
           include: [
             {
               model: Usuario,
-              as: 'tecnico', // 3. Incluye el objeto completo del Técnico PARA CADA TAREA
+              as: 'tecnico', 
               attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu']
             }
           ]
@@ -119,17 +124,31 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
   }
 };
 
+
+// CHATBOT CHANGE: This function is now completely modified to handle the new payload.
 exports.actualizarDetallesOt = async (req, res) => {
     const { id } = req.params;
-    const detallesParaActualizar = req.body;
+    // CHATBOT FIX: Destructure the CORRECT field name from the request body: 'descripcion_ot'.
+    const { km_ot, descripcion_ot, detalles } = req.body;
 
-    if (!Array.isArray(detallesParaActualizar)) {
-        return res.status(400).json({ error: 'Formato de datos incorrecto.' });
+    // CHATBOT FIX: Updated the validation to check for the correct property and allow it to be an empty string.
+    if (descripcion_ot === undefined || km_ot === undefined || !Array.isArray(detalles)) {
+        return res.status(400).json({ error: 'Formato de datos incorrecto. Se esperan km_ot, descripcion_ot y un array de detalles.' });
     }
 
     const t = await sequelize.transaction();
     try {
-        for (const detalle of detallesParaActualizar) {
+        // CHATBOT FIX: Update the main OrdenTrabajo record using the correct variable.
+        await OrdenTrabajo.update({
+            km_ot: km_ot,
+            descripcion_ot: descripcion_ot // The key and value are now consistent
+        }, {
+            where: { id_ot: id },
+            transaction: t
+        });
+
+        // Loop through details remains the same
+        for (const detalle of detalles) {
             await DetalleOt.update({
                 checklist: detalle.checklist,
                 usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico
@@ -141,14 +160,17 @@ exports.actualizarDetallesOt = async (req, res) => {
                 transaction: t 
             });
         }
+        
         await t.commit();
         res.status(200).json({ message: 'Cambios guardados con éxito.' });
     } catch (error) {
         await t.rollback();
-        console.error('Error al actualizar los detalles de la OT:', error);
-        res.status(500).json({ error: 'Error interno del servidor.' });
+        console.error('Error al actualizar la OT completa:', error);
+        res.status(500).json({ error: 'Error interno del servidor al actualizar la OT.' });
     }
 };
+
+
 
 exports.actualizarEstadoOt = async (req, res) => {
     const { id } = req.params;
@@ -168,6 +190,10 @@ exports.actualizarEstadoOt = async (req, res) => {
 
         if (estado_ot === 'en_progreso' && usuario_id_usu_encargado) {
             camposAActualizar.usuario_id_usu_encargado = usuario_id_usu_encargado;
+            // CHATBOT CHANGE: Also update fec_ini_ot when the status changes to 'en_progreso' for the first time
+            if (!ordenTrabajo.fec_ini_ot) {
+                camposAActualizar.fec_ini_ot = new Date();
+            }
         }
         
         if (estado_ot === 'completado') {

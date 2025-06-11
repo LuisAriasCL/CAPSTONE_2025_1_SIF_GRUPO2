@@ -37,24 +37,35 @@
               <p>{{ ordenTrabajo.vehiculo.marca }} {{ ordenTrabajo.vehiculo.modelo }} ({{ ordenTrabajo.vehiculo.patente }})</p>
             </ion-label>
           </ion-item>
+
           <ion-item>
             <ion-icon name="speedometer-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
+            <ion-label position="stacked">
               <h3>Kilometraje</h3>
-              <p>{{ ordenTrabajo.km_ot }} km</p>
             </ion-label>
+            <ion-input type="number" placeholder="Ingrese kilometraje del vehículo"
+                       [(ngModel)]="ordenTrabajo.km_ot"
+                       [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode">
+            </ion-input>
           </ion-item>
+
+         <ion-item>
+             <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+             <ion-label position="stacked">
+               <h3>Descripción del Trabajo Realizado</h3>
+             </ion-label>
+             <ion-textarea placeholder="Describa el trabajo efectuado..."
+                           [(ngModel)]="ordenTrabajo.descripcion_ot"
+                           [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+                           rows="4">
+             </ion-textarea>
+           </ion-item>
+
           <ion-item>
             <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
             <ion-label>
               <h3>Solicitante</h3>
               <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'N/A' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || '' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item lines="full">
-            <ion-label>
-              <h3>Estado</h3>
-              <p>{{ ordenTrabajo.estado_ot | titlecase }}</p>
             </ion-label>
           </ion-item>
           <ion-item lines="full">
@@ -111,9 +122,7 @@
   </div>
 </ion-content>
 
-<!-- Footer con botones -->
 <div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && !isViewMode">
-  <!-- Botones según el estado -->
   <ion-button *ngIf="ordenTrabajo.estado_ot === 'solicitado'" (click)="iniciarOrdenDeTrabajo()" expand="block" style="--background: #008000; --background-hover: #006600;">
     <ion-icon name="play-circle-outline" slot="start"></ion-icon>
     Iniciar Orden de Trabajo

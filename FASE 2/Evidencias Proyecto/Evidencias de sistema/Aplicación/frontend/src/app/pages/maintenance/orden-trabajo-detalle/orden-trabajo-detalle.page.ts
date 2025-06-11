@@ -8,7 +8,7 @@ import { ApiService, OrdenTrabajoDetalle, DetalleOtData, UsuarioResumen } from '
 import { AuthService } from 'src/app/services/auth.service';
 import { addIcons } from 'ionicons';
 import { checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, saveOutline, flagOutline, personAddOutline, 
-         personCircleOutline, carSportOutline, speedometerOutline } from 'ionicons/icons';
+         personCircleOutline, carSportOutline, speedometerOutline, documentTextOutline } from 'ionicons/icons';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
@@ -22,6 +22,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
   @Input() ordenTrabajoId: number | null = null;
   @Input() isViewMode: boolean = false;
 
+  // CHATBOT FIX: The type is now correct. The property 'descripcion_ot' is already part of OrdenTrabajoDetalle.
   ordenTrabajo: OrdenTrabajoDetalle | null = null;
   isLoading: boolean = false;
   tecnicos: UsuarioResumen[] = [];
@@ -34,11 +35,10 @@ export class OrdenTrabajoDetallePage implements OnInit {
     private toastCtrl: ToastController,
     private modalCtrl: ModalController
   ) {
-    // Registrar iconos necesarios
     addIcons({ 
       checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, 
       saveOutline, flagOutline, personAddOutline, personCircleOutline,
-      carSportOutline, speedometerOutline
+      carSportOutline, speedometerOutline, documentTextOutline
     });
   }
 
@@ -72,7 +72,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
         this.isLoading = false;
         loading.dismiss();
         
-        // Mostrar alerta personalizada para el error
         const modal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
           componentProps: {
@@ -93,7 +92,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
     this.apiService.getUsuariosPorRol('tecnico').subscribe({
       next: (data) => this.tecnicos = data,
       error: async (err) => {
-        // Mostrar alerta personalizada para el error
         const modal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
           componentProps: {
@@ -111,7 +109,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
 
   async abrirSelectorTecnicos(tarea: DetalleOtData) {
     if (this.tecnicos.length === 0) {
-      // Mostrar alerta personalizada
       const modal = await this.modalCtrl.create({
         component: AlertaPersonalizadaComponent,
         componentProps: {
@@ -166,7 +163,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
       return;
     }
   
-    // Mostrar alerta personalizada de confirmación
     const confirmModal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
@@ -199,7 +195,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
         },
         error: async (err) => {
           await loading.dismiss();
-          // Mostrar alerta personalizada para el error
           const errorModal = await this.modalCtrl.create({
             component: AlertaPersonalizadaComponent,
             componentProps: {
@@ -228,14 +223,20 @@ export class OrdenTrabajoDetallePage implements OnInit {
       usuario_id_usu_tecnico: t.tecnico ? t.tecnico.id_usu : null
     }));
     
-    this.apiService.actualizarDetallesOt(this.ordenTrabajo.id_ot, detallesParaActualizar).subscribe({
+    // CHATBOT FIX: The payload now uses the correct property 'descripcion_ot'
+    const datosParaActualizar = {
+        km_ot: this.ordenTrabajo.km_ot,
+        descripcion_ot: this.ordenTrabajo.descripcion_ot,
+        detalles: detallesParaActualizar
+    };
+    
+    this.apiService.actualizarDetallesOt(this.ordenTrabajo.id_ot, datosParaActualizar).subscribe({
       next: async () => {
         await loading.dismiss();
         this.presentToast('Progreso guardado con éxito.', 'success');
       },
       error: async (err) => {
         await loading.dismiss();
-        // Mostrar alerta personalizada para el error
         const errorModal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
           componentProps: {
@@ -257,7 +258,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
     const todasCompletas = this.ordenTrabajo.detalles.every(t => t.checklist);
     
     if (!todasCompletas) {
-      // Mostrar alerta personalizada
       const warnModal = await this.modalCtrl.create({
         component: AlertaPersonalizadaComponent,
         componentProps: {
@@ -272,7 +272,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
       return;
     }
     
-    // Mostrar alerta personalizada de confirmación
     const confirmModal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
@@ -305,7 +304,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
         },
         error: async (err) => {
           await loading.dismiss();
-          // Mostrar alerta personalizada para el error
           const errorModal = await this.modalCtrl.create({
             component: AlertaPersonalizadaComponent,
             componentProps: {
@@ -330,18 +328,14 @@ export class OrdenTrabajoDetallePage implements OnInit {
     return colores[estado] || 'medium';
   }
   
-  // Añadir método para validar fechas antes de aplicar el pipe date
   isValidDate(dateStr: any): boolean {
     if (!dateStr) return false;
     
-    // Si es un string, verificar que tenga formato de fecha válido
     if (typeof dateStr === 'string') {
-      // Intentar convertirlo a fecha
       const date = new Date(dateStr);
       return !isNaN(date.getTime());
     }
     
-    // Si ya es un objeto Date
     if (dateStr instanceof Date) {
       return !isNaN(dateStr.getTime());
     }
