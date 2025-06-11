@@ -22,7 +22,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
   @Input() ordenTrabajoId: number | null = null;
   @Input() isViewMode: boolean = false;
 
-  // CHATBOT FIX: The type is now correct. The property 'descripcion_ot' is already part of OrdenTrabajoDetalle.
+  
   ordenTrabajo: OrdenTrabajoDetalle | null = null;
   isLoading: boolean = false;
   tecnicos: UsuarioResumen[] = [];
@@ -223,7 +223,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
       usuario_id_usu_tecnico: t.tecnico ? t.tecnico.id_usu : null
     }));
     
-    // CHATBOT FIX: The payload now uses the correct property 'descripcion_ot'
+    
     const datosParaActualizar = {
         km_ot: this.ordenTrabajo.km_ot,
         descripcion_ot: this.ordenTrabajo.descripcion_ot,

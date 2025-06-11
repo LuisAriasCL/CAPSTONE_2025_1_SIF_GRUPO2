@@ -229,7 +229,7 @@ export class ApiService {
     return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
   }
 
-  // CHATBOT CHANGE: The type of the payload is now 'any' to reflect the new object structure.
+
   actualizarDetallesOt(idOt: number, payload: any): Observable<any> {
       return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, payload);
   }
