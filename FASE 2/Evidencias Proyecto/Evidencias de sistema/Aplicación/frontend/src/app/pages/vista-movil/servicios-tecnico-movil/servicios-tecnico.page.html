@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>Servicios Asignados</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content [fullscreen]="true">
+    <ion-list>
+      <ion-card *ngFor="let servicio of servicios" button="true" (click)="verDetalle(servicio)">
+        <ion-card-header>
+          <ion-card-subtitle>OT: {{ servicio.codigoOT }}</ion-card-subtitle>
+          <ion-card-title>{{ servicio.servicio }}</ion-card-title>
+        </ion-card-header>
+  
+        <ion-card-content>
+          <ion-item lines="none">
+            <ion-label>Encargado por:</ion-label>
+            <ion-note slot="end">{{ servicio.encargadoPor }}</ion-note>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-label>Estado:</ion-label>
+            <ion-badge [color]="getStatusColor(servicio.estado)" slot="end">{{ servicio.estado }}</ion-badge>
+          </ion-item>
+        </ion-card-content>
+        
+        <ion-footer class="ion-text-right">
+          <ion-button fill="clear" size="small">
+            Ver Detalles <ion-icon slot="end" name="arrow-forward"></ion-icon>
+          </ion-button>
+        </ion-footer>
+      </ion-card>
+    </ion-list>
+  </ion-content>
