@@ -1,0 +1,61 @@
+<ion-header [translucent]="true">
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/mobile/servicios-tecnico"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Orden de Trabajo #{{ ordenDeTrabajo?.codigoOT }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content [fullscreen]="true" class="ion-padding" *ngIf="ordenDeTrabajo">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información del Servicio</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description">{{ ordenDeTrabajo?.descripcionGeneral }}</p>
+      </ion-card-content>
+    </ion-card>
+  
+    <ion-list lines="full" [inset]="true">
+      <ion-list-header>
+        <ion-label>Desarrollo del Servicio</ion-label>
+      </ion-list-header>
+      <ion-item>
+        <ion-label>Encargado de la OT:</ion-label>
+        <ion-note slot="end">{{ ordenDeTrabajo?.encargadoOT }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Fecha y hora de inicio:</ion-label>
+        <ion-note slot="end">{{ ordenDeTrabajo?.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Fecha y hora de fin:</ion-label>
+        <ion-note slot="end">{{ ordenDeTrabajo?.fechaFin | date:'dd/MM/yyyy HH:mm' }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Duración Aproximada:</ion-label>
+        <ion-note slot="end">{{ ordenDeTrabajo?.duracionAprox }} min</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Duración Real:</ion-label>
+        <ion-note slot="end">{{ ordenDeTrabajo?.duracionReal || '-' }} min</ion-note>
+      </ion-item>
+    </ion-list>
+  
+    <ion-item-divider class="ion-margin-top">
+      <ion-label>Descripción de la tarea:</ion-label>
+    </ion-item-divider>
+    <p class="ion-padding description-task">
+      {{ ordenDeTrabajo?.descripcionTarea }}
+    </p>
+  </ion-content>
+  
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <ion-button expand="block" color="success">
+        Finalizar Tarea
+        <ion-icon slot="end" name="checkmark-done"></ion-icon>
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>

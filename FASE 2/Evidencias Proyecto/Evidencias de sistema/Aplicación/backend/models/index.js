@@ -82,7 +82,7 @@ if (db.AsignacionRecorrido && db.Ruta) {
       field: 'ruta_id_ruta'
     },
     as: 'rutaPlantilla',
-    targetKey: 'idRuta' // Asegúrate que 'idRuta' es la PK en tu modelo Ruta
+    targetKey: 'idRuta' 
   });
   db.Ruta.hasMany(db.AsignacionRecorrido, {
     foreignKey: {
@@ -90,7 +90,7 @@ if (db.AsignacionRecorrido && db.Ruta) {
       allowNull: false,
       field: 'ruta_id_ruta'
     },
-    as: 'asignacionesEnEstaRuta' // CAMBIADO para mayor claridad y unicidad
+    as: 'asignacionesEnEstaRuta' 
   });
 }
 

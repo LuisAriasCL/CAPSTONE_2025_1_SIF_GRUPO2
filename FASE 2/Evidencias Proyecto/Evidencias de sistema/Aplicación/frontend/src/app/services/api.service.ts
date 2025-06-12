@@ -1,10 +1,11 @@
 // src/app/services/api.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import * as L from 'leaflet';
 
+// ... (todas las interfaces permanecen igual) ...
 // --- INTERFACES ---
 
 // Interfaz para la respuesta de OSRM (como la definimos antes)
@@ -29,7 +30,6 @@ export interface VehiculoAsignacionInfo {
   patente: string;
   modelo?: string;
   marca?: string;
-  // otros campos que quieras mostrar en los selectores o listas
 }
 
 // Interfaz para USUARIO (conductor, simplificada)
@@ -38,7 +38,6 @@ export interface UsuarioConductorInfo {
   priNomUsu: string;
   priApeUsu: string;
   email?: string;
-  // otros campos útiles
 }
 export interface TareaPlanificacionData {
   nomTareaPlan: string;
@@ -72,14 +71,12 @@ export interface PlanificacionMantenimientoResumen {
   tareas?: TareaPlanificacionResumen[];
   vehiculosEnPlan?: VehiculoAsignacionInfo[];
 }
-// NUEVA INTERFAZ: ASIGNACION_RECORRIDO
-// Refleja la estructura que el backend devuelve, incluyendo datos de las relaciones
 export interface AsignacionRecorrido {
   idAsig: number;
   estadoAsig: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
-  fecCreAsig: string; // o Date, dependiendo de cómo lo manejes
-  fecIniRecor: string; // o Date
-  fecFinRecor?: string | null; // o Date
+  fecCreAsig: string; 
+  fecIniRecor: string;
+  fecFinRecor?: string | null;
   efiCombRecor?: number | null;
   kmIniRecor: number;
   kmFinRecor?: number | null;
@@ -88,13 +85,13 @@ export interface AsignacionRecorrido {
   usuarioIdUsu: number;
   rutaIdRuta: number;
 
-  // Propiedades de las relaciones (incluidas desde el backend)
   vehiculo?: VehiculoAsignacionInfo;
   conductor?: UsuarioConductorInfo;
-  rutaPlantilla?: Route; // Usamos la interfaz Route existente para la plantilla
+  rutaPlantilla?: Route; 
 }
-// (Asegúrate de tener estas interfaces básicas o adáptalas)
+
 export interface UsuarioResumen {
+  id_usu: number;
   pri_nom_usu: string;
   pri_ape_usu: string;
 }
@@ -112,7 +109,7 @@ export interface DetalleOtData {
   desc_det: string;
   checklist: boolean;
   es_activo_det: boolean;
-  tecnico?: UsuarioResumen; // El técnico puede no estar asignado aún
+  tecnico?: UsuarioResumen; 
 }
 
 export interface OrdenTrabajoResumen {
@@ -124,34 +121,27 @@ export interface OrdenTrabajoResumen {
   descripcion_ot: string;
   vehiculo: VehiculoResumen;
   solicitante?: UsuarioResumen;
-  fec_fin_ot?: string; // Fecha de finalización opcional
+  fec_fin_ot?: string;
 }
-export interface UsuarioResumen {
-  id_usu: number; // <-- AÑADE ESTA LÍNEA
-  pri_nom_usu: string;
-  pri_ape_usu: string;
-}
+
 export interface OrdenTrabajoDetalle extends OrdenTrabajoResumen {
   fec_fin_ot?: string;
   encargado?: UsuarioResumen;
   detalles: DetalleOtData[];
 }
-// Interfaz para los datos al CREAR o ACTUALIZAR una asignación
-// No incluye los objetos completos de vehiculo, conductor, rutaPlantilla, solo sus IDs
 export interface AsignacionRecorridoData {
-  fecIniRecor: string; // Formato YYYY-MM-DDTHH:mm:ss
+  fecIniRecor: string;
   fecFinRecor?: string | null;
-  kmIniRecor?: number; // Puede ser opcional si el backend lo toma del vehículo
+  kmIniRecor?: number;
   kmFinRecor?: number | null;
   notas?: string | null;
   vehiculoIdVehi: number;
-  usuarioIdUsu: number; // ID del conductor
+  usuarioIdUsu: number;
   rutaIdRuta: number;
   estadoAsig?: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
   efiCombRecor?: number | null;
 }
 
-// ... (tus interfaces Vehiculo completa, EstadoVehiculo, TipoCombustibleVehiculo pueden seguir aquí)
 export type EstadoVehiculo = 'activo' | 'inactivo' | 'mantenimiento' | 'taller' | 'baja';
 export type TipoCombustibleVehiculo = 'gasolina_93' | 'gasolina_95' | 'gasolina_97' | 'diesel' | 'electrico' | 'otro';
 
@@ -179,9 +169,7 @@ export interface Vehiculo {
 })
 export class ApiService {
 
-
   private apiUrl = 'http://localhost:8101/api';
-
 
   constructor(private http: HttpClient) { }
 
@@ -204,22 +192,20 @@ export class ApiService {
         }
         return null;
       }),
-      catchError(this.handleErrorSimple) // Usar un manejador de error más simple para OSRM
+      catchError(this.handleErrorSimple)
     );
   }
   crearPlanificacion(data: PlanificacionMantenimientoData): Observable<any> {
-    // HttpClient debería establecer Content-Type: application/json automáticamente si 'data' es un objeto.
-    // Si se requiere un token de autorización, un HttpInterceptor debería manejarlo.
     return this.http.post<any>(`${this.apiUrl}/planificaciones`, data)
-      .pipe(catchError(this.handleError)); // Tu manejador de errores general
+      .pipe(catchError(this.handleError));
   }
 
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
-    // Siguiendo el patrón de getRoutes.
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
   }
-// --- Métodos para el Módulo de Órdenes de Trabajo ---
+
+  // --- Métodos para el Módulo de Órdenes de Trabajo ---
   actualizarEstadoOt(id: number, estado: string, encargadoId?: number): Observable<any> {
     const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
       estado_ot: estado,
@@ -229,43 +215,41 @@ export class ApiService {
     }
     return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
   }
-// POST /api/ordenes-trabajo/generar
-generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
-  const body = { 
-    id_plan: idPlan, 
-    id_vehi: idVehi,
-    id_usuario_solicitante: idUsuario 
-  };
-  return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
-}
 
-// GET /api/ordenes-trabajo
-getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
-  return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
-}
-actualizarDetallesOt(idOt: number, detalles: any[]): Observable<any> {
-  // El 'idOt' se usa para construir la URL del endpoint.
-  // El array 'detalles' se envía como el cuerpo (body) de la petición PUT.
-  return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, detalles);
-}
+  generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
+    const body = { 
+      id_plan: idPlan, 
+      id_vehi: idVehi,
+      id_usuario_solicitante: idUsuario 
+    };
+    return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
+  }
 
-// GET /api/ordenes-trabajo/:id
-getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
-  return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
-}
-getUsuariosPorRol(rol: string): Observable<UsuarioResumen[]> {
-  return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, { params: { rol } });
-}
-// POST /api/ordenes-trabajo/asignar-tecnico
-asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: string }> {
-  const body = { 
-    id_detalle: idDetalle, 
-    id_tecnico: idTecnico 
-  };
-  return this.http.post<{ message: string }>(`${this.apiUrl}/ordenes-trabajo/asignar-tecnico`, body);
-}
-  // (Aquí irían los métodos para GET by ID, PUT, DELETE de planificaciones cuando los implementes,
-  //  siguiendo el mismo patrón: sin opciones explícitas en la llamada http.)
+  getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
+    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
+  }
+
+
+  actualizarDetallesOt(idOt: number, payload: any): Observable<any> {
+      return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, payload);
+  }
+
+  getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
+    return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
+  }
+  
+  getUsuariosPorRol(rol: string): Observable<UsuarioResumen[]> {
+    return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, { params: { rol } });
+  }
+
+  asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: string }> {
+    const body = { 
+      id_detalle: idDetalle, 
+      id_tecnico: idTecnico 
+    };
+    return this.http.post<{ message: string }>(`${this.apiUrl}/ordenes-trabajo/asignar-tecnico`, body);
+  }
+
   getPlanificacionById(id: number): Observable<PlanificacionMantenimientoResumen> {
     return this.http.get<PlanificacionMantenimientoResumen>(`${this.apiUrl}/planificaciones/${id}`)
       .pipe(catchError(this.handleError));
@@ -288,17 +272,17 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
 
   getRoute(id: number): Observable<Route> {
     return this.http.get<Route>(`${this.apiUrl}/rutas/${id}`)
-       .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError));
   }
 
   createRoute(routeData: Partial<Route>): Observable<Route> {
     return this.http.post<Route>(`${this.apiUrl}/rutas`, routeData)
-       .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError));
   }
 
   updateRoute(id: number, routeData: Partial<Route>): Observable<Route> {
     return this.http.put<Route>(`${this.apiUrl}/rutas/${id}`, routeData)
-       .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError));
   }
 
   deleteRoute(id: number): Observable<{ message: string }> {
@@ -306,7 +290,6 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
       .pipe(catchError(this.handleError));
   }
 
-  // --- Métodos CRUD para Vehículos ---
   getVehicles(params?: { estado?: EstadoVehiculo, tipo?: string }): Observable<Vehiculo[]> {
     let httpParams = new HttpParams();
     if (params?.estado) {
@@ -324,7 +307,7 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
       .pipe(catchError(this.handleError));
   }
   getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {
-    return this.http.get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`) // Asumiendo endpoint /api/vehiculos
+    return this.http.get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`)
       .pipe(catchError(this.handleError));
   }
   createVehicle(vehicleData: Vehiculo): Observable<Vehiculo> {
@@ -342,7 +325,6 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
       .pipe(catchError(this.handleError));
   }
 
-  // --- NUEVOS Métodos para Asignaciones de Recorrido ---
   getAsignacionesRecorrido(filtros?: any): Observable<AsignacionRecorrido[]> {
     let params = new HttpParams();
     if (filtros) {
@@ -376,19 +358,15 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
       .pipe(catchError(this.handleError));
   }
 
-  // --- Métodos para Usuarios (ejemplo, necesitarás más para roles, etc.) ---
-  getUsuarios(params?: { rol?: string }): Observable<UsuarioConductorInfo[]> { // Devuelve la interfaz simplificada
+  getUsuarios(params?: { rol?: string }): Observable<UsuarioConductorInfo[]> {
     let httpParams = new HttpParams();
     if (params?.rol) {
       httpParams = httpParams.set('rol', params.rol);
     }
-    // Asume que tienes un endpoint /api/usuarios que puede filtrar por rol
     return this.http.get<UsuarioConductorInfo[]>(`${this.apiUrl}/auth/users`, { params: httpParams })
       .pipe(catchError(this.handleError));
   }
 
-
-  // --- Manejador de Errores ---
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Ocurrió un error desconocido.';
     let userFriendlyMessage = 'No se pudo completar la operación. Inténtalo de nuevo.';
@@ -399,11 +377,11 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
     } else {
       errorMessage = `Error del Servidor Código: ${error.status}\nMensaje: ${error.message}`;
       if (error.error && typeof error.error === 'object' && error.error.message) {
-         errorMessage += `\nDetalle Backend: ${error.error.message}`;
-         userFriendlyMessage = error.error.message;
-      } else if (error.error && typeof error.error === 'string' && error.error.length < 200) { // Si es un string simple
-         errorMessage += `\nDetalle Backend: ${error.error}`;
-         userFriendlyMessage = error.error;
+        errorMessage += `\nDetalle Backend: ${error.error.message}`;
+        userFriendlyMessage = error.error.message;
+      } else if (error.error && typeof error.error === 'string' && error.error.length < 200) { 
+        errorMessage += `\nDetalle Backend: ${error.error}`;
+        userFriendlyMessage = error.error;
       } else if (error.status === 400) {
         userFriendlyMessage = 'Solicitud incorrecta. Revisa los datos enviados.';
       } else if (error.status === 401) {
@@ -417,12 +395,11 @@ asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: stri
       }
     }
     console.error('Error en ApiService:', errorMessage, error);
-    // En lugar de solo el mensaje, podrías devolver un objeto con más info del error
     return throwError(() => ({ message: userFriendlyMessage, status: error.status, errorContent: error.error }));
   }
 
-  private handleErrorSimple(error: HttpErrorResponse) { // Para OSRM o servicios externos
+  private handleErrorSimple(error: HttpErrorResponse) {
     console.error('Error en servicio externo:', error.message || error);
-    return of(null); // Devuelve un observable que emite null y completa
+    return of(null);
   }
 }
