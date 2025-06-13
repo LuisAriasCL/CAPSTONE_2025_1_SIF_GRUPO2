@@ -1,5 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { AppPage } from 'src/types/components.types';
 import {
   IonList,
   IonMenuToggle,
@@ -7,27 +10,9 @@ import {
   IonIcon,
   IonLabel,
 } from '@ionic/angular/standalone';
-import { RouterLink } from '@angular/router';
-import { addIcons } from 'ionicons';
-import {
-  gridOutline,
-  newspaperOutline,
-  buildOutline,
-  flameOutline,
-  carOutline,
-  peopleOutline,
-  navigateOutline,
-  warningOutline,
-  mapOutline,
-  businessOutline,
-} from 'ionicons/icons';
 
-import { AuthService } from '../../services/auth.service';
 
-/**
- * Componente de navegación lateral.
- * Contiene solo la lista de navegación principal.
- */
+
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
@@ -43,13 +28,14 @@ import { AuthService } from '../../services/auth.service';
     IonLabel,
   ],
 })
+
+
 export class SidebarComponent {
- 
+
+  //  Variables que recorrera AppPage en el HTML -*ngFor="let p of appPages"-
   public selectedIndex = 0;
-  /**
-   * Opciones de navegación para la aplicación.
-   */
-  public appPages = [
+
+  public appPages: AppPage[] = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
     // { title: 'Reportes', url: '/reportes', icon: 'newspaper' }, // Página no existe aún
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
@@ -63,21 +49,4 @@ export class SidebarComponent {
     { title: 'Recorridos', url: '/recorridos', icon: 'navigate' },
   ];
 
-  private authService = inject(AuthService);
-
-  constructor() {
-
-    addIcons({
-      gridOutline,
-      newspaperOutline,
-      buildOutline,
-      flameOutline,
-      carOutline,
-      peopleOutline,
-      navigateOutline,
-      warningOutline,
-      mapOutline,
-      businessOutline,
-    });
-  }
 }

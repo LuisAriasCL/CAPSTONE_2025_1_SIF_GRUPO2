@@ -8,12 +8,22 @@
             <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-menu-toggle>
-        <img src="assets/icon/favicon.ico" alt="Logo Vehículo" class="header-logo" />
+        <img
+          src="assets/icon/favicon.ico"
+          alt="Logo Vehículo"
+          class="header-logo"
+        />
         <ion-title class="header-title">Sistema Integral de Flota</ion-title>
       </div>
-      <!-- Columna derecha: Notificaciones y perfil de usuario -->
+
       <div class="header-right">
-        <app-icono-alerta [count]="notificationCount"></app-icono-alerta>
+        <ion-label class="username-text">{{ currentUserName }}</ion-label>
+
+        <img
+          class="profile-picture"
+          src="assets/foto_perfil/perfil_ejemplo.jpg"
+          alt="Foto de perfil"
+        />
         <app-dropdown-usuario></app-dropdown-usuario>
       </div>
     </div>

@@ -1,14 +1,49 @@
 // src/app/pages/asignacion-list/asignacion-list.page.ts
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe, UpperCasePipe } from '@angular/common';
+import {
+  CommonModule,
+  DatePipe,
+  DecimalPipe,
+  UpperCasePipe,
+} from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController, RefresherCustomEvent, ModalController } from '@ionic/angular';
+import {
+  IonicModule,
+  LoadingController,
+  AlertController,
+  ToastController,
+  NavController,
+  RefresherCustomEvent,
+  ModalController,
+} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline, checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline, personCircleOutline, mapOutline, analyticsOutline, locationOutline, calendarOutline, optionsOutline } from 'ionicons/icons';
+import {
+  eyeOutline,
+  createOutline,
+  trashOutline,
+  addCircleOutline,
+  playCircleOutline,
+  checkmarkCircleOutline,
+  closeCircleOutline,
+  timeOutline,
+  carSportOutline,
+  personCircleOutline,
+  mapOutline,
+  analyticsOutline,
+  locationOutline,
+  calendarOutline,
+  optionsOutline,
+} from 'ionicons/icons';
 
 // CORRECCIÓN AQUÍ: Cambiar 'Ruta' por 'Route'
-import { ApiService, AsignacionRecorrido, Route, Vehiculo, UsuarioConductorInfo } from '../../services/api.service'; 
+import {
+  ApiService,
+  AsignacionRecorrido,
+  Route,
+  UsuarioConductorInfo,
+} from '../../services/api.service';
+import { Vehiculo } from 'src/types/components.types';
 import { SocketService } from '../../services/socket.service';
 import { AsignacionFormPage } from '../asignacion-form/asignacion-form.page';
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
@@ -25,8 +60,8 @@ import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personali
     DatePipe,
     DecimalPipe,
     UpperCasePipe,
-    AlertaPersonalizadaComponent
-  ]
+    AlertaPersonalizadaComponent,
+  ],
 })
 export class AsignacionListPage implements OnInit {
   private apiService = inject(ApiService);
@@ -40,15 +75,27 @@ export class AsignacionListPage implements OnInit {
   asignaciones: AsignacionRecorrido[] = [];
   isLoading = false;
 
-  constructor() { 
+  constructor() {
     addIcons({
-      eyeOutline, createOutline, trashOutline, addCircleOutline, playCircleOutline,
-      checkmarkCircleOutline, closeCircleOutline, timeOutline, carSportOutline,
-      personCircleOutline, mapOutline, analyticsOutline, locationOutline, calendarOutline, optionsOutline
+      eyeOutline,
+      createOutline,
+      trashOutline,
+      addCircleOutline,
+      playCircleOutline,
+      checkmarkCircleOutline,
+      closeCircleOutline,
+      timeOutline,
+      carSportOutline,
+      personCircleOutline,
+      mapOutline,
+      analyticsOutline,
+      locationOutline,
+      calendarOutline,
+      optionsOutline,
     });
   }
 
-  ngOnInit() { 
+  ngOnInit() {
     // Simplificar inicialización
   }
   ionViewWillEnter() {
@@ -58,26 +105,29 @@ export class AsignacionListPage implements OnInit {
     this.isLoading = true;
     let loadingIndicator: HTMLIonLoadingElement | undefined;
     if (!event) {
-      loadingIndicator = await this.loadingCtrl.create({ message: 'Cargando asignaciones...' });
+      loadingIndicator = await this.loadingCtrl.create({
+        message: 'Cargando asignaciones...',
+      });
       await loadingIndicator.present();
     }
 
     // Cargar todas las asignaciones sin filtros
     this.apiService.getAsignacionesRecorrido().subscribe({
-      next: (data: AsignacionRecorrido[]) => { 
+      next: (data: AsignacionRecorrido[]) => {
         this.asignaciones = data;
         this.isLoading = false;
         loadingIndicator?.dismiss();
         event?.target?.complete();
       },
-      error: async (error: any) => { 
+      error: async (error: any) => {
         console.error('Error al cargar asignaciones:', error);
         this.isLoading = false;
         loadingIndicator?.dismiss();
         event?.target?.complete();
-        const errorMsg = error?.message || 'No se pudo cargar la lista de asignaciones.';
+        const errorMsg =
+          error?.message || 'No se pudo cargar la lista de asignaciones.';
         this.presentToast(errorMsg, 'danger');
-      }
+      },
     });
   }
 
@@ -95,10 +145,10 @@ export class AsignacionListPage implements OnInit {
       component: AsignacionFormPage,
       componentProps: {
         isEditMode: false,
-        isViewMode: false
+        isViewMode: false,
       },
       cssClass: 'asignacion-form-modal',
-      backdropDismiss: false
+      backdropDismiss: false,
     });
 
     await modal.present();
@@ -111,16 +161,16 @@ export class AsignacionListPage implements OnInit {
 
   async viewOrEditAsignacion(idAsig?: number) {
     if (idAsig === undefined) return;
-    
+
     const modal = await this.modalCtrl.create({
       component: AsignacionFormPage,
       componentProps: {
         asignacionId: idAsig,
         isEditMode: true,
-        isViewMode: false
+        isViewMode: false,
       },
       cssClass: 'asignacion-form-modal',
-      backdropDismiss: false
+      backdropDismiss: false,
     });
 
     await modal.present();
@@ -134,71 +184,97 @@ export class AsignacionListPage implements OnInit {
   async iniciarSeguimientoEnMapa(asignacion: AsignacionRecorrido) {
     const asignacionId = asignacion.idAsig;
     // Acceder a idRuta a través de asignacion.rutaPlantilla (que es de tipo Route | undefined)
-    const rutaId = asignacion.rutaPlantilla?.idRuta; 
+    const rutaId = asignacion.rutaPlantilla?.idRuta;
     const vehiculoId = asignacion.vehiculo?.idVehi;
 
-    if (asignacionId === undefined || rutaId === undefined || vehiculoId === undefined) {
-      console.error('Datos incompletos en la asignación (idAsig, rutaPlantilla.idRuta, vehiculo.idVehi):', asignacion);
-      this.presentToast('Faltan datos de la asignación (ruta o vehículo) para iniciar el seguimiento.', 'warning');
+    if (
+      asignacionId === undefined ||
+      rutaId === undefined ||
+      vehiculoId === undefined
+    ) {
+      console.error(
+        'Datos incompletos en la asignación (idAsig, rutaPlantilla.idRuta, vehiculo.idVehi):',
+        asignacion
+      );
+      this.presentToast(
+        'Faltan datos de la asignación (ruta o vehículo) para iniciar el seguimiento.',
+        'warning'
+      );
       return;
     }
 
-    if (asignacion.estadoAsig !== 'en_progreso' && asignacion.estadoAsig !== 'asignado') {
-      this.presentToast(`El seguimiento solo se puede iniciar para asignaciones "En Progreso" o "Asignado". Estado actual: ${asignacion.estadoAsig}`, 'warning');
+    if (
+      asignacion.estadoAsig !== 'en_progreso' &&
+      asignacion.estadoAsig !== 'asignado'
+    ) {
+      this.presentToast(
+        `El seguimiento solo se puede iniciar para asignaciones "En Progreso" o "Asignado". Estado actual: ${asignacion.estadoAsig}`,
+        'warning'
+      );
       return;
     }
-    
+
     this.procederConInicioSimulacion(asignacionId, rutaId, vehiculoId);
   }
 
-  private procederConInicioSimulacion(asignacionId: number, rutaId: number, vehiculoId: number) {
-    console.log(`Iniciando seguimiento para Asignación ID: ${asignacionId}, Ruta ID: ${rutaId}, Vehículo ID: ${vehiculoId}`);
+  private procederConInicioSimulacion(
+    asignacionId: number,
+    rutaId: number,
+    vehiculoId: number
+  ) {
+    console.log(
+      `Iniciando seguimiento para Asignación ID: ${asignacionId}, Ruta ID: ${rutaId}, Vehículo ID: ${vehiculoId}`
+    );
 
     this.socketService.emit('startSimulation', {
       routeId: rutaId,
       vehicleId: vehiculoId,
-      asignacionId: asignacionId
+      asignacionId: asignacionId,
     });
 
-    this.router.navigate(['/recorridos'], { 
+    this.router.navigate(['/recorridos'], {
       queryParams: {
         asignacionId: asignacionId,
         vehiculoId: vehiculoId,
-        rutaId: rutaId
-      }
+        rutaId: rutaId,
+      },
     });
   }
 
   async confirmDeleteAsignacion(asignacion: AsignacionRecorrido) {
     if (asignacion.idAsig === undefined) return;
-    
+
     const modal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
         title: 'Confirmar Eliminación',
-        message: `¿Seguro de eliminar la asignación para la ruta "<strong>${asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'}</strong>"?`,
+        message: `¿Seguro de eliminar la asignación para la ruta "<strong>${
+          asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'
+        }</strong>"?`,
         icon: 'warning',
         buttons: [
           { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' }
-        ]
+          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' },
+        ],
       },
       backdropDismiss: false,
-      cssClass: 'custom-alert-modal'
+      cssClass: 'custom-alert-modal',
     });
 
     await modal.present();
     const { data } = await modal.onDidDismiss();
-    
+
     if (data === 'confirm') {
       this.deleteAsignacion(asignacion.idAsig);
     }
   }
 
   async deleteAsignacion(idAsig: number) {
-    const loading = await this.loadingCtrl.create({ message: 'Eliminando asignación...' });
+    const loading = await this.loadingCtrl.create({
+      message: 'Eliminando asignación...',
+    });
     await loading.present();
-    
+
     this.apiService.deleteAsignacionRecorrido(idAsig).subscribe({
       next: async () => {
         await loading.dismiss();
@@ -208,7 +284,7 @@ export class AsignacionListPage implements OnInit {
       error: async (error: any) => {
         await loading.dismiss();
         const errorMsg = error?.message || 'No se pudo eliminar la asignación.';
-        
+
         // Mostrar alerta personalizada para el error
         const errorModal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
@@ -216,25 +292,30 @@ export class AsignacionListPage implements OnInit {
             title: 'Error al Eliminar',
             message: `No se pudo eliminar la asignación: ${errorMsg}`,
             icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            buttons: [{ text: 'Aceptar', role: 'confirm' }],
           },
-          cssClass: 'custom-alert-modal'
+          cssClass: 'custom-alert-modal',
         });
         await errorModal.present();
-      }
+      },
     });
   }
 
-  async cambiarEstadoAsignacion(asignacion: AsignacionRecorrido, nuevoEstado: 'en_progreso' | 'completado' | 'cancelado') {
+  async cambiarEstadoAsignacion(
+    asignacion: AsignacionRecorrido,
+    nuevoEstado: 'en_progreso' | 'completado' | 'cancelado'
+  ) {
     if (asignacion.idAsig === undefined) return;
 
     let confirmMessage = '';
     let confirmTitle = '';
-    
+
     switch (nuevoEstado) {
       case 'en_progreso':
         confirmTitle = 'Iniciar Recorrido';
-        confirmMessage = `¿Confirmas iniciar el recorrido para la ruta "<strong>${asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'}</strong>"?`;
+        confirmMessage = `¿Confirmas iniciar el recorrido para la ruta "<strong>${
+          asignacion.rutaPlantilla?.nombreRuta || 'Desconocida'
+        }</strong>"?`;
         break;
       case 'completado':
         confirmTitle = 'Completar Recorrido';
@@ -254,81 +335,106 @@ export class AsignacionListPage implements OnInit {
         icon: nuevoEstado === 'cancelado' ? 'warning' : 'help',
         buttons: [
           { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-          { text: 'Confirmar', role: 'confirm', cssClass: 'confirm-button' }
-        ]
+          { text: 'Confirmar', role: 'confirm', cssClass: 'confirm-button' },
+        ],
       },
       backdropDismiss: false,
-      cssClass: 'custom-alert-modal'
+      cssClass: 'custom-alert-modal',
     });
 
     await modal.present();
     const { data } = await modal.onDidDismiss();
-    
+
     if (data !== 'confirm') return;
 
-    const loading = await this.loadingCtrl.create({ message: `Actualizando estado a ${nuevoEstado}...` });
+    const loading = await this.loadingCtrl.create({
+      message: `Actualizando estado a ${nuevoEstado}...`,
+    });
     await loading.present();
 
-    let datosParaActualizar: Partial<AsignacionRecorrido> = { estadoAsig: nuevoEstado };
+    let datosParaActualizar: Partial<AsignacionRecorrido> = {
+      estadoAsig: nuevoEstado,
+    };
 
     if (nuevoEstado === 'en_progreso' && asignacion.estadoAsig === 'asignado') {
       console.log(`Iniciando recorrido para asignación ${asignacion.idAsig}.`);
     } else if (nuevoEstado === 'completado') {
       if (!asignacion.fecFinRecor) {
-          datosParaActualizar.fecFinRecor = new Date().toISOString();
+        datosParaActualizar.fecFinRecor = new Date().toISOString();
       }
       if (asignacion.kmFinRecor == null) {
-          await loading.dismiss();
-          
-          // Mostrar alerta personalizada
-          const warnModal = await this.modalCtrl.create({
-            component: AlertaPersonalizadaComponent,
-            componentProps: {
-              title: 'Falta Información',
-              message: 'Para marcar como "Completado", edita la asignación y registra los KM finales.',
-              icon: 'warning',
-              buttons: [{ text: 'Entendido', role: 'confirm' }]
-            },
-            cssClass: 'custom-alert-modal'
-          });
-          await warnModal.present();
-          return;
+        await loading.dismiss();
+
+        // Mostrar alerta personalizada
+        const warnModal = await this.modalCtrl.create({
+          component: AlertaPersonalizadaComponent,
+          componentProps: {
+            title: 'Falta Información',
+            message:
+              'Para marcar como "Completado", edita la asignación y registra los KM finales.',
+            icon: 'warning',
+            buttons: [{ text: 'Entendido', role: 'confirm' }],
+          },
+          cssClass: 'custom-alert-modal',
+        });
+        await warnModal.present();
+        return;
       }
     }
 
-    this.apiService.updateAsignacionRecorrido(asignacion.idAsig, datosParaActualizar).subscribe({
+    this.apiService
+      .updateAsignacionRecorrido(asignacion.idAsig, datosParaActualizar)
+      .subscribe({
         next: async (updatedAsignacion) => {
-            await loading.dismiss();
-            this.presentToast(`Estado de asignación actualizado a "${nuevoEstado}".`, 'success');
-            const index = this.asignaciones.findIndex(a => a.idAsig === asignacion.idAsig);
-            if (index !== -1 && updatedAsignacion) { 
-                this.asignaciones[index] = { ...this.asignaciones[index], ...updatedAsignacion };
-            } else {
-                this.loadAsignaciones();
-            }
+          await loading.dismiss();
+          this.presentToast(
+            `Estado de asignación actualizado a "${nuevoEstado}".`,
+            'success'
+          );
+          const index = this.asignaciones.findIndex(
+            (a) => a.idAsig === asignacion.idAsig
+          );
+          if (index !== -1 && updatedAsignacion) {
+            this.asignaciones[index] = {
+              ...this.asignaciones[index],
+              ...updatedAsignacion,
+            };
+          } else {
+            this.loadAsignaciones();
+          }
         },
         error: async (error: any) => {
-            await loading.dismiss();
-            const errorMsg = error?.message || 'No se pudo actualizar el estado.';
-            
-            // Mostrar alerta personalizada para el error
-            const errorModal = await this.modalCtrl.create({
-              component: AlertaPersonalizadaComponent,
-              componentProps: {
-                title: 'Error',
-                message: `No se pudo actualizar el estado: ${errorMsg}`,
-                icon: 'error',
-                buttons: [{ text: 'Aceptar', role: 'confirm' }]
-              },
-              cssClass: 'custom-alert-modal'
-            });
-            await errorModal.present();
-        }
-    });
+          await loading.dismiss();
+          const errorMsg = error?.message || 'No se pudo actualizar el estado.';
+
+          // Mostrar alerta personalizada para el error
+          const errorModal = await this.modalCtrl.create({
+            component: AlertaPersonalizadaComponent,
+            componentProps: {
+              title: 'Error',
+              message: `No se pudo actualizar el estado: ${errorMsg}`,
+              icon: 'error',
+              buttons: [{ text: 'Aceptar', role: 'confirm' }],
+            },
+            cssClass: 'custom-alert-modal',
+          });
+          await errorModal.present();
+        },
+      });
   }
 
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'primary', duration: number = 3000) {
-    const toast = await this.toastCtrl.create({ message, duration, color, position: 'bottom', mode: 'md' });
+  async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'primary',
+    duration: number = 3000
+  ) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration,
+      color,
+      position: 'bottom',
+      mode: 'md',
+    });
     toast.present();
   }
 

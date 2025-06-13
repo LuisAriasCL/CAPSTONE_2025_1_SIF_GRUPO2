@@ -6,8 +6,7 @@ import * as L from 'leaflet';
   selector: 'app-route-simulation-modal',
   standalone: true,
   imports: [IonicModule],
-  templateUrl: './route-simulation-modal.component.html',
-  styleUrls: ['./route-simulation-modal.component.scss']
+  template: ``,
 })
 export class RouteSimulationModalComponent {
   @Input() routeName?: string;

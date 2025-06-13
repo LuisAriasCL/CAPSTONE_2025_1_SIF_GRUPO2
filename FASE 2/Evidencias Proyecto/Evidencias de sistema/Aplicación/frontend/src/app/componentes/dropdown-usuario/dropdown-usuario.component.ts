@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,12 +9,14 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  ModalController // Asegúrate de importar ModalController
+  ModalController,
 } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons'; // Necesario para los iconos
-import { chevronDownOutline, personOutline, settingsOutline, logOutOutline } from 'ionicons/icons';
-import { AlertaPersonalizadaComponent, AlertButton } from '../alerta-personalizada/alerta-personalizada.component'; // Ajusta la ruta
-import { AuthService } from '../../services/auth.service'; 
+import { AlertaPersonalizadaComponent } from '../alerta-personalizada/alerta-personalizada.component';
+import { AuthService } from '../../services/auth.service';
+import { Subscription } from 'rxjs';
+import { AlertButton } from 'src/types/components.types';
+import { AlertIconType } from 'src/types/components.types';
+
 @Component({
   selector: 'app-dropdown-usuario',
   templateUrl: './dropdown-usuario.component.html',
@@ -28,104 +30,83 @@ import { AuthService } from '../../services/auth.service';
     IonPopover,
     IonList,
     IonItem,
-    IonLabel
-  ]
+    IonLabel,
+  ],
 })
-export class DropdownUsuarioComponent  {
-  public currentUserName: string = 'Pedro San Martin';
+export class DropdownUsuarioComponent {
+  @Input() userNameFromHeader?: string; // Opción 1: Recibir del header
+
+  public currentUserNameDisplay: string = ''; // Para mostrar en el template
   public showPopover = false;
   public popoverEvent: Event | null = null;
+  private userSubscription!: Subscription;
+
+  // Botones de alerta personalizados para el modal de cierre de sesión
+  private readonly logoutButtons: AlertButton[] = [
+    { text: 'Cancelar', role: 'cancel', variant: 'secondary' },
+    { text: 'Si, cerrar sesión', role: 'confirm', variant: 'danger' },
+  ];
 
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
-    private authService: AuthService // Asegúrate de tener el servicio de autenticación
-  ) {
-    // Registra los iconos que usarás en este componente
-    addIcons({ chevronDownOutline, personOutline, settingsOutline, logOutOutline });
-  }
+    private authService: AuthService
+  ) {}
 
-  openUserMenu(ev: Event): void {
-    this.popoverEvent = ev;
+  openUserMenu(event: Event): void {
+    this.popoverEvent = event;
     this.showPopover = true;
   }
 
   closePopover(): void {
     this.showPopover = false;
-    this.popoverEvent = null; // Limpia el evento también
+    this.popoverEvent = null;
   }
 
   goToProfile(): void {
-    console.log('Abrir perfil de usuario');
-    this.router.navigate(['/perfil']); // Asegúrate que la ruta '/perfil' exista
+    this.router.navigate(['/perfil']);
     this.closePopover();
   }
 
   openSettings(): void {
-    console.log('Abrir configuración');
-    // Lógica para abrir configuración
     this.closePopover();
   }
 
-  async mostrarAlertaLogout() {
-    this.closePopover(); // Cierra el dropdown si está abierto
-
-    const modal = await this.modalCtrl.create({
+  // Método para crear el modal de cierre de sesión
+  private async crearModalLogout() {
+    return this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
-        title: 'Confirmar cierre de sesión',
+        title: 'Cerrar sesión',
         message: '¿Estás seguro que deseas cerrar sesión?',
-        icon: 'logout', // Cambiado de 'warning' a 'logout'
-        buttons: [
-          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' }, // Botón gris/claro
-          { text: 'Cerrar sesión', role: 'confirm', cssClass: 'button-danger' } // Botón rojo
-        ] as AlertButton[] // Asegura el tipo
+        icon: AlertIconType.Logout,
+        buttons: this.logoutButtons,
       },
-      cssClass: 'custom-alert-modal', // Clase para el backdrop y posicionamiento
-      backdropDismiss: false // Evita cerrar al hacer clic fuera
+      cssClass: 'custom-alert-modal',
+      backdropDismiss: false,
     });
-
-    await modal.present();
-
-    // Espera el resultado al cerrar el modal
-    const { data } = await modal.onDidDismiss();
-
-    if (data === 'confirm') {
-      console.log('Cerrando sesión...');
-      // Aquí ejecutamos el logout real
-      this.authService.logout();
-      this.mostrarAlertaExito(); // Muestra alerta de éxito
-    } else {
-      console.log('Cierre de sesión cancelado (role:', data, ')');
-    }
   }
 
-  async mostrarAlertaExito() {
-    const modal = await this.modalCtrl.create({
-      component: AlertaPersonalizadaComponent,
-      componentProps: {
-        title: 'Sesión cerrada',
-        message: 'Su sesión fue cerrada con éxito.',
-        icon: 'success',
-        buttons: [
-          { text: 'Aceptar', role: 'accept' }
-        ] as AlertButton[]
-      },
-      // Añadimos una clase específica para este modal
-      cssClass: 'custom-alert-modal-wrapper logout-success-modal-wrapper',
-      backdropDismiss: false
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onDidDismiss();
-    if (data === 'accept') {
-      this.router.navigate(['/login']); // Redirige
-    }
+  // Método para manejar el resultado del modal de cierre de sesión
+  private manejarResultadoLogout(data: any) {
+    const actions: Record<string, () => void> = {
+      confirm: () => this.authService.logout(),
+      cancel: () => this.closePopover(),
+    };
+    actions[data]?.();
   }
 
-  logout(): void {
-    // Solo muestra el modal de confirmación, NO ejecuta el logout
-    this.mostrarAlertaLogout();
+  // METODO PARA MOSTRAR LA ALERTA DE CIERRE DE SESIÓN.
+
+  async mostrarAlertaLogout() {
+    this.closePopover(); // Asegurarse de que el popover se cierre
+    const modal = await this.crearModalLogout();
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    this.manejarResultadoLogout(data);
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
   }
 }

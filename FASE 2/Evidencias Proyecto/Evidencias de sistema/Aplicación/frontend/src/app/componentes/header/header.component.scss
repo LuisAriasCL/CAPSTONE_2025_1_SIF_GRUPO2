@@ -1,70 +1,84 @@
+/* Estilos principales para el contenedor del header */
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   padding: 0 10px;
-}
 
-/* Mantenemos la transición si quieres la animación en el header */
-.header-left,
-.header-right {
-  transition: transform 0.3s ease;
-}
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  ion-menu-toggle ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    margin-right: 4px;
+  .header-logo {
+    height: 40px;
+  }
+
+  .header-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white; // Asegurar color si no hereda bien de ion-toolbar
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px; // Espacio entre nombre, imagen y dropdown
+
+    .username-text {
+      // Estilos para el ion-label del nombre de usuario
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem;
+      // Añade más estilos si es necesario (line-height, etc.)
+    }
+
+    .profile-picture {
+      // Estilos para la img de perfil
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid white; // Opcional: borde para la imagen
+      // padding: 1px; // Si se usa borde
+    }
+
+    // Si app-dropdown-usuario es solo una flecha, podrías necesitar estilizarla
+    // Esto asume que app-dropdown-usuario tiene un ion-button o ion-icon internamente
+    // que quieres estilizar. Si es solo un componente simple, puede que no necesite ::ng-deep.
+    app-dropdown-usuario {
+      // Ejemplo si app-dropdown-usuario tuviera un ion-icon directamente:
+      // ::ng-deep ion-icon {
+      //   color: white;
+      //   font-size: 1.2rem;
+      // }
+      // Si tiene un ion-button:
+      ::ng-deep ion-button {
+        --background: transparent;
+        --background-hover: rgba(255, 255, 255, 0.1);
+        --background-activated: rgba(255, 255, 255, 0.15);
+        --padding-start: 4px; // Ajustar para que solo sea la flecha
+        --padding-end: 4px; // Ajustar para que solo sea la flecha
+        min-width: auto;
+
+        ion-icon[name="chevron-down-outline"] {
+          // Asumiendo que el icono está dentro del botón
+          color: white;
+          font-size: 1.2rem;
+          transition: transform 0.3s ease-in-out;
+        }
+      }
+      // Si la clase .rotate se aplica al ion-icon dentro de app-dropdown-usuario
+      ::ng-deep .rotate {
+        transform: rotate(180deg);
+      }
+    }
   }
 }
 
-.header-logo {
-  height: 40px;
-}
-
-.header-title {
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-/* Puedes mantener las clases de animación si las usas en el header directamente */
-.move-left {
-  transform: translateX(-10px);
-}
-
-.move-right {
-  transform: translateX(10px);
-}
-
-/* Estilos para header fijo que ocupa toda la página */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  width: 100%;
-  
-  ion-toolbar {
-    --min-height: 56px;
-    --padding-start: 0;
-    --padding-end: 0;
-  }
-}
-
-/* Clases de utilidad para visibilidad */
+/* Clases de utilidad para visibilidad (si las usas) */
 .desktop-only {
   display: flex;
 }
@@ -73,67 +87,63 @@
   display: none;
 }
 
-/* Responsividad para móviles */
+/* Responsividad */
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: flex;
-  }
-
   .header-container {
     padding: 0 8px;
-  }
-  
-  .header-title {
-    font-size: 1rem;
-    display: none; /* Ocultar título en móviles para ahorrar espacio */
-  }
-  
-  .header-logo {
-    height: 32px;
-  }
-  
-  .header-left {
-    gap: 4px;
-  }
 
-  ion-back-button {
-    --color: #ff6b00;
-  }
+    .header-title {
+      font-size: 1rem;
+      // display: none; /* Considera si realmente quieres ocultarlo */
+    }
 
-  /* Modificaciones para el dropdown de usuario en móvil */
-  app-dropdown-usuario {
-    ::ng-deep {
-      .user-info-text {
-        display: none; /* Oculta el nombre y rol */
-      }
-      
-      ion-avatar {
-        margin-right: 4px;
+    .header-logo {
+      height: 32px;
+    }
+
+    .header-left {
+      gap: 4px;
+    }
+
+    .header-right {
+      gap: 8px; // Menor espacio en móvil
+      .username-text {
+        // Podrías ocultar el nombre en pantallas muy pequeñas si es necesario
+        // display: none;
       }
     }
-  }
 
-  /* Estilos para el back button móvil */
-  .back-button-mobile {
-    position: absolute;
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
+    .desktop-only {
+      display: none;
+    }
+
+    .mobile-only {
+      display: flex;
+    }
+
+    /* Estilos para el back button móvil (si lo tienes en el template del header) */
+    .back-button-mobile {
+      position: absolute;
+      left: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
   }
 }
 
 /* Para pantallas muy pequeñas */
 @media (max-width: 480px) {
-  .header-title {
-    display: none;
-  }
-  
   .header-container {
     padding: 0 4px;
+
+    .header-title {
+      display: none;
+    }
+    .header-right {
+      .username-text {
+        display: none; // Ocultar nombre de usuario en pantallas muy pequeñas
+      }
+    }
   }
 }
