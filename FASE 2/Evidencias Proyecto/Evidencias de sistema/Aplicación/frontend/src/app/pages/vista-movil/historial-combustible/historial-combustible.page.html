@@ -7,45 +7,55 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div *ngIf="isLoading" class="ion-text-center">
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <div *ngIf="!isLoading && historial.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && historialAgrupado.length === 0" class="empty-state">
     <ion-icon name="document-text-outline" size="large"></ion-icon>
     <p>No tienes registros de combustible.</p>
   </div>
 
-  <ion-list *ngIf="!isLoading && historial.length > 0">
-    <ion-card *ngFor="let registro of historial">
-      <ion-card-header>
-        <ion-card-title>${{ registro.monto | number }}</ion-card-title>
-        <ion-card-subtitle>{{ registro.fecha | date:'dd/MM/yyyy HH:mm' }} hrs.</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item lines="none">
-          <ion-icon name="car-sport-outline" slot="start"></ion-icon>
-          <ion-label>
-            <h3>Vehículo</h3>
-            <p>{{ registro.Vehiculo?.marca }} {{ registro.Vehiculo?.modelo }} ({{ registro.Vehiculo?.patente }})</p>
-          </ion-label>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-icon name="speedometer-outline" slot="start"></ion-icon>
-          <ion-label>
-            <h3>Kilometraje</h3>
-            <p>{{ registro.kilometraje | number }} km</p>
-          </ion-label>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-icon name="water-outline" slot="start"></ion-icon>
-          <ion-label>
-            <h3>Litros</h3>
-            <p>{{ registro.litros | number }} L</p>
-          </ion-label>
-        </ion-item>
-      </ion-card-content>
+  <div *ngFor="let grupo of historialAgrupado">
+    <ion-item-divider sticky>
+      <ion-label>{{ grupo.fecha }}</ion-label>
+    </ion-item-divider>
+
+    <ion-card *ngFor="let registro of grupo.registros" class="registro-card">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <ion-col size="auto" class="icon-col">
+            <ion-icon name="gas-pump" color="success"></ion-icon>
+          </ion-col>
+          <ion-col>
+            <h2 class="monto">${{ registro.monto | number:'1.0-0' }}</h2>
+            <p class="fecha-hora">{{ registro.fecha | date:'HH:mm' }} hrs.</p>
+          </ion-col>
+          <ion-col size="auto" class="ion-text-end">
+            <p class="litros">{{ registro.litros | number:'1.2-2' }} L</p>
+          </ion-col>
+        </ion-row>
+        <ion-row class="details-row">
+          <ion-col>
+            <p class="detail-text">
+              <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
+              {{ registro.Vehiculo?.patente }}
+            </p>
+          </ion-col>
+          <ion-col class="ion-text-end">
+            <p class="detail-text">
+              <ion-icon name="speedometer-outline" class="detail-icon"></ion-icon>
+              {{ registro.kilometraje | number:'1.0-0' }} km
+            </p>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </ion-card>
-  </ion-list>
+  </div>
+
 </ion-content>

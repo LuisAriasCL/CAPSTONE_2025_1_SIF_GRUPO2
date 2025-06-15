@@ -10,6 +10,7 @@ const db = require('./models');
 const planificacionMantenimientoRoutes = require('./routes/planificacionMantenimiento.routes');
 const ordenTrabajoRoutes = require('./routes/ordenTrabajo.routes.js'); // <--- 1. IMPORTAR NUEVAS RUTAS
 // Rutas API
+const siniestroRoutes = require('./routes/siniestros');
 const combustibleRoutes = require('./routes/combustibles');
 const vehicleRoutes = require('./routes/vehiculos');
 const authRoutes = require('./routes/auth');
@@ -50,7 +51,7 @@ app.get('/', (req, res) => {
 });
 
 // --- REGISTRO DE RUTAS API ---
-
+app.use('/api/siniestros', siniestroRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/combustibles', combustibleRoutes);
 app.use('/api/vehicles', vehicleRoutes);

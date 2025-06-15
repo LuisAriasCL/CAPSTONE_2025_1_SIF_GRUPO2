@@ -207,6 +207,9 @@ export class ApiService {
 getHistorialCombustible(conductorId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
   }
+    registrarIncidente(data: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/siniestros`, data);
+  }
   // Método para registrar la carga de combustible
   registrarCargaCombustible(data: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/combustibles`, data);
