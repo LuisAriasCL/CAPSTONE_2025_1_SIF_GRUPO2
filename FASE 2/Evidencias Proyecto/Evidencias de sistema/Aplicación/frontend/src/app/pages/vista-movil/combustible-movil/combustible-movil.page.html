@@ -1,68 +1,74 @@
-<ion-content [fullscreen]="true" class="ion-padding">  <div class="form-container">
-    <div class="form-header">
-      <h3>Formulario de carga de combustible</h3>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-movil"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registrar Carga</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="combustibleForm" (ngSubmit)="registrarCarga()">
+    <ion-item>
+  <ion-label position="floating">Vehículo</ion-label>
+  <ion-select formControlName="vehiculoId" interface="popover" placeholder="Selecciona un vehículo">
+    <ion-select-option *ngFor="let v of vehiculos" [value]="v.idVehi">
+      {{ v.marca }} {{ v.modelo }} ({{ v.patente }})
+    </ion-select-option>
+  </ion-select>
+</ion-item>
+<ion-item>
+  <ion-label position="floating">Tipo de Combustible</ion-label>
+  <ion-select formControlName="tipoCombustible" interface="popover" placeholder="Selecciona un tipo">
+    <ion-select-option value="gasolina_93">Gasolina 93</ion-select-option>
+    <ion-select-option value="gasolina_95">Gasolina 95</ion-select-option>
+    <ion-select-option value="gasolina_97">Gasolina 97</ion-select-option>
+    <ion-select-option value="diesel">Diesel</ion-select-option>
+    <ion-select-option value="electrico">Eléctrico</ion-select-option>
+    <ion-select-option value="otro">Otro</ion-select-option>
+  </ion-select>
+</ion-item>
+    <ion-item>
+      <ion-label position="floating">Fecha y Hora</ion-label>
+      <ion-datetime-button datetime="datetime"></ion-datetime-button>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime id="datetime" formControlName="fecha"></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Monto ($)</ion-label>
+      <ion-input type="number" formControlName="monto"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Litros</ion-label>
+      <ion-input type="number" formControlName="litros"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Kilometraje</ion-label>
+      <ion-input type="number" formControlName="kilometraje"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" fill="outline" (click)="fileInput.click()" class="ion-margin-top">
+      <ion-icon name="attach-outline" slot="start"></ion-icon>
+      Adjuntar Comprobante
+    </ion-button>
+    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" accept="image/*">
+
+    <div *ngIf="isImageLoading" class="ion-padding-start">
+      <ion-spinner name="crescent"></ion-spinner>
     </div>
-    
-    <form [formGroup]="combustibleForm" (ngSubmit)="guardarCargaCombustible()">
-      <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Vehículo</ion-label>
-          <ion-input type="text" formControlName="vehiculo" placeholder="Ej: FWGH-31"></ion-input>
-        </ion-item>
+    <div *ngIf="imageSrc && !isImageLoading" class="ion-padding image-preview">
+      <img [src]="imageSrc" alt="Vista previa"/>
+      <p class="ion-text-center file-name">{{ selectedFileName }}</p>
+    </div>
 
-        <ion-item>
-          <ion-label position="stacked">Conductor</ion-label>
-          <ion-input type="text" formControlName="conductor" placeholder="Nombre del conductor"></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="stacked">Odómetro (Km)</ion-label>
-          <ion-input type="number" formControlName="odometro" placeholder="Ej: 50000"></ion-input>
-        </ion-item>
-
-        <ion-item>          <ion-label position="stacked">Tipo de Combustible</ion-label>
-          <ion-select formControlName="tipoCombustible" placeholder="Seleccione tipo" 
-                     interface="popover" 
-                     [interfaceOptions]="{ cssClass: 'custom-select-interface' }">
-            <ion-select-option value="93">93</ion-select-option>
-            <ion-select-option value="95">95</ion-select-option>
-            <ion-select-option value="97">97</ion-select-option>
-            <ion-select-option value="diesel">Diésel</ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="stacked">Cantidad de Litros (L)</ion-label>
-          <ion-input type="number" formControlName="cantidadLitros" placeholder="Ej: 50"></ion-input>
-        </ion-item>
-
-        <ion-item lines="none" class="ion-margin-top">
-          <ion-label>Foto del comprobante</ion-label>
-        </ion-item>
-        
-        <ion-item lines="none">
-          <ion-button expand="block" fill="outline" (click)="presentPhotoOptions()">
-            <ion-icon slot="start" name="camera"></ion-icon>
-            Subir foto
-          </ion-button>
-        </ion-item>
-
-        <div *ngIf="isImageLoading" class="ion-padding-start">
-          <ion-spinner></ion-spinner>
-          <ion-text color="medium" class="ion-padding-start">Cargando imagen...</ion-text>
-        </div>
-
-        <div *ngIf="imageSrc && !isImageLoading" class="ion-padding image-preview">
-          <img [src]="imageSrc" alt="Vista previa"/>
-          <ion-text color="medium" class="ion-padding-top ion-text-wrap">
-            {{ selectedFileName }}
-          </ion-text>
-        </div>
-      </ion-list>
-
-      <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="combustibleForm.invalid">
-        Registrar Carga
-      </ion-button>
-    </form>
-  </div>
+    <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="combustibleForm.invalid">
+      Registrar Carga
+    </ion-button>
+  </form>
 </ion-content>

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-
+import { isConductorGuard } from './guards/conductor.guard';
 export const routes: Routes = [
   // --- Rutas Públicas ---
   {
@@ -13,17 +13,25 @@ export const routes: Routes = [
   },
   {
     path: 'home-movil',
-    loadComponent: () => import('./pages/vista-movil/home-movil/home-movil.page').then(m => m.HomeMovilPage)
+    loadComponent: () => import('./pages/vista-movil/home-movil/home-movil.page').then(m => m.HomeMovilPage),
+    canActivate: [authGuard, isConductorGuard]
   },
   {
     path: 'combustible-movil',
-    loadComponent: () => import('./pages/vista-movil/combustible-movil/combustible-movil.page').then(m => m.CombustibleMovilPage)
+    loadComponent: () => import('./pages/vista-movil/combustible-movil/combustible-movil.page').then(m => m.CombustibleMovilPage),
+    canActivate: [authGuard, isConductorGuard]
   },
   {
-    path: 'incidente-movil', // Nueva ruta para la vista móvil de incidente
-    loadComponent: () => import('./pages/vista-movil/incidente-movil/incidente-movil.page').then(m => m.IncidenteMovilPage)
+    path: 'incidente-movil',
+    loadComponent: () => import('./pages/vista-movil/incidente-movil/incidente-movil.page').then(m => m.IncidenteMovilPage),
+    canActivate: [authGuard, isConductorGuard]
   },
-
+  
+{
+    path: 'historial-combustible',
+    loadComponent: () => import('./pages/vista-movil/historial-combustible/historial-combustible.page').then( m => m.HistorialCombustiblePage),
+    canActivate: [authGuard, isConductorGuard]
+  },
   // --- Rutas Privadas ---
   {
     path: 'dashboard',
@@ -125,5 +133,7 @@ export const routes: Routes = [
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
-  }
+  },
+  
+
 ];

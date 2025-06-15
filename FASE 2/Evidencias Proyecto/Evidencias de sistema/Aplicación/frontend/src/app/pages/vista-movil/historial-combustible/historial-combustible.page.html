@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home-movil"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Historial de Cargas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && historial.length === 0" class="empty-state">
+    <ion-icon name="document-text-outline" size="large"></ion-icon>
+    <p>No tienes registros de combustible.</p>
+  </div>
+
+  <ion-list *ngIf="!isLoading && historial.length > 0">
+    <ion-card *ngFor="let registro of historial">
+      <ion-card-header>
+        <ion-card-title>${{ registro.monto | number }}</ion-card-title>
+        <ion-card-subtitle>{{ registro.fecha | date:'dd/MM/yyyy HH:mm' }} hrs.</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon name="car-sport-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Vehículo</h3>
+            <p>{{ registro.Vehiculo?.marca }} {{ registro.Vehiculo?.modelo }} ({{ registro.Vehiculo?.patente }})</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon name="speedometer-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Kilometraje</h3>
+            <p>{{ registro.kilometraje | number }} km</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon name="water-outline" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Litros</h3>
+            <p>{{ registro.litros | number }} L</p>
+          </ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>

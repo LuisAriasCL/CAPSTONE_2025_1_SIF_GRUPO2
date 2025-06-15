@@ -193,8 +193,36 @@ router.put('/:idAsig', async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
+router.get('/vehiculo-activo/conductor/:conductorId', async (req, res) => {
+  try {
+    const { conductorId } = req.params;
 
-// DELETE /api/asignaciones-recorrido/:idAsig - Eliminar/Cancelar una asignación
+    const asignacion = await AsignacionRecorrido.findOne({
+      where: {
+        usuario_id_usu: conductorId, 
+        estado_asig: 'en_progreso'   
+      },
+      
+      include: {
+        model: Vehiculo,
+        as: 'vehiculo'
+      }
+    });
+
+    if (asignacion && asignacion.vehiculo) {
+     
+      res.json(asignacion.vehiculo);
+    } else {
+ 
+      res.status(404).json({ message: 'No se encontró un vehículo activo asignado para este conductor.' });
+    }
+  } catch (error) {
+    console.error("Error al obtener vehículo activo:", error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
 router.delete('/:idAsig', async (req, res) => {
   const t = await sequelize.transaction();
   try {

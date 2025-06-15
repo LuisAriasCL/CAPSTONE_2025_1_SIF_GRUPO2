@@ -4,12 +4,13 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require("socket.io");
-
+const path = require('path');
 const db = require('./models');
 // ... otras importaciones de rutas
 const planificacionMantenimientoRoutes = require('./routes/planificacionMantenimiento.routes');
 const ordenTrabajoRoutes = require('./routes/ordenTrabajo.routes.js'); // <--- 1. IMPORTAR NUEVAS RUTAS
 // Rutas API
+const combustibleRoutes = require('./routes/combustibles');
 const vehicleRoutes = require('./routes/vehiculos');
 const authRoutes = require('./routes/auth');
 const routeRoutes = require('./routes/rutas'); 
@@ -49,6 +50,9 @@ app.get('/', (req, res) => {
 });
 
 // --- REGISTRO DE RUTAS API ---
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/combustibles', combustibleRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/rutas', routeRoutes);

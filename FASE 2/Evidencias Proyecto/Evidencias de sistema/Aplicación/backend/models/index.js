@@ -201,7 +201,7 @@ if (db.DetalleOt && db.Usuario) {
     // Y la relación inversa: Un usuario (técnico) puede tener muchas tareas
     db.Usuario.hasMany(db.DetalleOt, {
         foreignKey: { name: 'usuarioIdUsuTecnico', field: 'usuario_id_usu_tecnico' },
-        as: 'tareasAsignadas' // Usamos un alias diferente para evitar conflictos
+        as: 'tareasAsignadas' 
     });
 }
 
@@ -223,6 +223,18 @@ if (db.DetalleOt && db.Tarea) {
         foreignKey: { name: 'tareaIdTarea', field: 'tarea_id_tarea' },
         as: 'tareaEstandar'
     });
+}
+// --- NUEVAS ASOCIACIONES PARA REGISTRO DE COMBUSTIBLE ---
+if (db.RegistroCombustible && db.Vehiculo) {
+  // Un registro de combustible pertenece a un vehículo
+  db.RegistroCombustible.belongsTo(db.Vehiculo, { foreignKey: 'vehiculoId' });
+  db.Vehiculo.hasMany(db.RegistroCombustible, { foreignKey: 'vehiculoId' });
+}
+
+if (db.RegistroCombustible && db.Usuario) {
+  // Un registro de combustible es realizado por un usuario (conductor)
+  db.RegistroCombustible.belongsTo(db.Usuario, { foreignKey: 'usuarioId' });
+  db.Usuario.hasMany(db.RegistroCombustible, { foreignKey: 'usuarioId' });
 }
 
 db.sequelize = sequelize;

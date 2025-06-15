@@ -9,7 +9,15 @@
       o si ocurre un accidente o desperfecto <ion-icon name="warning"></ion-icon> en mitad del viaje.
     </p>
 
-    <ion-card class="action-card" (click)="irACombustible()" button="true" style="background-color: #001f3f; color: white;">
+
+<ion-card class="action-card" routerLink="/historial-combustible" button>
+  <ion-card-header>
+    <ion-icon name="receipt-outline" size="large"></ion-icon>
+    <ion-card-title>Ver Historial de Cargas</ion-card-title>
+  </ion-card-header>
+</ion-card>
+
+    <ion-card class="action-card" routerLink="/combustible-movil" button="true" style="background-color: #001f3f; color: white;">
       <ion-card-content class="ion-text-center">
         <ion-icon name="water" color="tertiary" class="action-icon"></ion-icon>
         <ion-card-title style="color: white;">Cargar Combustible</ion-card-title>

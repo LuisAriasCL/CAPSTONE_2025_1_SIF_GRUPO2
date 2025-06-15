@@ -204,7 +204,17 @@ export class ApiService {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
   }
-
+getHistorialCombustible(conductorId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
+  }
+  // Método para registrar la carga de combustible
+  registrarCargaCombustible(data: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/combustibles`, data);
+  }
+  
+  getVehiculoActivo(conductorId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/asignaciones-recorrido/vehiculo-activo/conductor/${conductorId}`);
+  }
   // --- Métodos para el Módulo de Órdenes de Trabajo ---
   actualizarEstadoOt(id: number, estado: string, encargadoId?: number): Observable<any> {
     const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
