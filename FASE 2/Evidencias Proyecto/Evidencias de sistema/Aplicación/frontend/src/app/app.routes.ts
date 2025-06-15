@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { isConductorGuard } from './guards/conductor.guard';
+import { isTecnicoGuard } from './guards/tecnico.guard';
 export const routes: Routes = [
   // --- Rutas Públicas ---
   {
@@ -25,6 +26,17 @@ export const routes: Routes = [
     path: 'incidente-movil',
     loadComponent: () => import('./pages/vista-movil/incidente-movil/incidente-movil.page').then(m => m.IncidenteMovilPage),
     canActivate: [authGuard, isConductorGuard]
+  },
+    {
+    path: 'servicios-tecnico-movil',
+    loadComponent: () => import('./pages/vista-movil/servicios-tecnico-movil/servicios-tecnico.page').then(m => m.ServiciosTecnicoPage),
+    canActivate: [authGuard, isTecnicoGuard]
+  },
+  {
+    path: 'servicio-detalle-movil/:id',
+   
+    loadComponent: () => import('./pages/vista-movil/servicio-detalle-movil/servicio-detalle.page').then(m => m.ServicioDetallePage),
+    canActivate: [authGuard, isTecnicoGuard]
   },
   
 {

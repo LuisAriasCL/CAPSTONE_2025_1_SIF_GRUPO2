@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { IonicModule, LoadingController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { mailOutline, lockClosedOutline, logInOutline } from 'ionicons/icons';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LoginResponse } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -56,12 +56,12 @@ export class LoginPage implements OnInit {
   // --- Fin Getters ---
 
   // --- Método llamado al enviar el formulario ---
-  async login() {
-    this.isSubmitted = true; // Marcar para mostrar errores si es necesario
+   async login() {
+    this.isSubmitted = true;
 
     if (this.loginForm.invalid) {
       console.log('Formulario de login inválido');
-      return; // No continuar si hay errores de validación
+      return;
     }
 
     const loading = await this.loadingController.create({
@@ -71,14 +71,26 @@ export class LoginPage implements OnInit {
 
     // Llamar al método login del AuthService con los valores del formulario
     this.authService.login(this.loginForm.value).subscribe({
-      next: async (response) => {
-        // --- Éxito en el Login ---
+      // --- SECCIÓN MODIFICADA PARA REDIRECCIÓN POR ROL ---
+      next: async (response: LoginResponse) => {
         await loading.dismiss();
         console.log('Login exitoso!', response);
-        this.router.navigateByUrl('/', { replaceUrl: true });
+        
+        // Obtenemos el rol del usuario desde la respuesta
+        const userRole = response.user.rol;
+
+        // Redirigimos según el rol
+        if (userRole === 'conductor') {
+          this.router.navigateByUrl('/home-movil', { replaceUrl: true });
+        } else if (userRole === 'tecnico') {
+          this.router.navigateByUrl('/servicios-tecnico-movil', { replaceUrl: true });
+        } else {
+          // Para 'admin', 'gestor', 'mantenimiento' y cualquier otro rol, ir al dashboard
+          this.router.navigateByUrl('/dashboard', { replaceUrl: true });
+        }
       },
+      // --- FIN DE LA SECCIÓN MODIFICADA ---
       error: async (error) => {
-        // --- Error en el Login ---
         await loading.dismiss();
         console.error('Error en el login:', error);
         const alert = await this.alertController.create({

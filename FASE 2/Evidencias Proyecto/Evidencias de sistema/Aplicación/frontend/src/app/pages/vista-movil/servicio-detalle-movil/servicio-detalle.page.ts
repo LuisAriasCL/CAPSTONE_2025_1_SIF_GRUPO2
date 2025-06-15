@@ -1,49 +1,80 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-import { CommonModule, DatePipe } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { checkmarkDoneOutline } from 'ionicons/icons';
+import { ApiService, OrdenTrabajoDetalle } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-servicio-detalle',
   templateUrl: './servicio-detalle.page.html',
   styleUrls: ['./servicio-detalle.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
-  providers: [DatePipe] // Para usar el pipe 'date' en el template
+  imports: [IonicModule, CommonModule, FormsModule]
 })
+// --- ASEGÚRATE DE QUE EL NOMBRE DE LA CLASE SEA ESTE ---
 export class ServicioDetallePage implements OnInit {
-  
-  public ordenDeTrabajo: any;
-  private otId: string | null = null;
+  ot: OrdenTrabajoDetalle | null = null;
+  isLoading = true;
+  otId: number = 0;
+  currentUserId: number | null = null;
 
-  constructor(private route: ActivatedRoute) {
-    addIcons({
-      'checkmark-done': checkmarkDoneOutline
+  constructor(
+    private route: ActivatedRoute,
+    private apiService: ApiService,
+    private toastController: ToastController,
+    private navCtrl: NavController,
+    private authService: AuthService 
+  ) { }
+
+  ngOnInit() {
+    const currentUser = this.authService.getCurrentUser();
+    this.currentUserId = currentUser ? currentUser.idUsu : null;
+
+    this.otId = Number(this.route.snapshot.paramMap.get('id'));
+    this.cargarDetalleOT();
+  }
+
+  cargarDetalleOT() {
+    this.isLoading = true;
+    this.apiService.getOrdenTrabajoById(this.otId).subscribe({
+      next: (data) => {
+        this.ot = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        this.presentToast('Error al cargar el detalle de la OT.');
+      }
     });
   }
 
-  ngOnInit() {
-    // Obtenemos el ID de la OT desde la URL
-    this.otId = this.route.snapshot.paramMap.get('id');
-    // En una app real, llamarías a un servicio: this.miServicio.getOT(this.otId).subscribe(data => ...);
+  guardarProgreso() {
+    if (!this.ot) return;
 
-    // Por ahora, usamos datos de ejemplo para que la vista funcione:
-    this.cargarDatosDeEjemplo(this.otId);
+    const payload = {
+      detalles: this.ot.detalles.map(d => ({
+        id_det: d.id_det,
+        checklist: d.checklist
+      }))
+    };
+    
+    this.apiService.actualizarDetallesOt(this.otId, payload).subscribe({
+      next: async () => {
+        await this.presentToast('Progreso guardado con éxito.');
+        this.navCtrl.back();
+      },
+      error: async (err) => {
+        await this.presentToast('Error al guardar el progreso.');
+        console.error(err);
+      }
+    });
   }
 
-  cargarDatosDeEjemplo(id: string | null) {
-    // Simula que se cargan los datos de la OT seleccionada
-    this.ordenDeTrabajo = {
-      codigoOT: id,
-      descripcionGeneral: 'Sacar el aceite del motor y poner uno nuevo.',
-      encargadoOT: 'Jaime Castillo',
-      fechaInicio: new Date('2025-06-12T12:00:00'),
-      fechaFin: new Date('2025-06-12T12:30:00'),
-      duracionAprox: 30,
-      duracionReal: null, // Podría ser null si aún no se completa
-      descripcionTarea: 'Se realiza cambio de aceite según pauta de mantenimiento preventivo para el vehículo, utilizando aceite sintético 5W-30.'
-    };
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({ message, duration: 3000, position: 'bottom' });
+    toast.present();
   }
 }

@@ -1,61 +1,78 @@
-<ion-header [translucent]="true">
-    <ion-toolbar color="primary">
-      <ion-buttons slot="start">
-        <ion-back-button defaultHref="/mobile/servicios-tecnico"></ion-back-button>
-      </ion-buttons>
-      <ion-title>Orden de Trabajo #{{ ordenDeTrabajo?.codigoOT }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
-  <ion-content [fullscreen]="true" class="ion-padding" *ngIf="ordenDeTrabajo">
-    <ion-card>
+<ion-header>
+  <ion-toolbar color="tertiary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/servicios-tecnico-movil"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle OT #{{ otId }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && ot">
+    <!-- Tarjeta Principal con Información General -->
+    <ion-card class="main-info-card">
       <ion-card-header>
-        <ion-card-title>Información del Servicio</ion-card-title>
+        <ion-card-subtitle>{{ ot.vehiculo.patente }}</ion-card-subtitle>
+        <ion-card-title>{{ ot.vehiculo.marca }} {{ ot.vehiculo.modelo }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p class="description">{{ ordenDeTrabajo?.descripcionGeneral }}</p>
+        <div class="status-line">
+          <strong>Estado:</strong>
+          <ion-chip [outline]="true" [color]="ot.estado_ot === 'en_progreso' ? 'warning' : 'medium'">
+            <ion-label>{{ ot.estado_ot | titlecase }}</ion-label>
+          </ion-chip>
+        </div>
+        <div class="description" *ngIf="ot.descripcion_ot">
+          <strong>Descripción:</strong>
+          <p>{{ ot.descripcion_ot }}</p>
+        </div>
+        <div class="manager" *ngIf="ot.encargado">
+          <strong>Encargado:</strong>
+          <p>
+            <ion-icon name="person-circle-outline"></ion-icon>
+            {{ ot.encargado.pri_nom_usu }} {{ ot.encargado.pri_ape_usu }}
+          </p>
+        </div>
       </ion-card-content>
     </ion-card>
-  
-    <ion-list lines="full" [inset]="true">
-      <ion-list-header>
-        <ion-label>Desarrollo del Servicio</ion-label>
-      </ion-list-header>
-      <ion-item>
-        <ion-label>Encargado de la OT:</ion-label>
-        <ion-note slot="end">{{ ordenDeTrabajo?.encargadoOT }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Fecha y hora de inicio:</ion-label>
-        <ion-note slot="end">{{ ordenDeTrabajo?.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Fecha y hora de fin:</ion-label>
-        <ion-note slot="end">{{ ordenDeTrabajo?.fechaFin | date:'dd/MM/yyyy HH:mm' }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Duración Aproximada:</ion-label>
-        <ion-note slot="end">{{ ordenDeTrabajo?.duracionAprox }} min</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Duración Real:</ion-label>
-        <ion-note slot="end">{{ ordenDeTrabajo?.duracionReal || '-' }} min</ion-note>
-      </ion-item>
-    </ion-list>
-  
-    <ion-item-divider class="ion-margin-top">
-      <ion-label>Descripción de la tarea:</ion-label>
-    </ion-item-divider>
-    <p class="ion-padding description-task">
-      {{ ordenDeTrabajo?.descripcionTarea }}
-    </p>
-  </ion-content>
-  
-  <ion-footer class="ion-no-border">
-    <ion-toolbar>
-      <ion-button expand="block" color="success">
-        Finalizar Tarea
-        <ion-icon slot="end" name="checkmark-done"></ion-icon>
+
+  <ion-list-header>
+  <ion-label>Tareas Asignadas</ion-label>
+</ion-list-header>
+
+<ion-list [inset]="true">
+  <ion-item *ngFor="let tarea of ot.detalles">
+    <ion-label class="ion-text-wrap">
+      <h3>{{ tarea.desc_det }}</h3>
+      <p *ngIf="tarea.tecnico">
+        <ion-icon name="person-outline" class="small-icon"></ion-icon>
+        Asignado a: {{ tarea.tecnico.pri_nom_usu }}
+      </p>
+      <p *ngIf="!tarea.tecnico">
+        <ion-icon name="person-remove-outline" class="small-icon"></ion-icon>
+        Sin asignar
+      </p>
+    </ion-label>
+    
+    <ion-checkbox 
+      slot="end" 
+      [(ngModel)]="tarea.checklist"
+      [disabled]="!tarea.tecnico || tarea.tecnico.id_usu !== currentUserId">
+    </ion-checkbox>
+
+  </ion-item>
+</ion-list>
+
+    <!-- Botón de Acción -->
+    <div class="ion-padding">
+      <ion-button expand="block" (click)="guardarProgreso()" size="large">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Guardar Progreso
       </ion-button>
-    </ion-toolbar>
-  </ion-footer>
+    </div>
+  </div>
+</ion-content>

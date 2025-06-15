@@ -204,6 +204,9 @@ export class ApiService {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
   }
+    getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
+    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`);
+  }
 getHistorialCombustible(conductorId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
   }

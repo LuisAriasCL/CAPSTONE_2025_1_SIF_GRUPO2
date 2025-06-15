@@ -124,53 +124,90 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
   }
 };
 
+// --- FUNCIÓN AÑADIDA PARA LA VISTA MÓVIL DEL TÉCNICO ---
+// Devuelve solo las OTs donde el técnico tiene al menos una tarea asignada.
+exports.getOrdenesPorTecnico = async (req, res) => {
+  try {
+    const { tecnicoId } = req.params;
 
+    const ordenes = await OrdenTrabajo.findAll({
+      include: [
+        {
+          model: DetalleOt,
+          as: 'detalles',
+          // Corregido: Usar el nombre del modelo (camelCase)
+          where: { usuarioIdUsuTecnico: tecnicoId },
+          required: true 
+        },
+        {
+          model: Vehiculo,
+          as: 'vehiculo',
+          attributes: ['patente', 'marca', 'modelo']
+        }
+      ],
+      order: [['fec_ini_ot', 'DESC']]
+    });
+
+    res.status(200).json(ordenes);
+  } catch (error) {
+    console.error("Error al obtener órdenes de trabajo para el técnico:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
 
 exports.actualizarDetallesOt = async (req, res) => {
-    const { id } = req.params;
-   
+    // Usamos 'idOt' para evitar confusiones con otros 'id'
+    const { id: idOt } = req.params; 
     const { km_ot, descripcion_ot, detalles } = req.body;
 
-
-    if (descripcion_ot === undefined || km_ot === undefined || !Array.isArray(detalles)) {
-        return res.status(400).json({ error: 'Formato de datos incorrecto. Se esperan km_ot, descripcion_ot y un array de detalles.' });
+    // La única validación estricta es que 'detalles' debe existir y ser un array.
+    if (!Array.isArray(detalles)) {
+        return res.status(400).json({ error: 'Formato de datos incorrecto. Se espera un array de "detalles".' });
     }
 
     const t = await sequelize.transaction();
     try {
-        
-        await OrdenTrabajo.update({
-            km_ot: km_ot,
-            descripcion_ot: descripcion_ot 
-        }, {
-            where: { id_ot: id },
-            transaction: t
-        });
-
-     
-        for (const detalle of detalles) {
-            await DetalleOt.update({
-                checklist: detalle.checklist,
-                usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico
-            }, { 
-                where: { 
-                    id_det: detalle.id_det,
-                    orden_trabajo_id_ot: id 
-                }, 
-                transaction: t 
+        // Si la petición viene del gestor (con km_ot y descripcion_ot), actualiza la OT.
+        // Si viene del técnico, estos campos serán undefined y este bloque se saltará.
+        if (km_ot !== undefined && descripcion_ot !== undefined) {
+            await OrdenTrabajo.update({
+                km_ot: km_ot,
+                descripcion_ot: descripcion_ot 
+            }, {
+                where: { id_ot: idOt },
+                transaction: t
             });
+        }
+        
+        // Actualiza los detalles de las tareas (para ambos, gestor y técnico)
+        for (const detalle of detalles) {
+            const dataToUpdate = {
+                checklist: detalle.checklist,
+                // Si viene un técnico asignado, lo actualiza. Si no, no hace nada con este campo.
+                ...(detalle.usuario_id_usu_tecnico && { usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico })
+            };
+
+            await DetalleOt.update(
+                dataToUpdate,
+                { 
+                    where: { 
+                        id_det: detalle.id_det,
+                        // Corregido: Usar el nombre del modelo (camelCase) y la variable correcta
+                        ordenTrabajoIdOt: idOt 
+                    }, 
+                    transaction: t 
+                }
+            );
         }
         
         await t.commit();
         res.status(200).json({ message: 'Cambios guardados con éxito.' });
     } catch (error) {
         await t.rollback();
-        console.error('Error al actualizar la OT completa:', error);
+        console.error('Error al actualizar la OT:', error);
         res.status(500).json({ error: 'Error interno del servidor al actualizar la OT.' });
     }
 };
-
-
 
 exports.actualizarEstadoOt = async (req, res) => {
     const { id } = req.params;
