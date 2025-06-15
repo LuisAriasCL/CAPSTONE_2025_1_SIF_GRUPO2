@@ -18,7 +18,7 @@ export class IncidenteMovilPage implements OnInit {
   vehiculoAsignado: any = null;
   fotoFile: File | null = null;
   imageSrc: string | ArrayBuffer | null = null;
-  // 1. AÑADIMOS UNA VARIABLE PARA EL ESTADO DE CARGA
+  
   isVehicleLoading = true;
 
   constructor(
@@ -30,7 +30,7 @@ export class IncidenteMovilPage implements OnInit {
   ) {
     const ahora = new Date();
     this.incidenteForm = this.fb.group({
-      vehiculoDisplay: [{ value: null, disabled: true }], // Campo solo para mostrar
+      vehiculoDisplay: [{ value: null, disabled: true }], 
       vehiculoId: [null, Validators.required],
       fecha: [ahora.toISOString(), Validators.required],
       tipo: [null, Validators.required],
@@ -43,11 +43,11 @@ export class IncidenteMovilPage implements OnInit {
   }
 
   cargarVehiculoAsignado() {
-    this.isVehicleLoading = true; // Inicia la carga
+    this.isVehicleLoading = true; 
     const usuario = this.authService.getCurrentUser();
     if (!usuario) {
       this.presentToast('No se pudo identificar al conductor.');
-      this.isVehicleLoading = false; // Termina la carga
+      this.isVehicleLoading = false; 
       return;
     }
 
@@ -55,7 +55,7 @@ export class IncidenteMovilPage implements OnInit {
       next: (vehiculo) => {
         if (vehiculo) {
           this.vehiculoAsignado = vehiculo;
-          // Llenamos el ID para enviarlo y el campo de texto para mostrarlo
+         
           this.incidenteForm.patchValue({ 
             vehiculoId: vehiculo.idVehi,
             vehiculoDisplay: `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})`
@@ -64,12 +64,12 @@ export class IncidenteMovilPage implements OnInit {
           this.presentToast('No tienes un vehículo asignado.');
           this.incidenteForm.disable();
         }
-        this.isVehicleLoading = false; // Termina la carga
+        this.isVehicleLoading = false; 
       },
       error: () => {
         this.presentToast('Error al cargar la información del vehículo.');
         this.incidenteForm.disable();
-        this.isVehicleLoading = false; // Termina la carga
+        this.isVehicleLoading = false; 
       }
     });
   }
@@ -84,11 +84,11 @@ export class IncidenteMovilPage implements OnInit {
     }
   }
   
-  // Función para limpiar la foto seleccionada
+
   clearPhoto(fileInput: any) {
     this.imageSrc = null;
     this.fotoFile = null;
-    fileInput.value = ''; // Resetea el input de archivo
+    fileInput.value = ''; 
   }
 
   async registrarIncidente() {

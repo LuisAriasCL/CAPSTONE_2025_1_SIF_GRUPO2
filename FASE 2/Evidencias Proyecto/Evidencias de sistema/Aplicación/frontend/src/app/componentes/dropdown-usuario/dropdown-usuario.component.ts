@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core'; // 1. IMPORTAMOS Input
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,12 +9,13 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  ModalController // Asegúrate de importar ModalController
+  ModalController
 } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons'; // Necesario para los iconos
+import { addIcons } from 'ionicons';
 import { chevronDownOutline, personOutline, settingsOutline, logOutOutline } from 'ionicons/icons';
-import { AlertaPersonalizadaComponent, AlertButton } from '../alerta-personalizada/alerta-personalizada.component'; // Ajusta la ruta
-import { AuthService } from '../../services/auth.service'; 
+import { AlertaPersonalizadaComponent, AlertButton } from '../alerta-personalizada/alerta-personalizada.component';
+import { AuthService } from '../../services/auth.service';
+
 @Component({
   selector: 'app-dropdown-usuario',
   templateUrl: './dropdown-usuario.component.html',
@@ -31,17 +32,20 @@ import { AuthService } from '../../services/auth.service';
     IonLabel
   ]
 })
-export class DropdownUsuarioComponent  {
-  public currentUserName: string = 'Pedro San Martin';
+export class DropdownUsuarioComponent {
+  
+  
+  @Input() userName: string = 'Usuario';
+  @Input() userRole: string = '';
+
   public showPopover = false;
   public popoverEvent: Event | null = null;
 
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
-    private authService: AuthService // Asegúrate de tener el servicio de autenticación
+    private authService: AuthService
   ) {
-    // Registra los iconos que usarás en este componente
     addIcons({ chevronDownOutline, personOutline, settingsOutline, logOutOutline });
   }
 
@@ -52,51 +56,52 @@ export class DropdownUsuarioComponent  {
 
   closePopover(): void {
     this.showPopover = false;
-    this.popoverEvent = null; // Limpia el evento también
+    this.popoverEvent = null;
   }
 
   goToProfile(): void {
     console.log('Abrir perfil de usuario');
-    this.router.navigate(['/perfil']); // Asegúrate que la ruta '/perfil' exista
+    this.router.navigate(['/perfil']);
     this.closePopover();
   }
 
   openSettings(): void {
     console.log('Abrir configuración');
-    // Lógica para abrir configuración
     this.closePopover();
   }
 
+  logout(): void {
+    this.mostrarAlertaLogout();
+  }
+
   async mostrarAlertaLogout() {
-    this.closePopover(); // Cierra el dropdown si está abierto
+    this.closePopover();
 
     const modal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
         title: 'Confirmar cierre de sesión',
         message: '¿Estás seguro que deseas cerrar sesión?',
-        icon: 'logout', // Cambiado de 'warning' a 'logout'
+        icon: 'logout',
         buttons: [
-          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' }, // Botón gris/claro
-          { text: 'Cerrar sesión', role: 'confirm', cssClass: 'button-danger' } // Botón rojo
-        ] as AlertButton[] // Asegura el tipo
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Cerrar sesión', role: 'confirm', cssClass: 'button-danger' }
+        ] as AlertButton[]
       },
-      cssClass: 'custom-alert-modal', // Clase para el backdrop y posicionamiento
-      backdropDismiss: false // Evita cerrar al hacer clic fuera
+      cssClass: 'custom-alert-modal',
+      backdropDismiss: false
     });
 
     await modal.present();
 
-    // Espera el resultado al cerrar el modal
     const { data } = await modal.onDidDismiss();
 
     if (data === 'confirm') {
       console.log('Cerrando sesión...');
-      // Aquí ejecutamos el logout real
       this.authService.logout();
-      this.mostrarAlertaExito(); // Muestra alerta de éxito
+      this.mostrarAlertaExito();
     } else {
-      console.log('Cierre de sesión cancelado (role:', data, ')');
+      console.log('Cierre de sesión cancelado.');
     }
   }
 
@@ -107,25 +112,18 @@ export class DropdownUsuarioComponent  {
         title: 'Sesión cerrada',
         message: 'Su sesión fue cerrada con éxito.',
         icon: 'success',
-        buttons: [
-          { text: 'Aceptar', role: 'accept' }
-        ] as AlertButton[]
+        buttons: [{ text: 'Aceptar', role: 'accept' }] as AlertButton[]
       },
-      // Añadimos una clase específica para este modal
       cssClass: 'custom-alert-modal-wrapper logout-success-modal-wrapper',
       backdropDismiss: false
     });
 
     await modal.present();
-
+    
     const { data } = await modal.onDidDismiss();
     if (data === 'accept') {
-      this.router.navigate(['/login']); // Redirige
+      
+      this.router.navigate(['/login']);
     }
-  }
-
-  logout(): void {
-    // Solo muestra el modal de confirmación, NO ejecuta el logout
-    this.mostrarAlertaLogout();
   }
 }

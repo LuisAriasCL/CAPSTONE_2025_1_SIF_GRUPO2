@@ -53,9 +53,9 @@ const AsignacionRecorrido = sequelize.define('AsignacionRecorrido', {
   
 }, {
   tableName: 'ASIGNACION_RECORRIDO',
-  timestamps: false, // No estamos usando createdAt/updatedAt en la tabla SQL
+  timestamps: false, 
   
 });
 
-return AsignacionRecorrido; // DEVUELVE EL MODELO
+return AsignacionRecorrido; 
 };

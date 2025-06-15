@@ -124,8 +124,7 @@ exports.getOrdenTrabajoPorId = async (req, res) => {
   }
 };
 
-// --- FUNCIÓN AÑADIDA PARA LA VISTA MÓVIL DEL TÉCNICO ---
-// Devuelve solo las OTs donde el técnico tiene al menos una tarea asignada.
+
 exports.getOrdenesPorTecnico = async (req, res) => {
   try {
     const { tecnicoId } = req.params;
@@ -135,7 +134,7 @@ exports.getOrdenesPorTecnico = async (req, res) => {
         {
           model: DetalleOt,
           as: 'detalles',
-          // Corregido: Usar el nombre del modelo (camelCase)
+          
           where: { usuarioIdUsuTecnico: tecnicoId },
           required: true 
         },
@@ -156,19 +155,18 @@ exports.getOrdenesPorTecnico = async (req, res) => {
 };
 
 exports.actualizarDetallesOt = async (req, res) => {
-    // Usamos 'idOt' para evitar confusiones con otros 'id'
+   
     const { id: idOt } = req.params; 
     const { km_ot, descripcion_ot, detalles } = req.body;
 
-    // La única validación estricta es que 'detalles' debe existir y ser un array.
+    
     if (!Array.isArray(detalles)) {
         return res.status(400).json({ error: 'Formato de datos incorrecto. Se espera un array de "detalles".' });
     }
 
     const t = await sequelize.transaction();
     try {
-        // Si la petición viene del gestor (con km_ot y descripcion_ot), actualiza la OT.
-        // Si viene del técnico, estos campos serán undefined y este bloque se saltará.
+      
         if (km_ot !== undefined && descripcion_ot !== undefined) {
             await OrdenTrabajo.update({
                 km_ot: km_ot,
@@ -179,11 +177,11 @@ exports.actualizarDetallesOt = async (req, res) => {
             });
         }
         
-        // Actualiza los detalles de las tareas (para ambos, gestor y técnico)
+       
         for (const detalle of detalles) {
             const dataToUpdate = {
                 checklist: detalle.checklist,
-                // Si viene un técnico asignado, lo actualiza. Si no, no hace nada con este campo.
+               
                 ...(detalle.usuario_id_usu_tecnico && { usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico })
             };
 
@@ -192,7 +190,7 @@ exports.actualizarDetallesOt = async (req, res) => {
                 { 
                     where: { 
                         id_det: detalle.id_det,
-                        // Corregido: Usar el nombre del modelo (camelCase) y la variable correcta
+                       
                         ordenTrabajoIdOt: idOt 
                     }, 
                     transaction: t 

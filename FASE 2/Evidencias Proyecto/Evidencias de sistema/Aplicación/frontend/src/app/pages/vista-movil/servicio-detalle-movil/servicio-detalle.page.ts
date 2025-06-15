@@ -13,7 +13,7 @@ import { AuthService } from 'src/app/services/auth.service';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-// --- ASEGÚRATE DE QUE EL NOMBRE DE LA CLASE SEA ESTE ---
+
 export class ServicioDetallePage implements OnInit {
   ot: OrdenTrabajoDetalle | null = null;
   isLoading = true;

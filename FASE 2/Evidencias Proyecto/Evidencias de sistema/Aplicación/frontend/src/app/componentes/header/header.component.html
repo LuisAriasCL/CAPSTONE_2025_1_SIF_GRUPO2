@@ -1,7 +1,6 @@
 <ion-header class="header">
   <ion-toolbar color="primary">
     <div class="header-container">
-      <!-- Columna izquierda: Botón de menú, Logo y título -->
       <div class="header-left">
         <ion-menu-toggle>
           <ion-button fill="clear" color="light">
@@ -9,12 +8,14 @@
           </ion-button>
         </ion-menu-toggle>
         <img src="assets/icon/favicon.ico" alt="Logo Vehículo" class="header-logo" />
-        <ion-title class="header-title">Sistema Integral de Flota</ion-title>
+        <ion-title class="header-title">{{ title }}</ion-title>
       </div>
-      <!-- Columna derecha: Notificaciones y perfil de usuario -->
-      <div class="header-right">
+      <div class="header-right" *ngIf="currentUser">
         <app-icono-alerta [count]="notificationCount"></app-icono-alerta>
-        <app-dropdown-usuario></app-dropdown-usuario>
+        <app-dropdown-usuario 
+          [userName]="currentUser.priNomUsu" 
+          [userRole]="currentUser.rol">
+        </app-dropdown-usuario>
       </div>
     </div>
   </ion-toolbar>
