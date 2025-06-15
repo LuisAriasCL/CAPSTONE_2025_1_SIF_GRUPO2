@@ -58,7 +58,7 @@ router.post('/', async (req, res) => {
       kmIniRecor: kilometrajeInicialAUsar,
       notas,
       vehiculoIdVehi,
-      usuarioIdUsu,
+        usuarioIdUsuConductor: usuarioIdUsu, 
       rutaIdRuta,
       estadoAsig,
     }, { transaction: t });
