@@ -39,11 +39,10 @@ router.get('/:idVehi', async (req, res) => {
 // POST /api/vehicles - Crear un NUEVO vehículo
 router.post('/', async (req, res) => {
     try {
-        // El req.body debe venir con los nombres de campo camelCase como están definidos en el modelo Sequelize
-        // ej: { patente: '...', marca: '...', modelo: '...', anio: 2023, kmVehi: 0, ... }
+       
         const nuevoVehiculo = await Vehiculo.create(req.body);
 
-        if (req.io) { // Si tienes socket.io configurado en req
+        if (req.io) { 
             req.io.emit('vehicleCreated', nuevoVehiculo.toJSON());
         }
         res.status(201).json(nuevoVehiculo);
@@ -56,7 +55,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT /api/vehicles/:idVehi - Actualizar UN vehículo existente
+
 router.put('/:idVehi', async (req, res) => {
     try {
         const idVehiParam = parseInt(req.params.idVehi, 10);

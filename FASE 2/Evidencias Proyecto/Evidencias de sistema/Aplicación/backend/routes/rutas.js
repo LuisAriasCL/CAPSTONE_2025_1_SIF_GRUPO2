@@ -19,8 +19,7 @@ router.get('/', async (req, res) => {
 
 // POST /api/rutas - Crear una NUEVA ruta
 router.post('/', async (req, res) => {
-    // El req.body debe venir con los nombres de campo camelCase como en el modelo Sequelize
-    // ej: { nombreRuta: '...', descripcionRuta: '...', puntosRuta: [[lat,lon],...], kilometrosRuta: 10.5 }
+    
     const { nombreRuta, descripcionRuta, puntosRuta, kilometrosRuta } = req.body;
 
     if (!nombreRuta || !puntosRuta) {
@@ -79,7 +78,7 @@ router.put('/:idRuta', async (req, res) => {
         if (!ruta) {
             return res.status(404).json({ message: 'Ruta no encontrada para actualizar.' });
         }
-        // Validar puntosRuta si se envía
+  
         if (req.body.puntosRuta !== undefined) {
             const { puntosRuta } = req.body;
             if (!Array.isArray(puntosRuta) || !puntosRuta.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
@@ -108,7 +107,7 @@ router.delete('/:idRuta', async (req, res) => {
             return res.status(400).json({ message: 'El ID de la ruta debe ser un número.' });
         }
         const numeroFilasEliminadas = await Ruta.destroy({
-            where: { idRuta: idRutaParam } // idRuta es la PK en el modelo Ruta
+            where: { idRuta: idRutaParam }
         });
         if (numeroFilasEliminadas === 0) {
             return res.status(404).json({ message: 'Ruta no encontrada para eliminar.' });

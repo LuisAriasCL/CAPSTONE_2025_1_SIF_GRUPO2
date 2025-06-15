@@ -210,6 +210,12 @@ export class ApiService {
 getHistorialCombustible(conductorId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
   }
+  getStatsVehiculosPorTipo(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stats/vehiculos-por-tipo`);
+  }
+  getStatsMantenimientosPorEstado(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stats/mantenimientos-por-estado`);
+  }
     registrarIncidente(data: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/siniestros`, data);
   }

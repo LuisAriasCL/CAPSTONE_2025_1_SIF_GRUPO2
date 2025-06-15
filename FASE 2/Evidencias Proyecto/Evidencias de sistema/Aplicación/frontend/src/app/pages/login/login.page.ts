@@ -30,32 +30,30 @@ export class LoginPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    // Registrar íconos personalizados
+
     addIcons({
       mailOutline,
       lockClosedOutline,
-      logInOutline, // Ícono para el botón "Entrar"
+      logInOutline, 
     });
   }
 
   ngOnInit() {
-    // Inicializar el formulario de login
+   
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
-      clave: ['', [Validators.required]], // Cambiado de 'password' a 'clave'
+      clave: ['', [Validators.required]], 
     });
   }
 
-  // --- Getters opcionales ---
+ 
   get email() {
     return this.loginForm.get('email');
   }
   get clave() {
     return this.loginForm.get('clave');
   }
-  // --- Fin Getters ---
-
-  // --- Método llamado al enviar el formulario ---
+  
    async login() {
     this.isSubmitted = true;
 
@@ -69,27 +67,27 @@ export class LoginPage implements OnInit {
     });
     await loading.present();
 
-    // Llamar al método login del AuthService con los valores del formulario
+   
     this.authService.login(this.loginForm.value).subscribe({
-      // --- SECCIÓN MODIFICADA PARA REDIRECCIÓN POR ROL ---
+    
       next: async (response: LoginResponse) => {
         await loading.dismiss();
         console.log('Login exitoso!', response);
         
-        // Obtenemos el rol del usuario desde la respuesta
+       
         const userRole = response.user.rol;
 
-        // Redirigimos según el rol
+       
         if (userRole === 'conductor') {
           this.router.navigateByUrl('/home-movil', { replaceUrl: true });
         } else if (userRole === 'tecnico') {
           this.router.navigateByUrl('/servicios-tecnico-movil', { replaceUrl: true });
         } else {
-          // Para 'admin', 'gestor', 'mantenimiento' y cualquier otro rol, ir al dashboard
+        
           this.router.navigateByUrl('/dashboard', { replaceUrl: true });
         }
       },
-      // --- FIN DE LA SECCIÓN MODIFICADA ---
+      
       error: async (error) => {
         await loading.dismiss();
         console.error('Error en el login:', error);
