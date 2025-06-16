@@ -31,10 +31,8 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   // --- Inyecciones ---
   private fb = inject(FormBuilder);
     private apiService = inject(ApiService);
-  private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private loadingCtrl = inject(LoadingController);
-  private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
   private changeDetectorRef = inject(ChangeDetectorRef);
@@ -68,10 +66,9 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       speedometerOutline, close // Asegúrate de que `close` esté incluido aquí
     });
   }
-  ngOnInit() {
-    this.routeForm = this.fb.group({
-      nombre: ['', Validators.required],
-      descripcion: [''],
+  ngOnInit() {    this.routeForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.maxLength(200)]],
+      descripcion: ['', Validators.maxLength(500)],
     });
 
     // Verificar si se recibieron parámetros via modal (Input properties)
@@ -380,11 +377,21 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-
   async saveRoute() {
     this.isSubmitted = true;
-    if (this.routeForm.invalid || !this.calculatedPoints || this.calculatedPoints.length === 0) {
-      this.presentToast('Asigna un nombre y calcula una ruta válida (con puntos).', 'warning'); 
+    
+    if (this.routeForm.invalid) {
+      this.markAllAsTouched();
+      const firstError = this.getFirstError();
+      this.presentToast(
+        firstError || 'Por favor, completa los campos requeridos correctamente.',
+        'warning'
+      );
+      return;
+    }
+    
+    if (!this.calculatedPoints || this.calculatedPoints.length === 0) {
+      this.presentToast('Por favor, calcula una ruta válida antes de guardar.', 'warning');
       return;
     }
     
@@ -532,5 +539,58 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         document.addEventListener('click', restoreMap);
       }, 0);
     }
+  }
+
+   // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
+  get f() {
+    return this.routeForm.controls;
+  }
+
+  // Métodos de validación estandarizados
+  markAllAsTouched() {
+    Object.values(this.routeForm.controls).forEach(control => {
+      control.markAsTouched();
+    });
+  }
+
+  getFirstError(): string | null {
+    const controls = this.routeForm.controls;
+    for (const fieldName in controls) {
+      const control = controls[fieldName];
+      if (control.invalid && (control.dirty || control.touched || this.isSubmitted)) {
+        return this.getFieldErrorMessage(fieldName, control.errors);
+      }
+    }
+    return null;
+  }
+
+  hasFieldError(fieldName: string): boolean {
+    const control = this.routeForm.get(fieldName);
+    return !!(control && control.invalid && (control.dirty || control.touched || this.isSubmitted));
+  }
+
+  getFieldErrorMessage(fieldName: string, errors: any): string {
+    if (!errors) return '';
+
+    const errorMessages: { [key: string]: { [key: string]: string } } = {
+      nombre: {
+        required: 'Nombre de la ruta es requerido',
+        maxlength: 'Nombre no puede exceder 200 caracteres'
+      },
+      descripcion: {
+        maxlength: 'Descripción no puede exceder 500 caracteres'
+      }
+    };
+
+    const fieldErrors = errorMessages[fieldName];
+    if (fieldErrors) {
+      for (const errorType in errors) {
+        if (fieldErrors[errorType]) {
+          return fieldErrors[errorType];
+        }
+      }
+    }
+
+    return 'Campo inválido';
   }
 }

@@ -1,0 +1,94 @@
+/* ===== ESTILOS UNIFICADOS PARA FORMULARIOS ===== */
+
+// Estilos generales para formularios
+ion-content form {
+  margin-bottom: 1rem;
+}
+
+// Estilos para grupos de campos
+ion-row {
+  margin-bottom: var(--form-group-margin-bottom);
+}
+
+// Etiquetas de formulario
+ion-label {
+  color: var(--form-label-color);
+  margin-bottom: var(--form-label-margin-bottom);
+  font-weight: 500;
+  font-size: var(--form-label-font-size);
+  
+  &.label-floating {
+    color: var(--form-label-color-floating);
+  }
+}
+
+// Indicador de campo requerido
+ion-text[color="danger"] {
+  color: var(--form-required-indicator-color);
+  font-weight: 600;
+}
+
+// Inputs, textareas y selects
+ion-input, 
+ion-textarea, 
+ion-select, 
+ion-datetime {
+  --background: var(--form-input-background);
+  --border-color: var(--form-input-border);
+  --border-width: var(--form-border-width);
+  --border-radius: var(--form-border-radius);
+  --padding-start: var(--form-input-padding);
+  --padding-end: var(--form-input-padding);
+  --padding-top: var(--form-input-padding);
+  --padding-bottom: var(--form-input-padding);
+  font-size: var(--form-input-font-size);
+  margin-top: 0.25rem;
+  
+  &.has-focus {
+    --border-color: var(--form-input-border-focus);
+  }
+  
+  &.ion-invalid.ion-touched {
+    --border-color: var(--form-input-border-error);
+  }
+  
+  &.ion-valid.ion-touched {
+    --border-color: var(--form-input-border-success);
+  }
+}
+
+ion-textarea {
+  --min-height: var(--form-textarea-min-height);
+}
+
+// Mensajes de error estandarizados
+.error-message {
+  color: var(--form-error-color);
+  font-size: var(--form-error-font-size);
+  margin-top: var(--form-error-margin-top);
+  padding-left: var(--form-error-padding-left);
+  
+  ion-text {
+    font-size: inherit;
+    color: inherit;
+  }
+}
+
+// Botones del formulario
+ion-button[type="submit"] {
+  margin-top: var(--form-button-margin-top);
+  --border-radius: var(--form-button-border-radius);
+}
+
+// Tabs en formularios
+ion-tab-bar {
+  --background: var(--ion-color-light);
+}
+
+// Mapa específico para route-form
+#routeFormMap {
+  height: var(--form-map-height);
+  width: 100%;
+  border: var(--form-map-border);
+  border-radius: var(--form-border-radius);
+}

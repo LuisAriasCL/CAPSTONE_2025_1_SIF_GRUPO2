@@ -6,6 +6,23 @@ const { Vehiculo, sequelize } = require("../models"); // Importa desde el index.
 // const ExcelJS = require('exceljs'); // Descomenta si vas a implementar ExcelJS
 // const PDFDocument = require('pdfkit'); // Descomenta si vas a implementar PDFKit u otra librería PDF
 
+
+// GET /api/rutas - Obtener TODAS las rutas
+router.get("/activo", async (req, res) => {
+  try {
+    const vehiculos = await Vehiculo.findAll({
+      // Puedes ajustar los atributos que quieres devolver
+      // attributes: ['idVehi', 'patente', 'marca', 'modelo', 'anio', 'estadoVehi', 'kmVehi'] // Descomenta y ajusta para seleccionar solo los campos necesarios
+    });
+    res.status(200).json(vehiculos);
+  } catch (err) {
+    console.error("Error al obtener vehículos:", err);
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor al obtener vehículos." });
+  }
+});
+
 // GET /api/vehicles - Obtener vehículos PAGINADOS Y ORDENADOS
 router.get("/", async (req, res) => {
   try {
@@ -252,6 +269,26 @@ router.delete("/:idVehi", async (req, res) => {
       .status(500)
       .json({ message: "Error interno del servidor al eliminar el vehículo." });
   }
+});
+
+// GET /api/vehicles/activo - Obtener vehículos activos
+router.get('/activo', async (req, res) => {
+    try {
+        // Consulta la base de datos para verificar qué valor exacto se usa
+        const vehiculos = await Vehiculo.findAll({
+            where: {
+                estadoVehi: 'activo' // Asegúrate que coincida con los valores en tu BD
+            },
+            order: [['idVehi', 'ASC']] // Ordena por un campo que sí exista en Vehiculo
+        });
+        res.status(200).json(vehiculos);
+    } catch (err) {
+        console.error("Error al obtener vehículos activos:", err);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al obtener vehículos activos.',
+            error: err.message // Incluir el mensaje de error para depuración
+        });
+    }
 });
 
 module.exports = router;

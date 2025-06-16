@@ -409,7 +409,7 @@ export class ApiService {
   }
   getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {
     return this.http
-      .get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`)
+      .get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles/activo`)
       .pipe(catchError(this.handleError));
   }
   createVehicle(vehicleData: Vehiculo): Observable<Vehiculo> {

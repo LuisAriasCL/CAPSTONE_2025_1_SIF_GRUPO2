@@ -127,8 +127,76 @@ export class PlanificacionFormPage implements OnInit {
   // La plantilla puede acceder a 'f' directamente.
   get f() { return this.planForm.controls; }
 
-  get tareas(): FormArray {
+  // Getter para acceder al FormArray de tareas
+  get tareas() {
     return this.planForm.get('tareas') as FormArray;
+  }
+
+  // Métodos de validación estandarizados
+  markAllAsTouched() {
+    Object.values(this.planForm.controls).forEach(control => {
+      control.markAsTouched();
+    });
+    // También marcar los controles del FormArray de tareas
+    this.tareas.controls.forEach(tareaControl => {
+      Object.values((tareaControl as FormGroup).controls).forEach(control => {
+        control.markAsTouched();
+      });
+    });
+  }
+
+  hasFieldError(fieldName: string): boolean {
+    const control = this.planForm.get(fieldName);
+    return !!(control && control.invalid && (control.dirty || control.touched || this.isSubmitted));
+  }
+
+  hasTareaFieldError(index: number, fieldName: string): boolean {
+    const tareaControl = this.tareas.at(index);
+    const fieldControl = tareaControl?.get(fieldName);
+    return !!(fieldControl && fieldControl.invalid && (fieldControl.dirty || fieldControl.touched || this.isSubmitted));
+  }
+
+  getFieldErrorMessage(fieldName: string, errors: any): string {
+    if (!errors) return '';
+
+    const errorMessages: { [key: string]: { [key: string]: string } } = {
+      descPlan: {
+        required: 'Descripción de la planificación es requerida',
+        maxlength: 'Descripción no puede exceder 500 caracteres'
+      },
+      tipoFrecuencia: {
+        required: 'Tipo de frecuencia es requerido'
+      },
+      frecuencia: {
+        required: 'Frecuencia es requerida',
+        min: 'Frecuencia debe ser mayor a 0'
+      },
+      vehiculosIds: {
+        required: 'Debe seleccionar al menos un vehículo'
+      },
+      nomTareaPlan: {
+        required: 'Nombre de la tarea es requerido',
+        maxlength: 'Nombre no puede exceder 200 caracteres'
+      },
+      descTareaPlan: {
+        maxlength: 'Descripción no puede exceder 1000 caracteres'
+      }
+    };
+
+    const fieldErrors = errorMessages[fieldName];
+    if (fieldErrors) {
+      for (const errorType in errors) {
+        if (fieldErrors[errorType]) {
+          return fieldErrors[errorType];
+        }
+      }
+    }
+
+    return 'Campo inválido';
+  }
+
+  getTareaFieldErrorMessage(fieldName: string, errors: any): string {
+    return this.getFieldErrorMessage(fieldName, errors);
   }
 
   crearTareaFormGroup(): FormGroup {

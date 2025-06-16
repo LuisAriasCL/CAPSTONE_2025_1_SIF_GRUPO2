@@ -1,20 +1,49 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+// Variables existentes...
+
+/* ===== VARIABLES ESTÁNDAR PARA FORMULARIOS ===== */
 :root {
-    --ion-color-tertiary: #a5a5a8;
-    // ...otros colores
-
-    // Si en tu archivo completo existe una variable CSS personalizada para la altura mínima 
-    // de los inputs/textareas (por ejemplo, --form-input-min-height), 
-    // puedes comentarla o establecerla a un valor mínimo.
-    // A continuación, un ejemplo hipotético:
-
-    // Ejemplo de cómo podría estar definida originalmente:
-    // --form-input-min-height: 40px; 
-
-    // Opción 1: Comentar la variable para eliminar su efecto si no se desea un min-height específico.
-    /* --form-input-min-height: 40px; */
-
-    // Opción 2: Establecerla a un valor mínimo si es necesario que la variable exista.
-    // --form-input-min-height: 0px; // O 'unset', 'auto', etc., según el comportamiento deseado.
-  }
+  // Colores de fondo y bordes
+  --form-input-background: #f3f4f6;
+  --form-input-border: #d1d5db;
+  --form-textarea-border: #d1d5db;
+  --form-border-width: 1px;
+  --form-border-radius: 0.5rem;
+  
+  // Colores para estados
+  --form-input-border-focus: var(--ion-color-primary);
+  --form-input-border-error: var(--ion-color-danger);
+  --form-input-border-success: var(--ion-color-success);
+  
+  // Colores para etiquetas
+  --form-label-color: var(--ion-color-dark);
+  --form-label-color-floating: var(--ion-color-medium-shade);
+  --form-label-color-focus: var(--ion-color-primary);
+  
+  // Espaciado y tamaños (en rem)
+  --form-group-margin-bottom: 1rem;
+  --form-label-margin-bottom: 0.5rem;
+  --form-input-padding: 0.75rem;
+  
+  // Dimensiones (en rem)
+  --form-input-min-height: 2.75rem;
+  --form-textarea-min-height: 5rem;
+  
+  // Tipografía
+  --form-label-font-size: 0.875rem;
+  --form-input-font-size: 1rem;
+  --form-error-font-size: 0.75rem;
+  
+  // Mapas y elementos especiales
+  --form-map-height: 18.75rem;
+  --form-map-border: 1px solid var(--form-input-border);
+  
+  // Variables específicas para validación
+  --form-error-color: var(--ion-color-danger);
+  --form-error-margin-top: 0.25rem;
+  --form-error-padding-left: 0.5rem;
+  --form-required-indicator-color: var(--ion-color-danger);
+  
+  // Variables para botones de formulario
+  --form-button-margin-top: 1.5rem;
+  --form-button-border-radius: 0.5rem;
+}

@@ -190,7 +190,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
   async iniciarOrdenDeTrabajo() {
     if (!this.ordenTrabajo) return;
 
-    const currentUser = this.authService.getCurrentUserSnapshot();
+    const currentUser = this.authService.getCurrentUser();
 
     if (!currentUser) {
       this.presentToast('No se pudo identificar al usuario actual.', 'danger');

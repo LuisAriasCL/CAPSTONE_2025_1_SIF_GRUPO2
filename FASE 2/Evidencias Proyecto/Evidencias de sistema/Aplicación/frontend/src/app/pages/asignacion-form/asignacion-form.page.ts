@@ -67,7 +67,7 @@ export class AsignacionFormPage implements OnInit {
   asignacionForm!: FormGroup;
   pageTitle = 'Nueva Asignación de Recorrido';
   isLoading = false;
-  isSubmitting = false;
+  isSubmitted = false;
 
   conductores: UsuarioConductorInfo[] = [];
   rutasPlantilla: RutaPlantilla[] = [];
@@ -154,8 +154,9 @@ export class AsignacionFormPage implements OnInit {
         .subscribe((data) => (this.rutasPlantilla = data));
 
       // Cargar vehículos (idealmente solo los 'activos')
-      this.apiService.getVehicles({ estado: 'activo' }).subscribe({
+      this.apiService.getVehiculosDisponibles().subscribe({
         next: (data) => {
+          
           this.vehiculos = data.map((v) => ({
             idVehi: v.idVehi || 0,
             patente: v.patente,
@@ -250,19 +251,15 @@ export class AsignacionFormPage implements OnInit {
       });
     }
   }
-
   async submitForm() {
-    this.isSubmitting = true;
+    this.isSubmitted = true;
+    this.markAllAsTouched();
 
-    if (!this.asignacionForm.valid) {
+    if (this.asignacionForm.invalid) {
       this.presentToast(
-        'Por favor, completa todos los campos requeridos.',
+        'Por favor, completa todos los campos requeridos correctamente.',
         'warning'
       );
-      this.isSubmitting = false;
-      Object.values(this.asignacionForm.controls).forEach((control) => {
-        control.markAsTouched();
-      });
       return;
     }
 
@@ -289,10 +286,8 @@ export class AsignacionFormPage implements OnInit {
     });
 
     await confirm.present();
-    const { data } = await confirm.onDidDismiss();
-
-    if (data !== 'confirm') {
-      this.isSubmitting = false;
+    const { data } = await confirm.onDidDismiss();    if (data !== 'confirm') {
+      this.isSubmitted = false;
       return;
     }
 
@@ -315,7 +310,7 @@ export class AsignacionFormPage implements OnInit {
 
       if (kmIniRecorNum === null || isNaN(kmIniRecorNum)) {
         await loading.dismiss();
-        this.isSubmitting = false;
+        this.isSubmitted = false;
         this.presentToast(
           'El kilometraje inicial es inválido o no ha sido ingresado.',
           'warning'
@@ -332,7 +327,7 @@ export class AsignacionFormPage implements OnInit {
       if (kmFinRecorNum !== null) {
         if (isNaN(kmFinRecorNum)) {
           await loading.dismiss();
-          this.isSubmitting = false;
+          this.isSubmitted = false;
           this.presentToast(
             'El kilometraje final ingresado no es un número válido.',
             'warning'
@@ -341,7 +336,7 @@ export class AsignacionFormPage implements OnInit {
         }
         if (kmFinRecorNum <= kmIniRecorNum) {
           await loading.dismiss();
-          this.isSubmitting = false;
+          this.isSubmitted = false;
           this.presentToast(
             'El kilometraje final debe ser mayor que el kilometraje inicial.',
             'warning'
@@ -350,7 +345,7 @@ export class AsignacionFormPage implements OnInit {
         }
       } else if (formData.estadoAsig === 'completado') {
         await loading.dismiss();
-        this.isSubmitting = false;
+        this.isSubmitted = false;
         this.presentToast(
           'Para marcar como "Completado", el kilometraje final es requerido y debe ser válido.',
           'warning'
@@ -384,7 +379,7 @@ export class AsignacionFormPage implements OnInit {
           new Date(asignacionData.fecIniRecor)
       ) {
         await loading.dismiss();
-        this.isSubmitting = false;
+        this.isSubmitted = false;
         this.presentToast(
           'La fecha de fin debe ser posterior a la fecha de inicio.',
           'warning'
@@ -428,7 +423,7 @@ export class AsignacionFormPage implements OnInit {
       this.closeModal(true);
     } catch (error: any) {
       await loading.dismiss();
-      this.isSubmitting = false;
+      this.isSubmitted = false;
 
       await this.showErrorAlert(
         'Error al guardar',
@@ -436,11 +431,18 @@ export class AsignacionFormPage implements OnInit {
       );
     }
   }
+  // ===== MÉTODOS ESTÁNDAR DE UI =====
 
+  /**
+   * Muestra un toast con mensaje
+   * @param message Mensaje a mostrar
+   * @param color Color del toast (success, warning, danger, medium)
+   * @param duration Duración en milisegundos
+   */
   async presentToast(
     message: string,
     color: 'success' | 'warning' | 'danger' | 'primary' | 'medium' = 'medium',
-    duration: number = 3000
+    duration: number = 2500
   ) {
     const toast = await this.toastCtrl.create({
       message,
@@ -448,9 +450,14 @@ export class AsignacionFormPage implements OnInit {
       color,
       position: 'bottom',
     });
-    toast.present();
+    await toast.present();
   }
 
+  /**
+   * Muestra una alerta de error estandarizada
+   * @param title Título de la alerta
+   * @param message Mensaje de error
+   */
   async showErrorAlert(title: string, message: string) {
     const alert = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
@@ -469,7 +476,58 @@ export class AsignacionFormPage implements OnInit {
   async closeModal(dataChanged: boolean = false) {
     await this.modalCtrl.dismiss({
       dataChanged: dataChanged,
+    });  }
+
+  // ===== MÉTODOS ESTÁNDAR DE VALIDACIÓN =====
+  
+  /**
+   * Marca todos los controles del formulario como tocados
+   */
+  markAllAsTouched() {
+    Object.values(this.asignacionForm.controls).forEach(control => {
+      control.markAsTouched();
     });
+  }
+
+  /**
+   * Obtiene el primer error del formulario
+   * @returns Objeto con el id del campo y el error, o null si no hay errores
+   */
+  getFirstError() {
+    for (const key of Object.keys(this.asignacionForm.controls)) {
+      const control = this.asignacionForm.get(key);
+      if (control?.invalid && (control.dirty || control.touched)) {
+        return { id: key, error: control.errors };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Verifica si un campo específico tiene errores y ha sido tocado
+   * @param fieldName Nombre del campo
+   * @returns true si el campo tiene errores y ha sido tocado
+   */
+  hasFieldError(fieldName: string): boolean {
+    const field = this.asignacionForm.get(fieldName);
+    return !!(field?.invalid && (field.dirty || field.touched || this.isSubmitted));
+  }
+
+  /**
+   * Obtiene el mensaje de error para un campo específico
+   * @param fieldName Nombre del campo
+   * @returns Mensaje de error o cadena vacía
+   */
+  getFieldErrorMessage(fieldName: string): string {
+    const field = this.asignacionForm.get(fieldName);
+    if (field?.errors && this.hasFieldError(fieldName)) {
+      if (field.errors['required']) return `${fieldName} es requerido.`;
+      if (field.errors['min']) return `${fieldName} debe ser mayor que ${field.errors['min'].min}.`;
+      if (field.errors['max']) return `${fieldName} debe ser menor que ${field.errors['max'].max}.`;
+      if (field.errors['email']) return `${fieldName} debe ser un email válido.`;
+      if (field.errors['pattern']) return `${fieldName} no tiene el formato correcto.`;
+    }
+    return '';
   }
 
   // Helper para acceder a los controles del formulario en la plantilla

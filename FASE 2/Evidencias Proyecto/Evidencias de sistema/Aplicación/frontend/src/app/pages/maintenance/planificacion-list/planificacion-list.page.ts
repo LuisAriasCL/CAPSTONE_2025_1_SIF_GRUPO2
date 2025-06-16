@@ -128,7 +128,7 @@ export class PlanificacionListPage implements OnInit {
   async irACrearPlan() {
     const modal = await this.modalCtrl.create({
       component: PlanificacionFormPage,
-      cssClass: 'planificacion-form-modal'
+      cssClass: 'custom-alert-modal'
     });
 
     modal.onDidDismiss().then((result) => {
@@ -154,7 +154,7 @@ export class PlanificacionListPage implements OnInit {
         planId: plan.idPlan,
         isViewMode: true
       },
-      cssClass: 'planificacion-form-modal'
+      cssClass: 'custom-alert-modal'
     });
 
     return await modal.present();
@@ -168,7 +168,7 @@ export class PlanificacionListPage implements OnInit {
         planId: plan.idPlan,
         isEditMode: true
       },
-      cssClass: 'planificacion-form-modal'
+      cssClass: 'custom-alert-modal'
     });
 
     modal.onDidDismiss().then((result) => {
