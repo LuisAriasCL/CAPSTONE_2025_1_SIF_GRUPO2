@@ -42,6 +42,7 @@ import {
 
 // Importamos el componente de alerta personalizada
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { FormUtils } from '../../utils/form-utils';
 
 @Component({
   selector: 'app-vehicle-form',
@@ -317,14 +318,11 @@ export class VehicleFormPage implements OnInit {
     console.log('Exportar historial en formato:', format);
   }
   async saveVehicle() {
-    this.isSubmitted = true;
-    if (this.vehicleForm.invalid) {
-      this.markAllAsTouched();
-      const firstError = this.getFirstError();
-      this.presentToast(
-        firstError || 'Por favor, completa los campos requeridos correctamente.',
-        'warning'
-      );
+    const validation = FormUtils.validateForm(this.vehicleForm);
+    
+    if (!validation.isValid) {
+      this.isSubmitted = true;
+      this.presentToast(validation.firstError!, 'warning');
       return;
     }
 
@@ -491,97 +489,26 @@ export class VehicleFormPage implements OnInit {
   async closeModal(data?: any) {
     await this.modalCtrl.dismiss(data);
   }
-  // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
+  // Helper para acceder a los controles del formulario
   get f() {
     return this.vehicleForm.controls;
   }
 
-  // Métodos de validación estandarizados
-  markAllAsTouched() {
-    Object.values(this.vehicleForm.controls).forEach((control) => {
-      control.markAsTouched();
-    });
+  // Métodos de validación usando FormUtils
+  markAllAsTouched(): void {
+    FormUtils.markAllFieldsAsTouched(this.vehicleForm);
   }
 
   getFirstError(): string | null {
-    const controls = this.vehicleForm.controls;
-    for (const fieldName in controls) {
-      const control = controls[fieldName];
-      if (control.invalid && (control.dirty || control.touched || this.isSubmitted)) {
-        return this.getFieldErrorMessage(fieldName, control.errors);
-      }
-    }
-    return null;
+    return FormUtils.getFirstFormError(this.vehicleForm);
   }
 
   hasFieldError(fieldName: string): boolean {
-    const control = this.vehicleForm.get(fieldName);
-    return !!(control && control.invalid && (control.dirty || control.touched || this.isSubmitted));
+    return FormUtils.hasFieldError(this.vehicleForm, fieldName, this.isSubmitted);
   }
 
   getFieldErrorMessage(fieldName: string, errors: any): string {
-    if (!errors) return '';
-
-    const errorMessages: { [key: string]: { [key: string]: string } } = {
-      patente: {
-        required: 'Patente es requerida',
-        pattern: 'Formato debe ser XXXX-XX, con los últimos dos caracteres numéricos'
-      },
-      chasis: {
-        required: 'Chasis es requerido',
-        minlength: 'Chasis debe tener 17 caracteres',
-        maxlength: 'Chasis debe tener 17 caracteres'
-      },
-      marca: {
-        required: 'Marca es requerida'
-      },
-      modelo: {
-        required: 'Modelo es requerido'
-      },
-      anio: {
-        required: 'Año es requerido',
-        min: 'Año debe estar entre 1970 y 2025',
-        max: 'Año debe estar entre 1970 y 2025'
-      },
-      kmVehi: {
-        required: 'Kilometraje es requerido',
-        min: 'Kilometraje debe ser positivo',
-        max: 'Kilometraje no puede superar 1.000.000 km'
-      },
-      fecAdqui: {
-        required: 'Fecha de adquisición es requerida'
-      },
-      estadoVehi: {
-        required: 'Estado es requerido'
-      },
-      kmVidaUtil: {
-        min: 'Km de vida útil debe ser mayor a 1.000',
-        max: 'Km de vida útil no puede superar 5.000.000'
-      },
-      efiComb: {
-        min: 'Eficiencia debe ser mayor a 2 km/L',
-        max: 'Eficiencia no puede superar 30 km/L'
-      },
-      latitud: {
-        min: 'Latitud debe estar entre -90 y 90',
-        max: 'Latitud debe estar entre -90 y 90'
-      },
-      longitud: {
-        min: 'Longitud debe estar entre -180 y 180',
-        max: 'Longitud debe estar entre -180 y 180'
-      }
-    };
-
-    const fieldErrors = errorMessages[fieldName];
-    if (fieldErrors) {
-      for (const errorType in errors) {
-        if (fieldErrors[errorType]) {
-          return fieldErrors[errorType];
-        }
-      }
-    }
-
-    return 'Campo inválido';
+    return FormUtils.getFieldErrorMessage(fieldName, errors);
   }
 
   // Getter para el año máximo válido

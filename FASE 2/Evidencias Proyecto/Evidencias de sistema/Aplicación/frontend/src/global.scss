@@ -40,7 +40,7 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; // Oscuro basado en clases. */
 @import '@ionic/angular/css/palettes/dark.system.css'; // Oscuro basado en la configuración del sistema.
 @import "./theme/form-styles";
-@import "./theme/variables"; // Importa las variables CSS definidas en variables.scss.
+
 /* -------------------------------------------------------------------------- */
 /* Variables CSS Globales */
 /* -------------------------------------------------------------------------- */
@@ -50,7 +50,7 @@
   --ion-color-primary-rgb: 0, 92, 147; /* Versión RGB del color primario. */
   --ion-color-secondary: #ffffff; /* Color secundario global (blanco). */
   --ion-color-secondary-rgb: 255, 255, 255; /* Versión RGB del color secundario. */
-  --ion-color-tertiary: #a5a5a8; /* Color terciario global (gris claro). */
+  --ion-color-tertiary: #f3f4f8; /* Color terciario global (gris claro). */
 }
 
 /* Estilos para datetime picker */
@@ -160,6 +160,3 @@ ion-alert {
     font-size: 1.05rem !important; /* Texto un poco más grande */
   }
 }
-
-
-

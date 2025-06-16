@@ -21,12 +21,13 @@ crossorigin=""></script>
   <form *ngIf="routeForm" [formGroup]="routeForm" (ngSubmit)="saveRoute()" novalidate>
     <div>
       <ion-label position="floating">Nombre de la Ruta</ion-label>
-      <ion-input type="text" formControlName="nombre" required></ion-input>
-    </div>    <div *ngIf="hasFieldError('nombre')" class="error-message">
+      <ion-input class="custom-input" type="text" formControlName="nombre" required></ion-input>
+    </div>
+    <div *ngIf="hasFieldError('nombre')" class="error-message">
       <ion-text color="danger">{{ getFieldErrorMessage('nombre', f['nombre'].errors) }}</ion-text>
     </div>    <div>
       <ion-label position="floating">Descripción (Opcional)</ion-label>
-      <ion-textarea formControlName="descripcion" rows="2"></ion-textarea>
+      <ion-textarea class="custom-input" formControlName="descripcion" rows="2"></ion-textarea>
     </div>
     <div *ngIf="hasFieldError('descripcion')" class="error-message">
       <ion-text color="danger">{{ getFieldErrorMessage('descripcion', f['descripcion'].errors) }}</ion-text>
@@ -72,9 +73,14 @@ crossorigin=""></script>
       </ion-label>
     </ion-item>
     
-    <ion-button type="submit" expand="block" [disabled]="routeForm.invalid || !calculatedPoints">
-      <ion-icon slot="start" name="save"></ion-icon>
-      {{ isEditMode ? 'Actualizar Ruta' : 'CREAR RUTA' }}
+    <!-- Reemplazar el botón existente -->
+    <ion-button 
+      type="submit" 
+      expand="block" 
+      [color]="isEditMode ? 'edit-button' : 'add-button'"
+      [disabled]="routeForm.invalid || !calculatedPoints">
+      <ion-icon [name]="isEditMode ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
+      {{ isEditMode ? 'Actualizar Ruta' : 'Crear Ruta' }}
     </ion-button>
     
     <div *ngIf="isSubmitted && !calculatedPoints && origenCoords && destinoCoords && !routeCalculationError">

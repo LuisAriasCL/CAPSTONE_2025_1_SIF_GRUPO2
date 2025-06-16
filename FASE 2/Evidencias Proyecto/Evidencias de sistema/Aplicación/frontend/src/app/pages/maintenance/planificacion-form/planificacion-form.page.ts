@@ -11,6 +11,7 @@ import {
 } from 'ionicons/icons';
 import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { FormUtils } from '../../../utils/form-utils';
 
 @Component({
   selector: 'app-planificacion-form',
@@ -123,80 +124,44 @@ export class PlanificacionFormPage implements OnInit {
     }
   }
 
-  // Getter para acceder a los controles del formulario de forma más corta.
-  // La plantilla puede acceder a 'f' directamente.
-  get f() { return this.planForm.controls; }
+  // Getter para acceder a los controles del formulario
+  get f() { 
+    return this.planForm.controls; 
+  }
 
   // Getter para acceder al FormArray de tareas
   get tareas() {
     return this.planForm.get('tareas') as FormArray;
   }
 
-  // Métodos de validación estandarizados
-  markAllAsTouched() {
-    Object.values(this.planForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
-    // También marcar los controles del FormArray de tareas
-    this.tareas.controls.forEach(tareaControl => {
-      Object.values((tareaControl as FormGroup).controls).forEach(control => {
-        control.markAsTouched();
-      });
-    });
+  // Métodos de validación usando FormUtils
+  markAllAsTouched(): void {
+    FormUtils.markAllFieldsAsTouched(this.planForm);
+  }
+
+  getFirstError(): string | null {
+    return FormUtils.getFirstFormError(this.planForm);
   }
 
   hasFieldError(fieldName: string): boolean {
-    const control = this.planForm.get(fieldName);
-    return !!(control && control.invalid && (control.dirty || control.touched || this.isSubmitted));
-  }
-
-  hasTareaFieldError(index: number, fieldName: string): boolean {
-    const tareaControl = this.tareas.at(index);
-    const fieldControl = tareaControl?.get(fieldName);
-    return !!(fieldControl && fieldControl.invalid && (fieldControl.dirty || fieldControl.touched || this.isSubmitted));
+    return FormUtils.hasFieldError(this.planForm, fieldName, this.isSubmitted);
   }
 
   getFieldErrorMessage(fieldName: string, errors: any): string {
-    if (!errors) return '';
+    return FormUtils.getFieldErrorMessage(fieldName, errors);
+  }
 
-    const errorMessages: { [key: string]: { [key: string]: string } } = {
-      descPlan: {
-        required: 'Descripción de la planificación es requerida',
-        maxlength: 'Descripción no puede exceder 500 caracteres'
-      },
-      tipoFrecuencia: {
-        required: 'Tipo de frecuencia es requerido'
-      },
-      frecuencia: {
-        required: 'Frecuencia es requerida',
-        min: 'Frecuencia debe ser mayor a 0'
-      },
-      vehiculosIds: {
-        required: 'Debe seleccionar al menos un vehículo'
-      },
-      nomTareaPlan: {
-        required: 'Nombre de la tarea es requerido',
-        maxlength: 'Nombre no puede exceder 200 caracteres'
-      },
-      descTareaPlan: {
-        maxlength: 'Descripción no puede exceder 1000 caracteres'
-      }
-    };
-
-    const fieldErrors = errorMessages[fieldName];
-    if (fieldErrors) {
-      for (const errorType in errors) {
-        if (fieldErrors[errorType]) {
-          return fieldErrors[errorType];
-        }
-      }
-    }
-
-    return 'Campo inválido';
+  // Métodos específicos para validación de tareas
+  hasTareaFieldError(tareaIndex: number, fieldName: string): boolean {
+    const tareaControl = this.tareas.at(tareaIndex);
+    if (!tareaControl) return false;
+    
+    const field = tareaControl.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched || this.isSubmitted));
   }
 
   getTareaFieldErrorMessage(fieldName: string, errors: any): string {
-    return this.getFieldErrorMessage(fieldName, errors);
+    return FormUtils.getFieldErrorMessage(fieldName, errors);
   }
 
   crearTareaFormGroup(): FormGroup {
@@ -230,6 +195,14 @@ export class PlanificacionFormPage implements OnInit {
     );
   }
   async onSubmit() {
+    const validation = FormUtils.validateForm(this.planForm);
+    
+    if (!validation.isValid) {
+      this.isSubmitted = true;
+      this.mostrarToast(validation.firstError!, 'warning');
+      return;
+    }
+
     // Confirmación en modo edición
     if (this.isEditMode) {
       const confirmModal = await this.modalCtrl.create({
@@ -254,40 +227,7 @@ export class PlanificacionFormPage implements OnInit {
     this.isSubmitted = true;
     this.planForm.markAllAsTouched();
 
-    if (this.planForm.invalid) {
-      const firstError = this.getFirstError();
-      if (firstError) {
-        // Obtener referencia a los tabs
-        const tabs = document.querySelector('ion-tabs');
-        
-        // Primero, asegurar que estamos en el tab correcto
-        await tabs?.select(firstError.tab);
 
-        // Esperar a que cambie el tab y la vista se actualice
-        setTimeout(() => {
-          const errorElement = document.getElementById(firstError.id);
-          if (errorElement) {
-            // Asegurar que el elemento es visible después del cambio de tab
-            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            errorElement.classList.add('shake-animation');
-            setTimeout(() => errorElement.classList.remove('shake-animation'), 1000);
-
-            // Generar mensaje específico según el tipo de error
-            let fieldName = '';
-            switch (firstError.id) {
-              case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
-              case 'tipoFrecuencia': fieldName = 'tipo de frecuencia'; break;
-              case 'frecuencia': fieldName = 'frecuencia'; break;
-              case 'vehiculosIds': fieldName = 'vehículos asignados'; break;
-              default: fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
-            }
-            this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
-          }
-        }, 300); // Dar más tiempo para que el cambio de tab sea efectivo
-        
-        return;
-      }
-    }
 
     // Confirmación antes de crear una nueva planificación
     if (!this.isEditMode) {
@@ -373,28 +313,6 @@ export class PlanificacionFormPage implements OnInit {
         this.mostrarToast(error.message || errorMessage, 'danger', 5000);
       }
     });
-  }
-
-  getFirstError(): { id: string, tab: string } | null {
-    // Verificar campos del tab de información general
-    if (this.f['descPlan'].invalid) return { id: 'descPlan', tab: 'infoGeneral' };
-    if (this.f['tipoFrecuencia'].invalid) return { id: 'tipoFrecuencia', tab: 'infoGeneral' };
-    if (this.f['frecuencia'].invalid) return { id: 'frecuencia', tab: 'infoGeneral' };
-    if (this.f['vehiculosIds'].invalid) return { id: 'vehiculosIds', tab: 'infoGeneral' };
-
-    // Verificar tareas
-    const tareas = this.tareas.controls;
-    for (let i = 0; i < tareas.length; i++) {
-      const tarea = tareas[i];
-      if (tarea.get('nomTareaPlan')?.invalid) {
-        return { id: `tarea-${i}-nombre`, tab: 'tareasPlanificacion' };
-      }
-      if (tarea.get('descTareaPlan')?.invalid) {
-        return { id: `tarea-${i}-descripcion`, tab: 'tareasPlanificacion' };
-      }
-    }
-
-    return null;
   }
 
   async mostrarToast(mensaje: string, color: string = 'dark', duracion: number = 3000) {

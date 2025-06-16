@@ -12,17 +12,17 @@
     <ion-list>
       <ion-item>
         <ion-label position="floating">Vehículo</ion-label>
-        <ion-input type="text" formControlName="vehiculo"></ion-input>
+        <ion-input class="custom-input" type="text" formControlName="vehiculo"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="floating">Conductor</ion-label>
-        <ion-input type="text" formControlName="conductor"></ion-input>
+        <ion-input class="custom-input" type="text" formControlName="conductor"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="floating">Fecha</ion-label>
-        <ion-input id="fechaIncidente" type="text" formControlName="fecha" placeholder="DD/MM/AAAA" readonly></ion-input>
+        <ion-input class="custom-input" id="fechaIncidente" type="text" formControlName="fecha" placeholder="DD/MM/AAAA" readonly></ion-input>
         <ion-popover trigger="fechaIncidente" size="cover">
           <ng-template>
             <ion-datetime presentation="date"
@@ -35,7 +35,7 @@
 
       <ion-item>
         <ion-label position="floating">Hora del incidente</ion-label>
-        <ion-input id="horaIncidente" type="text" formControlName="hora" placeholder="HH:MM" readonly></ion-input>
+        <ion-input class="custom-input" id="horaIncidente" type="text" formControlName="hora" placeholder="HH:MM" readonly></ion-input>
          <ion-popover trigger="horaIncidente" size="cover">
           <ng-template>
             <ion-datetime presentation="time"
@@ -48,7 +48,7 @@
 
       <ion-item>
         <ion-label position="floating">Tipo de Incidente</ion-label>
-        <ion-select formControlName="tipoIncidente" placeholder="Seleccione tipo">
+        <ion-select class="custom-select" formControlName="tipoIncidente" placeholder="Seleccione tipo">
           <ion-select-option value="choque">Choque</ion-select-option>
           <ion-select-option value="robo">Robo</ion-select-option>
           <ion-select-option value="desperfecto">Desperfecto</ion-select-option>
@@ -73,7 +73,7 @@
 
       <ion-item class="ion-margin-top">
         <ion-label position="floating">Descripción</ion-label>
-        <ion-textarea formControlName="descripcion" placeholder="Describa los hechos o lo que acontece en detalle..." [autoGrow]="true"></ion-textarea>
+        <ion-textarea class="custom-input" formControlName="descripcion" placeholder="Describa los hechos o lo que acontece en detalle..." [autoGrow]="true"></ion-textarea>
       </ion-item>
     </ion-list>
 

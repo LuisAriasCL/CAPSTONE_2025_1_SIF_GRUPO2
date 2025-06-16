@@ -27,14 +27,13 @@
           <ion-row>
             <ion-col size="12">
               <ion-label position="floating">Conductor <ion-text color="danger">*</ion-text></ion-label>
-              <ion-select formControlName="usuarioIdUsu" interface="popover" placeholder="Seleccionar conductor" [disabled]="isViewMode">
+              <ion-select class="custom-select" formControlName="usuarioIdUsu" interface="popover" placeholder="Seleccionar conductor" [disabled]="isViewMode">
                 <ion-select-option *ngFor="let conductor of conductores" [value]="conductor.idUsu">
                   {{ conductor.priNomUsu }} {{ conductor.priApeUsu }}
                 </ion-select-option>
-              </ion-select>              <div *ngIf="f['usuarioIdUsu'].invalid && (f['usuarioIdUsu'].dirty || f['usuarioIdUsu'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['usuarioIdUsu'].errors?.['required']">
-                  <ion-text color="danger">El conductor es requerido.</ion-text>
-                </div>
+              </ion-select>
+              <div *ngIf="hasFieldError('usuarioIdUsu')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('usuarioIdUsu', f['usuarioIdUsu'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -43,14 +42,13 @@
           <ion-row>
             <ion-col size="12">
               <ion-label position="floating">Ruta (Plantilla) <ion-text color="danger">*</ion-text></ion-label>
-              <ion-select formControlName="rutaIdRuta" interface="popover" placeholder="Seleccionar ruta" [disabled]="isViewMode">
+              <ion-select class="custom-select" formControlName="rutaIdRuta" interface="popover" placeholder="Seleccionar ruta" [disabled]="isViewMode">
                 <ion-select-option *ngFor="let ruta of rutasPlantilla" [value]="ruta.idRuta">
                   {{ ruta.nombreRuta }} ({{ ruta.kilometrosRuta | number:'1.1-2' }} km aprox.)
                 </ion-select-option>
-              </ion-select>              <div *ngIf="f['rutaIdRuta'].invalid && (f['rutaIdRuta'].dirty || f['rutaIdRuta'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['rutaIdRuta'].errors?.['required']">
-                  <ion-text color="danger">La ruta es requerida.</ion-text>
-                </div>
+              </ion-select>
+              <div *ngIf="hasFieldError('rutaIdRuta')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('rutaIdRuta', f['rutaIdRuta'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -59,14 +57,13 @@
           <ion-row>
             <ion-col size="12">
               <ion-label position="floating">Vehículo <ion-text color="danger">*</ion-text></ion-label>
-              <ion-select formControlName="vehiculoIdVehi" interface="popover" placeholder="Seleccionar vehículo" [disabled]="isViewMode" (ionChange)="onVehiculoChange($event)">
+              <ion-select class="custom-select" formControlName="vehiculoIdVehi" interface="popover" placeholder="Seleccionar vehículo" [disabled]="isViewMode" (ionChange)="onVehiculoChange($event)">
                 <ion-select-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.idVehi">
                   {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
                 </ion-select-option>
-              </ion-select>              <div *ngIf="f['vehiculoIdVehi'].invalid && (f['vehiculoIdVehi'].dirty || f['vehiculoIdVehi'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['vehiculoIdVehi'].errors?.['required']">
-                  <ion-text color="danger">El vehículo es requerido.</ion-text>
-                </div>
+              </ion-select>
+              <div *ngIf="hasFieldError('vehiculoIdVehi')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('vehiculoIdVehi', f['vehiculoIdVehi'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -74,16 +71,15 @@
           <!-- Fecha y Hora de Inicio -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Fecha y Hora de Inicio <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
+              <ion-label position="floating">Fecha y Hora de Inicio <ion-text color="danger">*</ion-text></ion-label>              <ion-input 
+                class="custom-input"
                 type="datetime-local" 
                 formControlName="fecIniRecor" 
                 required
                 [readonly]="isViewMode">
-              </ion-input>              <div *ngIf="f['fecIniRecor'].invalid && (f['fecIniRecor'].dirty || f['fecIniRecor'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['fecIniRecor'].errors?.['required']">
-                  <ion-text color="danger">La fecha de inicio es requerida.</ion-text>
-                </div>
+              </ion-input>
+              <div *ngIf="hasFieldError('fecIniRecor')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('fecIniRecor', f['fecIniRecor'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -91,21 +87,17 @@
           <!-- Kilometraje Inicial -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Kilometraje Inicial <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
+              <ion-label position="floating">Kilometraje Inicial <ion-text color="danger">*</ion-text></ion-label>              <ion-input 
+                class="custom-input"
                 type="number" 
                 formControlName="kmIniRecor" 
                 required
                 min="0"
                 placeholder="Ej: 150000"
                 [readonly]="isViewMode">
-              </ion-input>              <div *ngIf="f['kmIniRecor'].invalid && (f['kmIniRecor'].dirty || f['kmIniRecor'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['kmIniRecor'].errors?.['required']">
-                  <ion-text color="danger">El kilometraje inicial es requerido.</ion-text>
-                </div>
-                <div *ngIf="f['kmIniRecor'].errors?.['min']">
-                  <ion-text color="danger">El kilometraje no puede ser negativo.</ion-text>
-                </div>
+              </ion-input>
+              <div *ngIf="hasFieldError('kmIniRecor')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('kmIniRecor', f['kmIniRecor'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -118,14 +110,13 @@
           <ion-row>
             <ion-col size="12">
               <ion-label position="floating">Estado de la Asignación <ion-text color="danger">*</ion-text></ion-label>
-              <ion-select formControlName="estadoAsig" interface="popover" placeholder="Seleccionar estado" [disabled]="isViewMode">
+              <ion-select class="custom-select" formControlName="estadoAsig" interface="popover" placeholder="Seleccionar estado" [disabled]="isViewMode">
                 <ion-select-option *ngFor="let estado of estadosAsignacion" [value]="estado">
                   {{ estado | titlecase }}
                 </ion-select-option>
-              </ion-select>              <div *ngIf="f['estadoAsig'].invalid && (f['estadoAsig'].dirty || f['estadoAsig'].touched || isSubmitted)" class="error-message">
-                <div *ngIf="f['estadoAsig'].errors?.['required']">
-                  <ion-text color="danger">El estado es requerido.</ion-text>
-                </div>
+              </ion-select>
+              <div *ngIf="hasFieldError('estadoAsig')" class="error-message">
+                <ion-text color="danger">{{ getFieldErrorMessage('estadoAsig', f['estadoAsig'].errors) }}</ion-text>
               </div>
             </ion-col>
           </ion-row>
@@ -133,8 +124,8 @@
           <!-- Fecha y Hora de Fin -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Fecha y Hora de Fin</ion-label>
-              <ion-input 
+              <ion-label position="floating">Fecha y Hora de Fin</ion-label>              <ion-input 
+                class="custom-input"
                 type="datetime-local" 
                 formControlName="fecFinRecor"
                 [readonly]="isViewMode">
@@ -145,8 +136,8 @@
           <!-- Kilometraje Final -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Kilometraje Final</ion-label>
-              <ion-input 
+              <ion-label position="floating">Kilometraje Final</ion-label>              <ion-input 
+                class="custom-input"
                 type="number" 
                 formControlName="kmFinRecor" 
                 min="0"
@@ -162,8 +153,8 @@
           <!-- Eficiencia Combustible -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Eficiencia Combustible (km/l)</ion-label>
-              <ion-input 
+              <ion-label position="floating">Eficiencia Combustible (km/l)</ion-label>              <ion-input 
+                class="custom-input"
                 type="number" 
                 formControlName="efiCombRecor" 
                 placeholder="Ej: 10.5"
@@ -175,8 +166,8 @@
           <!-- Notas -->
           <ion-row>
             <ion-col size="12">
-              <ion-label position="floating">Notas Adicionales</ion-label>
-              <ion-textarea 
+              <ion-label position="floating">Notas Adicionales</ion-label>              <ion-textarea 
+                class="custom-input"
                 formControlName="notas" 
                 rows="3"
                 [readonly]="isViewMode">
@@ -190,11 +181,21 @@
 </ion-content>
 
 <div>
-  <ion-button *ngIf="!isViewMode" type="submit" expand="block" (click)="submitForm()">
+  <ion-button 
+    *ngIf="!isViewMode" 
+    type="submit" 
+    expand="block" 
+    [color]="isEditMode ? 'edit-button' : 'add-button'"
+    (click)="submitForm()">
     <ion-icon [name]="isEditMode ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
     {{ isEditMode ? 'Actualizar Asignación' : 'Crear Asignación' }}
   </ion-button>
-  <ion-button *ngIf="isViewMode" expand="block" (click)="closeModal()" color="medium">
+  
+  <ion-button 
+    *ngIf="isViewMode" 
+    expand="block" 
+    color="cancel-button"
+    (click)="closeModal()">
     <ion-icon name="close-outline" slot="start"></ion-icon>
     Cerrar
   </ion-button>

@@ -12,6 +12,7 @@ import { save, navigateCircleOutline, locationOutline, calculatorOutline, trashO
 
 // Importar el componente de alertas personalizadas
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { FormUtils } from '../../utils/form-utils';
 
 @Component({
   selector: 'app-route-form',
@@ -23,7 +24,7 @@ import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personali
     CommonModule,
     ReactiveFormsModule,
     DecimalPipe,
-    AlertaPersonalizadaComponent // Añadir a los imports
+    AlertaPersonalizadaComponent
   ]
 })
 export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
@@ -380,18 +381,18 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
   async saveRoute() {
     this.isSubmitted = true;
     
-    if (this.routeForm.invalid) {
-      this.markAllAsTouched();
-      const firstError = this.getFirstError();
-      this.presentToast(
-        firstError || 'Por favor, completa los campos requeridos correctamente.',
-        'warning'
-      );
+    const validation = FormUtils.validateForm(this.routeForm);
+    
+    if (!validation.isValid) {
+      this.isSubmitted = true;
+      await this.presentToast(validation.firstError!, 'warning');
       return;
     }
-    
-    if (!this.calculatedPoints || this.calculatedPoints.length === 0) {
-      this.presentToast('Por favor, calcula una ruta válida antes de guardar.', 'warning');
+
+    // Validación específica para rutas: verificar que tenga puntos calculados
+    if (!this.calculatedPoints) {
+      this.isSubmitted = true;
+      await this.presentToast('Debe definir una ruta válida en el mapa', 'warning');
       return;
     }
     
@@ -541,56 +542,25 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-   // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
+  // Helper para acceder a los controles del formulario
   get f() {
     return this.routeForm.controls;
   }
 
-  // Métodos de validación estandarizados
-  markAllAsTouched() {
-    Object.values(this.routeForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
+  // Métodos de validación usando FormUtils
+  markAllAsTouched(): void {
+    FormUtils.markAllFieldsAsTouched(this.routeForm);
   }
 
   getFirstError(): string | null {
-    const controls = this.routeForm.controls;
-    for (const fieldName in controls) {
-      const control = controls[fieldName];
-      if (control.invalid && (control.dirty || control.touched || this.isSubmitted)) {
-        return this.getFieldErrorMessage(fieldName, control.errors);
-      }
-    }
-    return null;
+    return FormUtils.getFirstFormError(this.routeForm);
   }
 
   hasFieldError(fieldName: string): boolean {
-    const control = this.routeForm.get(fieldName);
-    return !!(control && control.invalid && (control.dirty || control.touched || this.isSubmitted));
+    return FormUtils.hasFieldError(this.routeForm, fieldName, this.isSubmitted);
   }
 
   getFieldErrorMessage(fieldName: string, errors: any): string {
-    if (!errors) return '';
-
-    const errorMessages: { [key: string]: { [key: string]: string } } = {
-      nombre: {
-        required: 'Nombre de la ruta es requerido',
-        maxlength: 'Nombre no puede exceder 200 caracteres'
-      },
-      descripcion: {
-        maxlength: 'Descripción no puede exceder 500 caracteres'
-      }
-    };
-
-    const fieldErrors = errorMessages[fieldName];
-    if (fieldErrors) {
-      for (const errorType in errors) {
-        if (fieldErrors[errorType]) {
-          return fieldErrors[errorType];
-        }
-      }
-    }
-
-    return 'Campo inválido';
+    return FormUtils.getFieldErrorMessage(fieldName, errors);
   }
 }

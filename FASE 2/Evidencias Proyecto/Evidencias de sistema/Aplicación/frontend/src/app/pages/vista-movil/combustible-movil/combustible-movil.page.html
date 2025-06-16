@@ -7,21 +7,20 @@
       <ion-list>
         <ion-item>
           <ion-label position="stacked">Vehículo</ion-label>
-          <ion-input type="text" formControlName="vehiculo" placeholder="Ej: FWGH-31"></ion-input>
+          <ion-input class="custom-input" type="text" formControlName="vehiculo" placeholder="Ej: FWGH-31"></ion-input>
         </ion-item>
 
         <ion-item>
           <ion-label position="stacked">Conductor</ion-label>
-          <ion-input type="text" formControlName="conductor" placeholder="Nombre del conductor"></ion-input>
+          <ion-input class="custom-input" type="text" formControlName="conductor" placeholder="Nombre del conductor"></ion-input>
         </ion-item>
 
         <ion-item>
           <ion-label position="stacked">Odómetro (Km)</ion-label>
-          <ion-input type="number" formControlName="odometro" placeholder="Ej: 50000"></ion-input>
+          <ion-input class="custom-input" type="number" formControlName="odometro" placeholder="Ej: 50000"></ion-input>
         </ion-item>
 
-        <ion-item>          <ion-label position="stacked">Tipo de Combustible</ion-label>
-          <ion-select formControlName="tipoCombustible" placeholder="Seleccione tipo" 
+        <ion-item>          <ion-label position="stacked">Tipo de Combustible</ion-label>          <ion-select class="custom-select" formControlName="tipoCombustible" placeholder="Seleccione tipo" 
                      interface="popover" 
                      [interfaceOptions]="{ cssClass: 'custom-select-interface' }">
             <ion-select-option value="93">93</ion-select-option>
@@ -33,7 +32,7 @@
 
         <ion-item>
           <ion-label position="stacked">Cantidad de Litros (L)</ion-label>
-          <ion-input type="number" formControlName="cantidadLitros" placeholder="Ej: 50"></ion-input>
+          <ion-input class="custom-input" type="number" formControlName="cantidadLitros" placeholder="Ej: 50"></ion-input>
         </ion-item>
 
         <ion-item lines="none" class="ion-margin-top">

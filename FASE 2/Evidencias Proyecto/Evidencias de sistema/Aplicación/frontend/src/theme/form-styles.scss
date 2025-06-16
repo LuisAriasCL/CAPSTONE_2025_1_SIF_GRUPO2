@@ -12,35 +12,51 @@ ion-row {
 
 // Etiquetas de formulario
 ion-label {
-  color: var(--form-label-color);
   margin-bottom: var(--form-label-margin-bottom);
   font-weight: 500;
   font-size: var(--form-label-font-size);
-  
-  &.label-floating {
-    color: var(--form-label-color-floating);
-  }
 }
 
-// Indicador de campo requerido
-ion-text[color="danger"] {
-  color: var(--form-required-indicator-color);
-  font-weight: 600;
-}
-
-// Inputs, textareas y selects
-ion-input, 
-ion-textarea, 
-ion-select, 
-ion-datetime {
+// Estilos específicos para ion-input
+ion-input {
   --background: var(--form-input-background);
   --border-color: var(--form-input-border);
   --border-width: var(--form-border-width);
   --border-radius: var(--form-border-radius);
+  --border-style: solid;
   --padding-start: var(--form-input-padding);
   --padding-end: var(--form-input-padding);
   --padding-top: var(--form-input-padding);
   --padding-bottom: var(--form-input-padding);
+  font-size: var(--form-input-font-size);
+  margin-top: 0.25rem;
+  
+  &.has-focus {
+    --border-color: var(--form-input-border-focus);
+    --color: var(--ion-color-dark);
+  }
+  
+  &.ion-invalid.ion-touched {
+    --border-color: var(--form-input-border-error);
+  }
+  
+  &.ion-valid.ion-touched {
+    --border-color: var(--form-input-border-success);
+  }
+}
+
+// Estilos específicos para ion-textarea
+ion-textarea {
+  --background: var(--form-input-background);
+  --border-color: var(--form-textarea-border);
+  --border-width: var(--form-border-width);
+  --border-radius: var(--form-border-radius);
+  --border-style: solid;
+  --padding-start: var(--form-input-padding);
+  --padding-end: var(--form-input-padding);
+  --padding-top: var(--form-input-padding);
+  --padding-bottom: var(--form-input-padding);
+  --min-height: var(--form-textarea-min-height);
   font-size: var(--form-input-font-size);
   margin-top: 0.25rem;
   
@@ -57,27 +73,59 @@ ion-datetime {
   }
 }
 
-ion-textarea {
-  --min-height: var(--form-textarea-min-height);
+// Estilos específicos para ion-select
+ion-select {
+  --background: var(--form-input-background);
+  --border-color: var(--form-input-border);
+  --border-width: var(--form-border-width);
+  --border-radius: var(--form-border-radius);
+  --border-style: solid;
+  --padding-start: var(--form-input-padding);
+  --padding-end: var(--form-input-padding);
+  --padding-top: var(--form-input-padding);
+  --padding-bottom: var(--form-input-padding);
+  font-size: var(--form-input-font-size);
+  margin-top: 0.25rem;
+  
+  &.select-expanded {
+    --border-color: var(--form-input-border-focus);
+  }
+  
+  &.ion-invalid.ion-touched {
+    --border-color: var(--form-input-border-error);
+  }
+  
+  &.ion-valid.ion-touched {
+    --border-color: var(--form-input-border-success);
+  }
 }
 
-// Mensajes de error estandarizados
+// Estilos para ion-datetime
+ion-datetime {
+  --background: var(--form-input-background);
+  --border-color: var(--form-input-border);
+  --border-width: var(--form-border-width);
+  --border-radius: var(--form-border-radius);
+  --border-style: solid;
+  --padding-start: var(--form-input-padding);
+  --padding-end: var(--form-input-padding);
+  --padding-top: var(--form-input-padding);
+  --padding-bottom: var(--form-input-padding);
+  font-size: var(--form-input-font-size);
+  margin-top: 0.25rem;
+}
+
+// Mensajes de error
 .error-message {
-  color: var(--form-error-color);
+  color: var(--ion-color-danger);
   font-size: var(--form-error-font-size);
-  margin-top: var(--form-error-margin-top);
-  padding-left: var(--form-error-padding-left);
-  
-  ion-text {
-    font-size: inherit;
-    color: inherit;
-  }
+  margin-top: 0.25rem;
+  padding-left: 0.5rem;
 }
 
 // Botones del formulario
 ion-button[type="submit"] {
-  margin-top: var(--form-button-margin-top);
-  --border-radius: var(--form-button-border-radius);
+  margin-top: 1.5rem;
 }
 
 // Tabs en formularios
@@ -92,3 +140,391 @@ ion-tab-bar {
   border: var(--form-map-border);
   border-radius: var(--form-border-radius);
 }
+
+// Estilos adicionales para mejor visualización
+ion-item {
+  --background: transparent;
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --min-height: auto;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+// Asegurar que los inputs tengan bordes visibles
+ion-card.custom-card,
+ion-input.custom-input,
+ion-textarea.custom-textarea,
+ion-select.custom-select {
+  border: var(--form-border-width) solid  #f3f4f6;
+  border-radius: var(--form-border-radius);
+  background: #f3f4f6
+}
+
+
+/* ===== ESTILOS ADICIONALES PARA POPOVERS ===== */
+
+// Backdrop del popover
+.select-popover .popover-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+// Contenedor principal del popover con animaciones
+.select-popover {
+  --background: var(--ion-select-popover-background);
+  --border-radius: var(--ion-select-popover-border-radius);
+  --box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.1);
+  --max-width: var(--ion-select-popover-max-width);
+  --min-width: var(--ion-select-popover-min-width);
+  animation: popoverFadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  .popover-content {
+    border-radius: var(--ion-select-popover-border-radius);
+    overflow: hidden;
+    --background: var(--ion-select-popover-background);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .popover-arrow {
+    &::after {
+      border-color: var(--ion-select-popover-background);
+      filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+    }
+  }
+}
+
+// Header del popover mejorado
+.select-popover .popover-header {
+  --background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+  --padding-start: 1.5rem;
+  --padding-end: 1.5rem;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  font-weight: 600;
+  --color: var(--ion-color-dark);
+  font-size: 1rem;
+  text-align: center;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3rem;
+    height: 2px;
+    background: var(--ion-color-primary);
+    border-radius: 1px;
+  }
+}
+
+// Contenido del popover con scroll personalizado
+.select-popover .popover-content {
+  max-height: 20rem;
+  overflow-y: auto;
+  
+  // Scrollbar personalizado
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--ion-color-primary-rgb), 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(var(--ion-color-primary-rgb), 0.5);
+    }
+  }
+}
+
+// Lista de opciones mejorada
+.select-popover ion-radio-group {
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+}
+
+// Items individuales con efectos mejorados
+.select-popover ion-item {
+  --background: white;
+  --color: var(--ion-select-option-color);
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+  --min-height: 2.75rem;
+  --border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin: 0 0.5rem 0.5rem 0.5rem;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  cursor: pointer;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.05), rgba(var(--ion-color-primary-rgb), 0.02));
+    border-radius: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  
+  &:hover {
+    --background: rgba(var(--ion-color-primary-rgb), 0.08);
+    --color: var(--ion-color-primary);
+    transform: translateX(6px) scale(1.02);
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.15);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+  
+  &.item-radio-checked {
+    --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+    --color: white;
+    font-weight: 600;
+    transform: scale(1.02);
+    --box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.3);
+    
+    &::after {
+      content: '✓';
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      font-size: 1rem;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Labels de los items
+.select-popover ion-label {
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.select-popover ion-item.item-radio-checked ion-label {
+  font-weight: 600;
+  color: white;
+}
+
+// Radio buttons estilizados
+.select-popover ion-radio {
+  --color: rgba(var(--ion-color-primary-rgb), 0.6);
+  --color-checked: white;
+  --border-radius: 50%;
+  --inner-border-radius: 50%;
+  margin-inline-end: 0.75rem;
+  transition: all 0.25s ease;
+  
+  &.radio-checked {
+    --color-checked: white;
+    animation: radioCheck 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+}
+
+// Separadores entre grupos de opciones
+.select-popover .option-group-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  margin: 0.5rem 1rem;
+}
+
+// Botones del popover mejorados
+.select-popover .popover-buttons {
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  --background: #f8fafc;
+}
+
+.select-popover .popover-buttons ion-button {
+  --border-radius: 0.5rem;
+  --padding-start: 1.25rem;
+  --padding-end: 1.25rem;
+  --padding-top: 0.625rem;
+  --padding-bottom: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  margin: 0;
+  transition: all 0.25s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.select-popover .popover-buttons .cancel-button {
+  --color: #white;
+  --background: white;
+  --border-color: #d1d5db;
+  --border-width: 1px;
+  --border-style: solid;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    --background: #f9fafb;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.select-popover .popover-buttons .ok-button {
+  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  --color: white;
+  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+  
+  &:hover {
+    --box-shadow: 0 6px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+  }
+}
+
+// Estados vacío y de búsqueda
+.select-popover .no-options {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #6b7280;
+  font-style: italic;
+  
+  ion-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+  }
+}
+
+.select-popover .search-box {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  
+  ion-searchbar {
+    --background: #f1f5f9;
+    --border-radius: 0.5rem;
+    --box-shadow: none;
+    --placeholder-color: #9ca3af;
+  }
+}
+
+// Animaciones
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes radioCheck {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// Efectos de carga
+.select-popover.loading {
+  .popover-content {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid var(--ion-color-primary);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+// Responsive design para popovers
+@media (max-width: 768px) {
+  .select-popover {
+    --max-width: 90vw;
+    --min-width: 280px;
+  }
+  
+  .select-popover .popover-content {
+    max-height: 60vh;
+  }
+  
+  .select-popover ion-item {
+    --min-height: 3rem;
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .select-popover {
+    --max-width: 95vw;
+    --min-width: 250px;
+  }
+  
+  .select-popover .popover-header {
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .select-popover .popover-buttons {
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+    
+    ion-button {
+      --padding-start: 1rem;
+      --padding-end: 1rem;
+      font-size: 0.8rem;
+    }
+  }
+}
+

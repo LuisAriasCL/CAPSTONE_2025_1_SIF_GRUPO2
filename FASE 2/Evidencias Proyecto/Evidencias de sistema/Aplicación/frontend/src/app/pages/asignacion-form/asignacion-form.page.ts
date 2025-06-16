@@ -36,6 +36,7 @@ import {
   UsuarioConductorInfo,
 } from '../../services/api.service';
 import { RouteSimulationModalComponent } from '../../componentes/modals/route-simulation-modal.component';
+import { FormUtils } from '../../utils/form-utils';
 
 @Component({
   selector: 'app-asignacion-form',
@@ -252,6 +253,14 @@ export class AsignacionFormPage implements OnInit {
     }
   }
   async submitForm() {
+    const validation = FormUtils.validateForm(this.asignacionForm);
+    
+    if (!validation.isValid) {
+      this.isSubmitted = true;
+      this.presentToast(validation.firstError!, 'warning');
+      return;
+    }
+
     this.isSubmitted = true;
     this.markAllAsTouched();
 
@@ -478,60 +487,25 @@ export class AsignacionFormPage implements OnInit {
       dataChanged: dataChanged,
     });  }
 
-  // ===== MÉTODOS ESTÁNDAR DE VALIDACIÓN =====
-  
-  /**
-   * Marca todos los controles del formulario como tocados
-   */
-  markAllAsTouched() {
-    Object.values(this.asignacionForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
-  }
-
-  /**
-   * Obtiene el primer error del formulario
-   * @returns Objeto con el id del campo y el error, o null si no hay errores
-   */
-  getFirstError() {
-    for (const key of Object.keys(this.asignacionForm.controls)) {
-      const control = this.asignacionForm.get(key);
-      if (control?.invalid && (control.dirty || control.touched)) {
-        return { id: key, error: control.errors };
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Verifica si un campo específico tiene errores y ha sido tocado
-   * @param fieldName Nombre del campo
-   * @returns true si el campo tiene errores y ha sido tocado
-   */
-  hasFieldError(fieldName: string): boolean {
-    const field = this.asignacionForm.get(fieldName);
-    return !!(field?.invalid && (field.dirty || field.touched || this.isSubmitted));
-  }
-
-  /**
-   * Obtiene el mensaje de error para un campo específico
-   * @param fieldName Nombre del campo
-   * @returns Mensaje de error o cadena vacía
-   */
-  getFieldErrorMessage(fieldName: string): string {
-    const field = this.asignacionForm.get(fieldName);
-    if (field?.errors && this.hasFieldError(fieldName)) {
-      if (field.errors['required']) return `${fieldName} es requerido.`;
-      if (field.errors['min']) return `${fieldName} debe ser mayor que ${field.errors['min'].min}.`;
-      if (field.errors['max']) return `${fieldName} debe ser menor que ${field.errors['max'].max}.`;
-      if (field.errors['email']) return `${fieldName} debe ser un email válido.`;
-      if (field.errors['pattern']) return `${fieldName} no tiene el formato correcto.`;
-    }
-    return '';
-  }
-
   // Helper para acceder a los controles del formulario en la plantilla
   get f() {
     return this.asignacionForm.controls;
+  }
+
+  // Métodos de validación usando FormUtils
+  markAllAsTouched(): void {
+    FormUtils.markAllFieldsAsTouched(this.asignacionForm);
+  }
+
+  getFirstError(): string | null {
+    return FormUtils.getFirstFormError(this.asignacionForm);
+  }
+
+  hasFieldError(fieldName: string): boolean {
+    return FormUtils.hasFieldError(this.asignacionForm, fieldName, this.isSubmitted);
+  }
+
+  getFieldErrorMessage(fieldName: string, errors: any): string {
+    return FormUtils.getFieldErrorMessage(fieldName, errors);
   }
 }
