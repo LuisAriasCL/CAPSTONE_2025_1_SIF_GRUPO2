@@ -53,121 +53,91 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Estilos globales para suavizar esquinas de inputs */
+/* Estilos globales para formularios usando variables estandarizadas */
 /* -------------------------------------------------------------------------- */
-/* Aplicar bordes redondeados a todos los elementos de entrada */
+
+/* Estilos base para todos los elementos de formulario */
 ion-input,
 ion-select,
 ion-searchbar,
-ion-item {
-  --border-radius: 12px !important;
-  border-radius: 12px !important;
-  /* Líneas más suaves y plomo claro */
-  border: 1px solid transparent !important;
-}
-
-/* Textareas con bordes transparentes para un look más suave */
-ion-textarea {
-  --border-radius: 12px !important;
-  border-radius: 12px !important;
-  /* Sin bordes visibles para textareas */
-  border: none !important;
-  outline: none !important;
-}
-
-/* Suavizar específicamente los elementos internos de los inputs */
-ion-input .native-input,
-ion-textarea .native-textarea,
-ion-select .select-text,
-ion-searchbar .searchbar-input {
-  border-radius: 12px !important;
-  /* Más padding izquierdo para el contenido interno */
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-}
-
-/* Padding adicional para elementos específicos */
-ion-input {
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-ion-textarea {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-}
-
-ion-select {
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-/* Estilos específicos para placeholders */
-ion-input .native-input::placeholder,
-ion-textarea .native-textarea::placeholder {
-  padding-left: 4px !important;
-  color: #9ca3af !important;
-  font-style: italic;
-}
-
-/* Mejorar el padding para el texto dentro de selects */
-ion-select .select-text {
-  padding-left: 4px !important;
-}
-
-/* Aplicar padding consistente a labels flotantes */
-ion-item ion-label {
-  margin-left: 4px;
-}
-
-/* Mejorar el espaciado interno de searchbar */
-ion-searchbar .searchbar-input {
-  padding-left: 20px !important;
-  padding-right: 20px !important;
-}
-
-/* Estilos para datetime picker */
+ion-textarea,
 ion-datetime {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  border: none !important;
+  --background: var(--form-background);
+  --color: var(--form-text-color);
+  --border-radius: var(--form-element-border-radius);
+  --padding-start: var(--form-padding-horizontal);
+  --padding-end: var(--form-padding-horizontal);
+  --padding-top: var(--form-padding-vertical);
+  --padding-bottom: var(--form-padding-vertical);
+  border: 1px solid var(--form-border-color);
+  min-height: var(--form-input-min-height);
+  max-height: var(--form-input-max-height);
+  margin-bottom: var(--form-margin-bottom);
+  font-size: var(--form-font-size);
 }
 
-/* Para los ion-item que contienen inputs */
-ion-item.item {
-  --border-radius: 12px;
-  border-radius: 12px;
-  overflow: hidden;
+/* Estilos para textareas */
+ion-textarea {
+  min-height: var(--form-textarea-min-height);
 }
 
-/* Suavizar bordes de elementos select */
-ion-select-option {
-  border-radius: 8px;
+/* Estilos para labels */
+ion-label {
+  color: var(--form-text-color);
+  font-size: var(--form-label-font-size);
+  font-weight: var(--form-label-font-weight);
+  margin-bottom: var(--form-label-margin);
 }
 
-/* Aplicar a elementos de fecha y datetime */
-ion-datetime {
-  --border-radius: 12px;
-  border-radius: 12px;
+/* Estilos para placeholders */
+ion-input::placeholder,
+ion-textarea::placeholder {
+  color: var(--form-placeholder-color);
+  font-style: var(--form-placeholder-font-style);
 }
 
-/* Suavizar popover de selects */
-ion-popover .popover-content {
-  border-radius: 12px;
-  overflow: hidden;
+/* Estilos para elementos deshabilitados */
+ion-input[disabled],
+ion-select[disabled],
+ion-textarea[disabled],
+ion-datetime[disabled] {
+  --background: var(--form-disabled-background);
+  --color: var(--form-disabled-text-color);
+  opacity: 0.8;
 }
 
-/* Aplicar a elementos de toggle y checkbox para consistencia */
-ion-toggle,
-ion-checkbox,
-ion-radio {
-  --border-radius: 8px;
+/* Estilos para estados de focus */
+ion-input:focus-within,
+ion-select:focus-within,
+ion-textarea:focus-within,
+ion-datetime:focus-within {
+  border-color: var(--form-border-focus-color);
+  box-shadow: var(--form-focus-shadow);
 }
 
-/* Estilos adicionales para mayor suavizado */
-/* Asegurar que los botones también tengan esquinas suavizadas */
+/* Clase contenedora para inputs */
+.input-wrapper {
+  margin-bottom: var(--form-margin-bottom);
+}
+
+/* Contenedor para mensajes de error */
+.error-container {
+  min-height: 20px;
+  margin-bottom: var(--form-margin-bottom);
+}
+
+/* Mensaje de error */
+.error-message {
+  color: var(--form-error-color);
+  font-size: var(--form-error-font-size);
+  margin-top: var(--form-error-margin-top);
+  display: none;
+}
+
+/* Mostrar mensaje de error cuando es visible */
+.error-message.visible {
+  display: block;
+}
 ion-button {
   --border-radius: 12px;
 }
@@ -215,107 +185,6 @@ ion-router-outlet {
   margin-top: 60px; // Ajusta este valor a la altura real de tu header
 }
 
-/* -------------------------------------------------------------------------- */
-/* Estilos para personalizar los botones de las alertas */
-/* -------------------------------------------------------------------------- */
-
-/* Alerta de confirmación de logout */
-.alert-logout-confirm {
-  .alert-button.button-cancel {
-    color: white !important;
-    background-color: var(--ion-color-primary) !important; /* Azul */
-  }
-  
-  .alert-button.button-logout {
-    color: white !important;
-    background-color: var(--ion-color-danger) !important; /* Rojo */
-  }
-}
-
-/* Alerta de éxito de logout */
-.alert-logout-success {
-  .alert-button.button-accept {
-    color: white !important;
-    background-color: var(--ion-color-primary) !important; /* Azul */
-  }
-}
-
-/* Estilos generales para los botones de alerta */
-ion-alert {
-  .alert-button-inner {
-    justify-content: center !important; /* Centrar texto */
-  }
-  
-  .alert-button {
-    border-radius: 4px !important; /* Bordes redondeados */
-    margin: 0 4px !important; /* Margen entre botones */
-    min-width: 80px !important; /* Ancho mínimo */
-    padding: 0 16px !important; /* Padding horizontal */
-  }
-
-  --width: 320px !important; /* Aumentar ancho de la alerta */
-  --max-width: 90% !important; /* Asegurar que no sea demasiado grande en móviles */
-
-  .alert-wrapper {
-    padding: 15px !important; /* Más padding general */
-  }
-  
-  .alert-head {
-    padding-bottom: 15px !important; /* Más espacio bajo el título */
-    h2 {
-      font-size: 1.2rem !important; /* Título un poco más grande */
-      font-weight: 600 !important;
-    }
-  }
-  
-  .alert-message {
-    padding-bottom: 20px !important; /* Más espacio bajo el mensaje */
-    font-size: 1.05rem !important; /* Texto un poco más grande */
-  }
-
-  /* Centrar y mejorar el contenedor de botones */
-  .alert-button-group {
-    justify-content: center !important; /* Centrar los botones */
-    padding: 5px 0 !important; /* Padding vertical */
-    display: flex !important;
-    flex-wrap: wrap !important; /* Para pantallas pequeñas */
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Estilos personalizados para el modal de alerta */
-/* -------------------------------------------------------------------------- */
-.custom-alert-modal-wrapper {
-  --backdrop-opacity: 0.4;
-
-  .modal-wrapper {
-    // --- Centrado con Flexbox ---
-    display: flex !important;
-    align-items: center !important; // Centrar verticalmente el contenido (nuestro ion-content)
-    justify-content: center !important; // Centrar horizontalmente
-
-    // --- Forzar altura automática y quitar mínimos ---
-    height: auto !important;
-    min-height: 20 !important; // ¡Importante! Quitar altura mínima por defecto
-    max-height: 90vh !important; // Limitar altura máxima por si el contenido es muy largo
-
-    // --- Asegurar que el wrapper no ocupe espacio innecesario ---
-    // Podría no ser necesario, pero asegura que el wrapper se ajuste
-    width: fit-content !important; // Ajustar ancho al contenido (puede afectar el centrado si no se maneja bien)
-    max-width: 90vw !important; // Limitar ancho máximo
-  }
-
-  // --- Estilos para nuestro ion-content dentro del wrapper ---
-  ion-content.custom-modal-content {
-     height: auto !important; // Altura basada en su propio contenido
-     max-height: none !important; // Sin altura máxima propia
-     flex-shrink: 0 !important; // No encoger
-     overflow: auto !important; // Scroll interno si es necesario
-     // Aseguramos que el ancho se ajuste al contenedor padre (--max-width del componente)
-     width: 200% !important;
-  }
-}
-
 /* Estilo específico para el modal de éxito de logout (si aún se necesita) */
 .logout-success-modal-wrapper {
   ion-content.custom-modal-content {
@@ -325,400 +194,27 @@ ion-alert {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Estilos para el modal de creación de rutas */
+/* Estilos para el modal de vehículos - Pantalla completa */
 /* -------------------------------------------------------------------------- */
-.route-form-modal {
-  .modal-wrapper {
-    width: 95vw;
-    max-width: 900px;
-    height: 90vh;
-    max-height: 800px;
-    border-radius: 12px;
-    
-    ion-content {
-      --padding-top: 0;
-      --padding-bottom: 0;
-    }
-    
-    ion-header {
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      
-      ion-toolbar {
-        --background: var(--ion-color-primary);
-        --color: white;
-        
-        ion-title {
-          font-weight: 600;
-        }
-        
-        ion-button {
-          --color: white;
-          
-          &:hover {
-            --background: rgba(255, 255, 255, 0.1);
-          }
-        }
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Estilos Adicionales */
-/* -------------------------------------------------------------------------- */
-
-/* Eliminar espacios del split-pane */
-ion-split-pane {
-  --border: none;
-}
-
-ion-menu {
-  --ion-safe-area-left: 0;
-}
-
-// Si hay un header, asegurar que no tenga margen
-ion-header {
-  margin: 0;
-}
-
-// Eliminar cualquier padding o margin del contenido principal
-#main-content {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Clase Input Wrapper para formularios */
-/* -------------------------------------------------------------------------- */
-.input-wrapper {
-  
-  ion-input, 
-  ion-textarea, 
-  ion-select, 
-  ion-datetime {
-    background-color: #ffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    
-    --padding-end: 20px;
-    --border-radius: 12px;
-    
-    /* Estilo para los elementos internos */
-    .native-input,
-    .native-textarea,
-    .select-text,
-    .datetime-text {
-      padding-left: 4px !important;
-      padding-right: 4px !important;
-      border-radius: 12px !important;
-    }
-    
-    /* Placeholders */
-    .native-input::placeholder,
-    .native-textarea::placeholder {
-      color: #9ca3af !important;
-      font-style: italic;
-    }
-  }
-  
-  /* Textareas específicamente sin bordes */
-  ion-textarea {
-    border: none !important;
-    --padding-top: 12px;
-    --padding-bottom: 12px;
-  }
-    /* Labels */
-  ion-label {
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: var(--ion-color-dark);
-    font-size: 13px !important; /* Tamaño reducido para labels */
-    
-    /* Labels flotantes específicos */
-    &[position="floating"] {
-      font-size: 11px !important;
-    }
-  }
-  
-  /* Estados de focus */
-  ion-input:focus-within,
-  ion-select:focus-within,
-  ion-textarea:focus-within {
-    border-color: var(--ion-color-primary) !important;
-    box-shadow: 0 0 0 2px rgba(0, 92, 147, 0.1) !important;
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Estilos para el modal de planificación */
-/* -------------------------------------------------------------------------- */
-.planificacion-form-modal {
-  --height: 90%;
-  --width: 95%;
-  --max-width: 800px;
-  --border-radius: 16px;
-  --backdrop-opacity: 0.6;
-}
-
-.planificacion-form-modal .modal-wrapper {
-  border-radius: 16px;
-  overflow: hidden;
-  --height: auto;
-  --max-height: 80vh;    /* no pase del 80% de la pantalla */
-}
-
-.planificacion-form-modal ion-header {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 768px) {
-  .planificacion-form-modal {
-    --width: 100%;
-    --height: 100%;
-    --border-radius: 0;
-  }
-}
-
-ion-modal.planificacion-form-modal {
-  align-items: center;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Estilos específicos para action-sheet de ion-select */
-/* -------------------------------------------------------------------------- */
-ion-action-sheet {
-  .action-sheet-group {
-    .action-sheet-button {
-      font-size: 18px !important;
-      
-      .action-sheet-button-inner {
-        font-size: 18px !important;
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Reforzar estilos para ion-select múltiple */
-/* -------------------------------------------------------------------------- */
-.input-wrapper {
-  ion-select[multiple] {
-    font-size: 18px !important;
-    
-    .select-text {
-      font-size: 18px !important;
-      color: var(--ion-color-dark) !important;
-      font-weight: 500 !important;
-      line-height: 1.4 !important;
-    }
-    
-    .select-placeholder {
-      font-size: 18px !important;
-      color: #9ca3af !important;
-    }
-    
-    /* Para cuando hay valores seleccionados */
-    .select-text .select-value {
-      font-size: 18px !important;
-    }
-    
-    /* Chips y elementos seleccionados */
-    .select-text ion-chip {
-      font-size: 16px !important;
-      margin: 2px 4px 2px 0 !important;
-      
-      ion-label {
-        font-size: 16px !important;
-        color: white !important;
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Estilos globales adicionales para asegurar consistencia */
-/* -------------------------------------------------------------------------- */
-/* Forzar tamaño de fuente en todos los selects */
-ion-select {
-  font-size: 18px !important;
-  
-  .select-text,
-  .select-placeholder {
-    font-size: 18px !important;
-  }
-  
-  /* Específico para múltiple selección */
-  &[multiple] {
-    .select-text {
-      font-size: 18px !important;
-      
-      /* Texto cuando hay elementos seleccionados */
-      .select-value-text {
-        font-size: 18px !important;
-      }
-      
-      /* Lista de elementos separados por coma */
-      .select-value {
-        font-size: 18px !important;
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Responsividad para action-sheet y selects múltiples */
-/* -------------------------------------------------------------------------- */
-@media (max-width: 767px) {
-  ion-action-sheet {
-    .action-sheet-group {
-      .action-sheet-button {
-        font-size: 16px !important;
-        
-        .action-sheet-button-inner {
-          font-size: 16px !important;
-        }
-      }
-    }
-  }
-  
-  .input-wrapper {
-    ion-select[multiple] {
-      font-size: 16px !important;
-      
-      .select-text,
-      .select-placeholder {
-        font-size: 16px !important;
-      }
-      
-      .select-text ion-chip {
-        font-size: 14px !important;
-        
-        ion-label {
-          font-size: 14px !important;
-        }
-      }
-    }
-  }
-  
-  ion-select {
-    font-size: 16px !important;
-    
-    .select-text,
-    .select-placeholder {
-      font-size: 16px !important;
-    }
-    
-    &[multiple] {
-      .select-text {
-        .select-value-text,
-        .select-value {
-          font-size: 16px !important;
-        }
-      }
-    }
-  }
-}
-
-@media (min-width: 1200px) {
-  ion-action-sheet {
-    .action-sheet-group {
-      .action-sheet-button {
-        font-size: 20px !important;
-        
-        .action-sheet-button-inner {
-          font-size: 20px !important;
-        }
-      }
-    }
-  }
-  
-  .input-wrapper {
-    ion-select[multiple] {
-      font-size: 20px !important;
-      
-      .select-text,
-      .select-placeholder {
-        font-size: 20px !important;
-      }
-      
-      .select-text ion-chip {
-        font-size: 18px !important;
-        
-        ion-label {
-          font-size: 18px !important;
-        }
-      }
-    }
-  }
-  
-  ion-select {
-    font-size: 20px !important;
-    
-    .select-text,
-    .select-placeholder {
-      font-size: 20px !important;
-    }
-    
-    &[multiple] {
-      .select-text {
-        .select-value-text,
-        .select-value {
-          font-size: 20px !important;
-        }
-      }
-    }
-  }
-}
-
-/* Para todos los modales con cssClass 'custom-alert-modal' */
-ion-modal.custom-alert-modal .modal-wrapper {
-  --min-width: 280px;
-  --max-width: 360px;
-  --height: auto;
-  --max-height: 50vh;     /* no supere la mitad de la pantalla */
-}
-
-/* Dentro de tu alerta, que el contenedor ajuste al contenido */
-.modal-container {
-  width: 100%;
-  max-height: 100%;       /* hereda del wrapper */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* ===== ESTILOS PARA MODALES DE FORMULARIOS ===== */
 .vehicle-form-modal {
-  --width: 90%;
-  --max-width: 800px;
-  --height: 90%;
-  --max-height: 900px;
-  --border-radius: 16px;
+  --width: 98% !important;
+  --height: 98% !important;
+  --max-width: 1400px !important;
+  --max-height: 900px !important;
+  --border-radius: 12px !important;
+  --backdrop-opacity: 0.8 !important;
 }
 
+.vehicle-form-modal .modal-wrapper {
+  border-radius: var(--border-radius) !important;
+}
+
+/* Para pantallas pequeñas, ocupar completamente la pantalla */
 @media (max-width: 768px) {
   .vehicle-form-modal {
-    --width: 100%;
-    --height: 100%;
-    --border-radius: 0;
+    --width: 100% !important;
+    --height: 100% !important;
+    --border-radius: 0 !important;
   }
 }
-
-.planificacion-form-modal {
-  --width: 95%;
-  --max-width: 1000px;
-  --height: 95%;
-  --max-height: 1000px;
-  --border-radius: 16px;
-}
-
-@media (max-width: 768px) {
-  .planificacion-form-modal {
-    --width: 100%;
-    --height: 100%;
-    --border-radius: 0;
-  }
-}
-
 

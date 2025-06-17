@@ -20,6 +20,7 @@ import {
   warningOutline,
   mapOutline,
   businessOutline,
+  clipboardOutline
 } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
@@ -48,8 +49,7 @@ export class SidebarComponent {
   public selectedIndex = 0;
   /**
    * Opciones de navegación para la aplicación.
-   */
-  public appPages = [
+   */  public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
     // { title: 'Reportes', url: '/reportes', icon: 'newspaper' }, // Página no existe aún
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
@@ -58,7 +58,7 @@ export class SidebarComponent {
     // { title: 'Conductores', url: '/conductores', icon: 'people' }, // Página no existe aún
     { title: 'Asignación de recorridos', url: '/asignacion-list', icon: 'navigate' },
     // { title: 'Incidentes', url: '/siniestros', icon: 'warning' }, // Página no existe aún
-    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'construct-outline' },
+    { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'clipboard' },
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'map' },
     { title: 'Recorridos', url: '/recorridos', icon: 'navigate' },
   ];
@@ -78,6 +78,7 @@ export class SidebarComponent {
       warningOutline,
       mapOutline,
       businessOutline,
+      clipboardOutline
     });
   }
 }

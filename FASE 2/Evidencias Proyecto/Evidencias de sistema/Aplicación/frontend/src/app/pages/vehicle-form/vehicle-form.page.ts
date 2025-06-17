@@ -54,7 +54,6 @@ export class VehicleFormPage implements OnInit {
   ];
   // Variable para controlar las pestañas
   selectedTab = 'infoBasica';
-
   // Variables para el DataTable de historial de mantenimiento
   mantenimientos: any[] = [];
   historialColumns: Column[] = [
@@ -64,7 +63,51 @@ export class VehicleFormPage implements OnInit {
     { header: 'Kilometraje', field: 'kilometraje', sortable: true },
     { header: 'Costo', field: 'costo', sortable: true }
   ];
-    constructor() {
+  // Variables para el DataTable de recorridos
+  recorridos: any[] = [];
+  recorridosColumns: Column[] = [
+    { header: 'Nombre de la Ruta', field: 'nombreRuta', sortable: true },
+    { header: 'Fecha y Hora', field: 'fechaHora', sortable: true },
+    { header: 'Distancia', field: 'distancia', sortable: true },
+    { header: 'Estado', field: 'estado', sortable: true },
+    { header: 'Acciones', field: 'acciones', sortable: false }
+  ];
+
+  // Variables para el DataTable de combustible
+  combustible: any[] = [];
+  combustibleColumns: Column[] = [
+    { header: 'Fecha y Hora', field: 'fechaHora', sortable: true },
+    { header: 'Kilometraje', field: 'kilometraje', sortable: true },
+    { header: 'Tipo de Combustible', field: 'tipoCombustible', sortable: true },
+    { header: 'Litros Cargados', field: 'litrosCargados', sortable: true },
+    { header: 'Conductor', field: 'conductor', sortable: true },
+    { header: 'Acciones', field: 'acciones', sortable: false }
+  ];
+
+  // Variables para el DataTable de mantenimiento completo
+  mantenimientoCompleto: any[] = [];
+  mantenimientoColumns: Column[] = [
+    { header: 'Nombre de Mantenimiento', field: 'nombreMantenimiento', sortable: true },
+    { header: 'Fecha y Hora', field: 'fechaHora', sortable: true },
+    { header: 'Tiempo de Inactividad', field: 'tiempoInactividad', sortable: true },
+    { header: 'Estado del Mantenimiento', field: 'estadoMantenimiento', sortable: true },
+    { header: 'Tipo de Mantenimiento', field: 'tipoMantenimiento', sortable: true },
+    { header: 'Acciones', field: 'acciones', sortable: false }
+  ];
+
+  // Variables para el DataTable de incidentes
+  incidentes: any[] = [];
+  incidentesColumns: Column[] = [
+    { header: 'Tipo de Incidente', field: 'tipoIncidente', sortable: true },
+    { header: 'Conductor', field: 'conductor', sortable: true },
+    { header: 'Fecha de Incidente', field: 'fechaIncidente', sortable: true },
+    { header: 'Acciones', field: 'acciones', sortable: false }
+  ];
+
+  // Variables para la lista de documentos
+  documentos: any[] = [];
+  
+  constructor() {
     // Registramos los iconos para que Ionic los reconozca por nombre
     addIcons({ save, 'arrow-back-outline': ionArrowBackOutline, closeOutline });
   }
@@ -100,6 +143,7 @@ export class VehicleFormPage implements OnInit {
       this.pageTitle = 'Nuevo Vehículo';
     }
   }
+  
   initForm() {
     // Obtener la fecha actual en formato YYYY-MM-DD para valor por defecto
     const today = new Date().toISOString().split('T')[0];
@@ -132,6 +176,7 @@ export class VehicleFormPage implements OnInit {
       this.vehicleForm.disable();
     }
   }
+  
   async loadVehicleData() {
     if (!this.vehicleId) return;
 
@@ -191,6 +236,7 @@ export class VehicleFormPage implements OnInit {
       }
     });
   }
+  
   // Datos de ejemplo para el historial (en un caso real vendrían de la API)
   cargarHistorialMantenimiento(idVehiculo?: number | null) {
     // Datos de ejemplo - en una aplicación real estos datos vendrían de una API
@@ -226,7 +272,240 @@ export class VehicleFormPage implements OnInit {
     }
   }
   
-  // Métodos para el DataTable
+  // Métodos para cargar datos de las nuevas pestañas
+  cargarRecorridos(idVehiculo: number) {
+    // En una aplicación real, estos datos vendrían de la API usando ApiService.getAsignacionesRecorrido
+    // con un filtro por vehiculoIdVehi igual a idVehiculo
+    this.apiService.getAsignacionesRecorrido({ vehiculoIdVehi: idVehiculo }).subscribe({
+      next: (data) => {
+        if (data && data.length > 0) {
+          // Transformar los datos de la API al formato requerido para la tabla
+          this.recorridos = data.map(recorrido => {
+            return {
+              id: recorrido.idAsig,
+              nombreRuta: recorrido.rutaPlantilla?.nombreRuta || 'Sin nombre',
+              fechaHora: recorrido.fecIniRecor,
+              distancia: recorrido.rutaPlantilla?.kilometrosRuta ? `${recorrido.rutaPlantilla.kilometrosRuta} km` : 'No disponible',
+              estado: recorrido.estadoAsig,
+              acciones: ''
+            };
+          });
+        } else {
+          // Si no hay datos, mostrar la tabla vacía
+          this.recorridos = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar recorridos:', err);
+        // En caso de error, usar datos de ejemplo
+        this.recorridos = [
+          {
+            id: 1,
+            nombreRuta: 'Ruta Santiago-Valparaíso',
+            fechaHora: '2025-06-10 08:30',
+            distancia: '120 km',
+            estado: 'Completado',
+            acciones: ''
+          },
+          {
+            id: 2,
+            nombreRuta: 'Ruta Centro de Distribución',
+            fechaHora: '2025-06-08 14:15',
+            distancia: '45 km',
+            estado: 'Completado',
+            acciones: ''
+          },
+          {
+            id: 3,
+            nombreRuta: 'Ruta Norte Grande',
+            fechaHora: '2025-06-05 09:00',
+            distancia: '320 km',
+            estado: 'Cancelado',
+            acciones: ''
+          }
+        ];
+      }
+    });
+  }
+
+  cargarCombustible(idVehiculo: number) {
+    // En una implementación real, se llamaría a un endpoint específico para obtener registros de combustible
+    // Como no se ve un endpoint específico en api.service.ts, usamos datos de ejemplo
+    // Por ejemplo: this.apiService.getHistorialCombustible(idVehiculo)
+    
+    // Datos de ejemplo
+    this.combustible = [
+      {
+        id: 1,
+        fechaHora: '2025-06-12 10:45',
+        kilometraje: '15200 km',
+        tipoCombustible: 'Diesel',
+        litrosCargados: '45 L',
+        conductor: 'Juan Pérez',
+        acciones: ''
+      },
+      {
+        id: 2,
+        fechaHora: '2025-06-05 16:30',
+        kilometraje: '14800 km',
+        tipoCombustible: 'Diesel',
+        litrosCargados: '40 L',
+        conductor: 'Carlos Rodríguez',
+        acciones: ''
+      },
+      {
+        id: 3,
+        fechaHora: '2025-05-28 09:15',
+        kilometraje: '14200 km',
+        tipoCombustible: 'Diesel',
+        litrosCargados: '50 L',
+        conductor: 'Juan Pérez',
+        acciones: ''
+      }
+    ];
+  }
+
+  cargarMantenimientoCompleto(idVehiculo: number) {
+    // En una implementación real, se llamaría a un endpoint específico para obtener órdenes de trabajo
+    // Por ejemplo, usando this.apiService.getOrdenesTrabajo() con un filtro por vehículo
+    
+    // Intentar cargar órdenes de trabajo para este vehículo
+    this.apiService.getOrdenesTrabajo().subscribe({
+      next: (ordenes) => {
+        // Filtrar órdenes para este vehículo - esto tendría que hacerse en el backend idealmente
+        const ordenesVehiculo = ordenes.filter(ot => ot.vehiculo?.patente === this.vehicleForm.get('patente')?.value);
+        
+        if (ordenesVehiculo && ordenesVehiculo.length > 0) {
+          // Transformar los datos de la API al formato requerido para la tabla
+          this.mantenimientoCompleto = ordenesVehiculo.map(orden => {
+            return {
+              id: orden.id_ot,
+              nombreMantenimiento: orden.descripcion_ot || 'Mantenimiento',
+              fechaHora: orden.fec_ini_ot,
+              tiempoInactividad: orden.fec_fin_ot ? this.calcularTiempoInactividad(orden.fec_ini_ot, orden.fec_fin_ot) : 'En curso',
+              estadoMantenimiento: orden.estado_ot,
+              tipoMantenimiento: orden.prioridad === 'alta' ? 'Correctivo' : 'Preventivo',
+              acciones: ''
+            };
+          });
+        } else {
+          // Si no hay datos, mostrar datos de ejemplo
+          this.cargarMantenimientoEjemplo();
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar mantenimientos:', err);
+        // En caso de error, usar datos de ejemplo
+        this.cargarMantenimientoEjemplo();
+      }
+    });
+  }
+
+  private cargarMantenimientoEjemplo() {
+    this.mantenimientoCompleto = [
+      {
+        id: 1,
+        nombreMantenimiento: 'Mantenimiento General',
+        fechaHora: '2025-05-15 14:00',
+        tiempoInactividad: '2 días',
+        estadoMantenimiento: 'Completado',
+        tipoMantenimiento: 'Preventivo',
+        acciones: ''
+      },
+      {
+        id: 2,
+        nombreMantenimiento: 'Reparación de Frenos',
+        fechaHora: '2025-04-10 09:30',
+        tiempoInactividad: '1 día',
+        estadoMantenimiento: 'Completado',
+        tipoMantenimiento: 'Correctivo',
+        acciones: ''
+      },
+      {
+        id: 3,
+        nombreMantenimiento: 'Rotación de Neumáticos',
+        fechaHora: '2025-03-05 11:15',
+        tiempoInactividad: '3 horas',
+        estadoMantenimiento: 'Completado',
+        tipoMantenimiento: 'Preventivo',
+        acciones: ''
+      }
+    ];
+  }
+
+  private calcularTiempoInactividad(fechaInicio: string, fechaFin: string): string {
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+    const difMs = fin.getTime() - inicio.getTime();
+    const difDias = Math.floor(difMs / (1000 * 60 * 60 * 24));
+    
+    if (difDias > 0) {
+      return `${difDias} día${difDias > 1 ? 's' : ''}`;
+    }
+    
+    const difHoras = Math.floor((difMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    if (difHoras > 0) {
+      return `${difHoras} hora${difHoras > 1 ? 's' : ''}`;
+    }
+    
+    const difMinutos = Math.floor((difMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${difMinutos} minuto${difMinutos > 1 ? 's' : ''}`;
+  }
+
+  cargarIncidentes(idVehiculo: number) {
+    // No hay un endpoint específico para incidentes en api.service.ts
+    // Podríamos intentar usar registrarIncidente pero es solo para crear
+    
+    // Datos de ejemplo
+    this.incidentes = [
+      {
+        id: 1,
+        tipoIncidente: 'Colisión Menor',
+        conductor: 'Juan Pérez',
+        fechaIncidente: '2025-04-18',
+        acciones: ''
+      },
+      {
+        id: 2,
+        tipoIncidente: 'Pinchazo de Neumático',
+        conductor: 'Carlos Rodríguez',
+        fechaIncidente: '2025-03-22',
+        acciones: ''
+      }
+    ];
+  }
+  
+  cargarDocumentos(idVehiculo: number) {
+    // No hay un endpoint específico para documentos en api.service.ts
+    // En una implementación real, se llamaría a un endpoint específico
+    
+    // Datos de ejemplo
+    this.documentos = [
+      {
+        id: 1,
+        nombre: 'Permiso de Circulación',
+        descripcion: 'Permiso de circulación vigente',
+        fecha: '2025-03-15',
+        url: 'permiso.pdf'
+      },
+      {
+        id: 2,
+        nombre: 'Seguro Obligatorio',
+        descripcion: 'Póliza de seguro obligatorio',
+        fecha: '2025-01-10',
+        url: 'seguro.pdf'
+      },
+      {
+        id: 3,
+        nombre: 'Revisión Técnica',
+        descripcion: 'Certificado de revisión técnica',
+        fecha: '2024-12-05',
+        url: 'revision.pdf'
+      }
+    ];
+  }
+  
+  // Métodos para el DataTable de historial
   onHistorialPageChange(event: PageEvent) {
     console.log('Cambio de página en historial:', event);
   }
@@ -241,6 +520,74 @@ export class VehicleFormPage implements OnInit {
   
   onHistorialExport(format: string) {
     console.log('Exportar historial en formato:', format);
+  }
+
+  // Métodos para el DataTable de recorridos
+  onRecorridosPageChange(event: PageEvent) {
+    console.log('Cambio de página en recorridos:', event);
+  }
+  
+  onRecorridosRowClick(row: any) {
+    console.log('Fila de recorridos seleccionada:', row);
+  }
+  
+  onRecorridosSort(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar recorridos por:', event);
+  }
+  
+  onRecorridosExport(format: string) {
+    console.log('Exportar recorridos en formato:', format);
+  }
+
+  // Métodos para el DataTable de combustible
+  onCombustiblePageChange(event: PageEvent) {
+    console.log('Cambio de página en combustible:', event);
+  }
+  
+  onCombustibleRowClick(row: any) {
+    console.log('Fila de combustible seleccionada:', row);
+  }
+  
+  onCombustibleSort(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar combustible por:', event);
+  }
+  
+  onCombustibleExport(format: string) {
+    console.log('Exportar combustible en formato:', format);
+  }
+
+  // Métodos para el DataTable de mantenimiento
+  onMantenimientoPageChange(event: PageEvent) {
+    console.log('Cambio de página en mantenimiento:', event);
+  }
+  
+  onMantenimientoRowClick(row: any) {
+    console.log('Fila de mantenimiento seleccionada:', row);
+  }
+  
+  onMantenimientoSort(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar mantenimiento por:', event);
+  }
+  
+  onMantenimientoExport(format: string) {
+    console.log('Exportar mantenimiento en formato:', format);
+  }
+
+  // Métodos para el DataTable de incidentes
+  onIncidentesPageChange(event: PageEvent) {
+    console.log('Cambio de página en incidentes:', event);
+  }
+  
+  onIncidentesRowClick(row: any) {
+    console.log('Fila de incidentes seleccionada:', row);
+  }
+  
+  onIncidentesSort(event: {column: string, direction: 'asc' | 'desc'}) {
+    console.log('Ordenar incidentes por:', event);
+  }
+  
+  onIncidentesExport(format: string) {
+    console.log('Exportar incidentes en formato:', format);
   }
 
   async saveVehicle() {
@@ -377,6 +724,7 @@ export class VehicleFormPage implements OnInit {
   async closeModal(data?: any) {
     await this.modalCtrl.dismiss(data);
   }
+  
   // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
   get f() {
     return this.vehicleForm.controls;
@@ -386,9 +734,30 @@ export class VehicleFormPage implements OnInit {
   get maxValidYear() {
     return new Date().getFullYear() + 5;
   }
-
+  
   // Método para cambiar entre pestañas
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
+    
+    // Cargar datos según la pestaña seleccionada
+    if (this.vehicleId) {
+      switch (this.selectedTab) {
+        case 'recorridos':
+          this.cargarRecorridos(this.vehicleId);
+          break;
+        case 'combustible':
+          this.cargarCombustible(this.vehicleId);
+          break;
+        case 'mantenimiento':
+          this.cargarMantenimientoCompleto(this.vehicleId);
+          break;
+        case 'incidentes':
+          this.cargarIncidentes(this.vehicleId);
+          break;
+        case 'documentos':
+          this.cargarDocumentos(this.vehicleId);
+          break;
+      }
+    }
   }
 }
