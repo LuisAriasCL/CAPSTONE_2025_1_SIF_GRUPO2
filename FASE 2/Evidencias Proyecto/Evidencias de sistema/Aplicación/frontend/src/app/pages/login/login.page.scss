@@ -14,7 +14,7 @@
 
 :host {
   ion-content {
-    --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --background: var(--ion-color-light);
     position: relative;
     min-height: 100vh;
   }
@@ -64,7 +64,7 @@
 
     ion-item {
       --background: transparent;
-      --border-color: rgba(102, 126, 234, 0.3);
+      --border-color:var(--ion-color-medium);
       --border-width: 2px;
       --border-radius: var(--form-item-radius);
       --padding-start: 16px;
@@ -235,7 +235,6 @@
     .center-wrapper {
       width: 95%;
       padding: var(--login-padding);
-      margin: 20px auto;
       position: relative;
       top: auto;
       left: auto;

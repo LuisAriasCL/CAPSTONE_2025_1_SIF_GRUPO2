@@ -35,6 +35,11 @@ ion-split-pane {
   transition: all 0.3s ease;
 }
 
+/* Split pane cuando no hay header */
+.no-header-layout ion-split-pane {
+  height: 100vh;
+}
+
 /* Estilos para el menú lateral */
 ion-menu {
   --background: var(--ion-color-light);
@@ -58,6 +63,12 @@ ion-menu {
   height: calc(100vh - var(--header-height));
   background: var(--ion-color-light-shade);
   overflow: hidden;
+  
+  /* Clase para cuando no hay header (login/register) */
+  &.no-header {
+    height: 100vh;
+    margin-top: 0;
+  }
 }
 
 /* Router outlet responsivo */
