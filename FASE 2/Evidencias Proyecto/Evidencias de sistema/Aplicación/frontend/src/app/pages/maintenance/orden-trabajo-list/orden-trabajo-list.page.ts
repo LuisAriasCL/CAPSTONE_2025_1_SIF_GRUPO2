@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController, LoadingController, ToastController, AlertController, ModalController } from '@ionic/angular';
 import { ApiService, OrdenTrabajoResumen } from 'src/app/services/api.service';
@@ -11,7 +11,7 @@ import { OrdenTrabajoDetallePage } from '../orden-trabajo-detalle/orden-trabajo-
   templateUrl: './orden-trabajo-list.page.html',
   styleUrls: ['./orden-trabajo-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DatePipe, TitleCasePipe, AlertaPersonalizadaComponent]
+  imports: [IonicModule, CommonModule, FormsModule, DatePipe]
 })
 export class OrdenTrabajoListPage implements OnInit {
 
@@ -118,6 +118,20 @@ export class OrdenTrabajoListPage implements OnInit {
       default:
         return 'medium';
     }
+  }
+
+  // Función para mostrar los estados en formato legible
+  getStatusDisplayName(estado: string | undefined): string {
+    if (!estado) return 'Sin estado';
+    
+    const estadosDisplay: { [key: string]: string } = {
+      solicitado: 'Solicitado',
+      en_progreso: 'En Progreso',
+      completado: 'Completado',
+      cancelado: 'Cancelado'
+    };
+    
+    return estadosDisplay[estado] || estado;
   }
 
   // Método para validar fechas antes de aplicar el pipe date

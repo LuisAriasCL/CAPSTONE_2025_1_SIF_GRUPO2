@@ -46,11 +46,9 @@
                 <strong>Cierre:</strong> {{ ot.fec_fin_ot | date:'dd/MM/yy' }}
               </p>
             </ion-label>
-          </ion-col>
-
-          <ion-col size="12" size-md="2" class="ion-text-center">
+          </ion-col>          <ion-col size="12" size-md="2" class="ion-text-center">
             <ion-chip [color]="getColorForStatus(ot.estado_ot)">
-              <ion-label>{{ ot.estado_ot | titlecase }}</ion-label>
+              <ion-label>{{ getStatusDisplayName(ot.estado_ot) }}</ion-label>
             </ion-chip>
           </ion-col>
 

@@ -50,8 +50,9 @@ module.exports = (sequelize, SequelizeDataTypes) => {
     }
     
   }, {
-    tableName: 'planificacion_mantenimiento', 
-    timestamps: false, 
+    tableName: 'PLANIFICACION_MANTENIMIENTO',
+    timestamps: true, 
+                      
     comment: 'Tabla para almacenar las planificaciones de mantenimiento de vehículos'
   });
 

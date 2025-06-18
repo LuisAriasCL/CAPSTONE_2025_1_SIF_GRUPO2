@@ -8,7 +8,7 @@ import { ApiService, OrdenTrabajoDetalle, DetalleOtData, UsuarioResumen } from '
 import { AuthService } from 'src/app/services/auth.service';
 import { addIcons } from 'ionicons';
 import { checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, saveOutline, flagOutline, personAddOutline, 
-         personCircleOutline, carSportOutline, speedometerOutline, documentTextOutline } from 'ionicons/icons';
+         personCircleOutline, carSportOutline, speedometerOutline, documentTextOutline, close } from 'ionicons/icons';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
@@ -38,7 +38,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
     addIcons({ 
       checkmarkCircleOutline, closeCircleOutline, helpCircleOutline, 
       saveOutline, flagOutline, personAddOutline, personCircleOutline,
-      carSportOutline, speedometerOutline, documentTextOutline
+      carSportOutline, speedometerOutline, documentTextOutline, close
     });
   }
 
@@ -328,6 +328,19 @@ export class OrdenTrabajoDetallePage implements OnInit {
     return colores[estado] || 'medium';
   }
   
+  getStatusDisplayName(estado: string | undefined): string {
+    if (!estado) return 'Sin estado';
+    
+    const estadosDisplay: { [key: string]: string } = {
+      solicitado: 'Solicitado',
+      en_progreso: 'En Progreso',
+      completado: 'Completado',
+      cancelado: 'Cancelado'
+    };
+    
+    return estadosDisplay[estado] || estado;
+  }
+
   isValidDate(dateStr: any): boolean {
     if (!dateStr) return false;
     
