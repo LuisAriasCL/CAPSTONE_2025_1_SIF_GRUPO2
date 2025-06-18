@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; // Para *ngIf, *ngFor
-import { IonicModule } from '@ionic/angular';   // Para todos los componentes Ionic
+import { CommonModule } from '@angular/common'; 
+import { IonicModule } from '@ionic/angular';   
 import { NavController, ToastController, LoadingController, AlertController, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -35,13 +35,13 @@ export class PlanificacionFormPage implements OnInit {
   isSubmitted = false;
   pageTitle = 'Crear Planificación';
   
-  // Propiedades para datos cargados (estilo RouteFormPage)
+  
   loadedTareas: any[] = [];
   loadedVehiculosIds: number[] = [];tareasDisponibles: any;
   tipoFrecuenciaSeleccionado: string | null = null;
   selectedTab = 'infoGeneral';
 
-  // Agregar esta propiedad
+ 
   esPreventivo: boolean = true;
 
   constructor(
@@ -67,7 +67,7 @@ export class PlanificacionFormPage implements OnInit {
   }
 
   ngOnInit() {
-    // Support for both modal parameters and route parameters
+   
     if (!this.planId) {
       this.route.paramMap.subscribe(params => {
         const id = params.get('id');
@@ -82,17 +82,17 @@ export class PlanificacionFormPage implements OnInit {
     this.initForm();
     this.cargarVehiculos();
     
-    // Verificar si se recibieron parámetros via modal (Input properties)
+    
     if (this.planId && (this.isEditMode || this.isViewMode)) {
       this.loadPlanificacionData();
     } else {
-      // Modo creación - agregar una tarea por defecto
+    
       this.agregarTarea();
     }
 
     this.tipoFrecuenciaSeleccionado = this.planForm.get('tipoFrecuencia')?.value || null;
 
-    // Agregar después de initForm()
+   
     this.planForm.get('esPreventivo')?.valueChanges.subscribe(value => {
       this.esPreventivo = value;
     });
@@ -113,18 +113,18 @@ export class PlanificacionFormPage implements OnInit {
       descPlan: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(255)]],
       frecuencia: [null, [Validators.required, Validators.min(1)]],
       tipoFrecuencia: ['', Validators.required],
+       fechaActivacion: [null],
       esPreventivo: [true, Validators.required],
       esActivoPlan: [true, Validators.required],
       vehiculosIds: [[], [Validators.required, Validators.minLength(1)]],
       tareas: this.fb.array([], [Validators.required, Validators.minLength(1)])
     });
     if (this.tareas.length === 0) {
-        this.agregarTarea(); // Asegurar al menos una tarea al inicio
+        this.agregarTarea(); 
     }
   }
 
-  // Getter para acceder a los controles del formulario de forma más corta.
-  // La plantilla puede acceder a 'f' directamente.
+ 
   get f() { return this.planForm.controls; }
 
   get tareas(): FormArray {
@@ -133,8 +133,8 @@ export class PlanificacionFormPage implements OnInit {
 
   crearTareaFormGroup(): FormGroup {
     return this.fb.group({
-      nomTareaPlan: ['', [Validators.required, Validators.maxLength(150)]], // Coincide con formControlName="nomTareaPlan"
-      descTareaPlan: ['', Validators.maxLength(500)]  // Coincide con formControlName="descTareaPlan"
+      nomTareaPlan: ['', [Validators.required, Validators.maxLength(150)]], 
+      descTareaPlan: ['', Validators.maxLength(500)]  
     });
   }
 
@@ -151,7 +151,7 @@ export class PlanificacionFormPage implements OnInit {
   }
 
   cargarVehiculos() {
-    this.apiService.getVehiculosDisponibles().subscribe( // Asegúrate que este método exista
+    this.apiService.getVehiculosDisponibles().subscribe(
       (data) => {
         this.vehiculosDisponibles = data;
       },
@@ -189,22 +189,22 @@ export class PlanificacionFormPage implements OnInit {
     if (this.planForm.invalid) {
       const firstError = this.getFirstError();
       if (firstError) {
-        // Obtener referencia a los tabs
+  
         const tabs = document.querySelector('ion-tabs');
         
-        // Primero, asegurar que estamos en el tab correcto
+        
         await tabs?.select(firstError.tab);
 
-        // Esperar a que cambie el tab y la vista se actualice
+    
         setTimeout(() => {
           const errorElement = document.getElementById(firstError.id);
           if (errorElement) {
-            // Asegurar que el elemento es visible después del cambio de tab
+         
             errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             errorElement.classList.add('shake-animation');
             setTimeout(() => errorElement.classList.remove('shake-animation'), 1000);
 
-            // Generar mensaje específico según el tipo de error
+           
             let fieldName = '';
             switch (firstError.id) {
               case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
@@ -215,7 +215,7 @@ export class PlanificacionFormPage implements OnInit {
             }
             this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
           }
-        }, 300); // Dar más tiempo para que el cambio de tab sea efectivo
+        }, 300); 
         
         return;
       }
@@ -240,7 +240,7 @@ export class PlanificacionFormPage implements OnInit {
       await confirmModal.present();
       const { data } = await confirmModal.onDidDismiss();
       if (data !== 'confirm') {
-        return; // Cancelar creación si no confirma
+        return; 
       }
     }
 
@@ -251,10 +251,11 @@ export class PlanificacionFormPage implements OnInit {
     await loading.present();
 
     // Construcción manual del objeto (estilo RouteFormPage)
-    const planData: Partial<PlanificacionMantenimientoData> = {
+      const planData: Partial<PlanificacionMantenimientoData> = {
       descPlan: this.planForm.value.descPlan,
       frecuencia: this.planForm.value.frecuencia,
       tipoFrecuencia: this.planForm.value.tipoFrecuencia,
+      fechaActivacion: this.planForm.value.fechaActivacion, 
       esPreventivo: this.planForm.value.esPreventivo,
       esActivoPlan: this.planForm.value.esActivoPlan,
       vehiculosIds: this.planForm.value.vehiculosIds,
@@ -276,7 +277,7 @@ export class PlanificacionFormPage implements OnInit {
         
         this.mostrarToast(message, 'success');
         
-        // Close modal if we're in modal mode, otherwise navigate
+    
         if (this.modalCtrl) {
           await this.closeModal({ 
             planificacionCreated: !isEditMode, 
@@ -308,7 +309,7 @@ export class PlanificacionFormPage implements OnInit {
   }
 
   getFirstError(): { id: string, tab: string } | null {
-    // Verificar campos del tab de información general
+   
     if (this.f['descPlan'].invalid) return { id: 'descPlan', tab: 'infoGeneral' };
     if (this.f['tipoFrecuencia'].invalid) return { id: 'tipoFrecuencia', tab: 'infoGeneral' };
     if (this.f['frecuencia'].invalid) return { id: 'frecuencia', tab: 'infoGeneral' };
@@ -353,22 +354,23 @@ export class PlanificacionFormPage implements OnInit {
       next: async (data) => {
         await loading.dismiss();
         
-        // Mapeo directo de datos (estilo RouteFormPage)
+    
         this.planForm.patchValue({
           descPlan: data.descPlan,
           frecuencia: data.frecuencia,
+          fechaActivacion: data.fechaActivacion,
           tipoFrecuencia: data.tipoFrecuencia,
           esActivoPlan: data.esActivoPlan,
           esPreventivo: data.esPreventivo
         });
 
-        // Asignar datos a propiedades del componente (estilo RouteFormPage)
+       
         this.loadedTareas = data.tareas || [];
         this.loadedVehiculosIds = data.vehiculosEnPlan?.map(v => v.idVehi) || [];
 
-        // Cargar tareas en el FormArray
+    
         this.cargarTareasEnFormulario();
-        // Asignar vehículos al control
+
         this.planForm.patchValue({ vehiculosIds: this.loadedVehiculosIds });
 
         console.log('Planificación cargada:', data);
@@ -382,16 +384,15 @@ export class PlanificacionFormPage implements OnInit {
   }
 
   private cargarTareasEnFormulario() {
-    // Limpiar FormArray
+
     this.tareas.clear();
     
-    // Agregar tareas cargadas
+
     if (this.loadedTareas.length > 0) {
       this.loadedTareas.forEach(() => {
         this.agregarTarea();
       });
-      
-      // Llenar los valores de las tareas
+
       this.loadedTareas.forEach((tarea, index) => {
         const tareaControl = this.tareas.at(index);
         tareaControl.patchValue({
@@ -400,7 +401,7 @@ export class PlanificacionFormPage implements OnInit {
         });
       });
     } else {
-      // Si no hay tareas, agregar una por defecto
+    
       this.agregarTarea();
     }
   }
@@ -412,7 +413,7 @@ export class PlanificacionFormPage implements OnInit {
     }
   }
 
-  // Añadir este método
+
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
     const tabs = document.querySelector('ion-tabs');

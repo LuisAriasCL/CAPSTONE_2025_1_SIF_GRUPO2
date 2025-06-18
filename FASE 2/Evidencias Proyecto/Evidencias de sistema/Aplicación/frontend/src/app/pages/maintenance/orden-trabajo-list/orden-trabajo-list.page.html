@@ -39,11 +39,11 @@
             <ion-label class="info-col">
               <p>
                 <ion-icon name="calendar-outline" class="align-middle"></ion-icon>
-                <strong>Inicio:</strong> {{ ot.fec_ini_ot ? (ot.fec_ini_ot | date:'dd/MM/yy HH:mm') : 'No especificado' }}
+                <strong>Inicio:</strong> {{ ot.fec_ini_ot ? (ot.fec_ini_ot | date:'dd/MM/yy') : 'No especificado' }}
               </p>
               <p *ngIf="ot.fec_fin_ot && isValidDate(ot.fec_fin_ot)">
                 <ion-icon name="checkmark-done-outline" class="align-middle"></ion-icon>
-                <strong>Cierre:</strong> {{ ot.fec_fin_ot | date:'dd/MM/yy HH:mm' }}
+                <strong>Cierre:</strong> {{ ot.fec_fin_ot | date:'dd/MM/yy' }}
               </p>
             </ion-label>
           </ion-col>

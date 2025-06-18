@@ -28,6 +28,13 @@ module.exports = (sequelize, SequelizeDataTypes) => {
         field: 'tipo_frecuencia',
         comment: 'Tipo de frecuencia (km, dias, semanas, meses)'
     },
+    
+    fechaActivacion: {
+        type: DataTypes.DATEONLY, 
+        allowNull: true,          
+        field: 'fecha_activacion',
+        comment: 'Fecha de inicio para la activación del plan de mantenimiento'
+    },
     esActivoPlan: { 
         type: DataTypes.BOOLEAN, 
         allowNull: false, 
@@ -43,13 +50,10 @@ module.exports = (sequelize, SequelizeDataTypes) => {
     }
     
   }, {
-    tableName: 'PLANIFICACION_MANTENIMIENTO',
+    tableName: 'planificacion_mantenimiento', 
     timestamps: false, 
-                      
     comment: 'Tabla para almacenar las planificaciones de mantenimiento de vehículos'
   });
-
-
 
   return PlanificacionMantenimiento;
 };

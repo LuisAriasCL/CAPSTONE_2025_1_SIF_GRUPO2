@@ -49,6 +49,7 @@ export interface PlanificacionMantenimientoData {
   frecuencia: number;
   tipoFrecuencia: 'km' | 'dias' | 'semanas' | 'meses';
   esActivoPlan: boolean;
+  fechaActivacion?: string | null;
   esPreventivo: boolean;
   tareas: TareaPlanificacionData[];
   vehiculosIds: number[];
@@ -64,6 +65,7 @@ export interface PlanificacionMantenimientoResumen {
   descPlan: string;
   frecuencia: number;
   tipoFrecuencia: string;
+   fechaActivacion?: string | null;
   esActivoPlan: boolean;
   esPreventivo: boolean;
   fecCrePlan?: string;
