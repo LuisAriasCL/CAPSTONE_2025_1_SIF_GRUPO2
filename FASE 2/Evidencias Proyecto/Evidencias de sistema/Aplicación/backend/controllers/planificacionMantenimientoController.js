@@ -1,10 +1,9 @@
 // backend/controllers/planificacionMantenimientoController.js
-const { PlanificacionMantenimiento, TareaPlanificacion, Vehiculo, VehiculoPlanificacion, sequelize } = require('../models'); // Asegúrate que la ruta a tus modelos sea correcta
+const { PlanificacionMantenimiento, TareaPlanificacion, Vehiculo, VehiculoPlanificacion, sequelize } = require('../models');
 
 // Crear una nueva Planificación de Mantenimiento
 exports.crearPlanificacion = async (req, res) => {
     const transaction = await sequelize.transaction();
-
     console.log('CUERPO DE LA SOLICITUD RECIBIDO:', req.body);
 
     try {
@@ -12,14 +11,15 @@ exports.crearPlanificacion = async (req, res) => {
             descPlan,
             frecuencia,
             tipoFrecuencia,
+            fechaActivacion, 
             esActivoPlan,
             esPreventivo,
             tareas,
             vehiculosIds
         } = req.body;
 
+       
         if (!descPlan || !tareas || !Array.isArray(tareas) || tareas.length === 0) {
-         
             return res.status(400).json({ msg: 'La descripción y al menos una tarea son obligatorias.' });
         }
         if (typeof esPreventivo === 'undefined' || esPreventivo === null) {
@@ -31,24 +31,22 @@ exports.crearPlanificacion = async (req, res) => {
         if (!vehiculosIds || !Array.isArray(vehiculosIds) || vehiculosIds.length === 0) {
             return res.status(400).json({ msg: 'Se debe asignar al menos un vehículo.' });
         }
-      
+        
         const datosParaPlanificacion = {
             descPlan,
             frecuencia,
             tipoFrecuencia,
+            fechaActivacion, 
             esActivoPlan,
             esPreventivo  
         };
 
         console.log('Valores a crear en PlanificacionMantenimiento:', datosParaPlanificacion);
 
-     
         const nuevaPlanificacion = await PlanificacionMantenimiento.create(datosParaPlanificacion, { transaction });
-
         
         const tareasCreadasPromises = tareas.map(tarea => {
             if (!tarea.nomTareaPlan) {
-               
                 throw new Error('El nombre de la tarea (nomTareaPlan) es obligatorio para todas las tareas.');
             }
             return TareaPlanificacion.create({
@@ -59,19 +57,14 @@ exports.crearPlanificacion = async (req, res) => {
         });
         await Promise.all(tareasCreadasPromises); 
 
-        
         if (vehiculosIds && vehiculosIds.length > 0) {
-            
             await nuevaPlanificacion.addVehiculosEnPlan(vehiculosIds, {
                 transaction,
-                
             });
         }
 
-
         await transaction.commit();
 
-       
         const planificacionCompleta = await PlanificacionMantenimiento.findByPk(nuevaPlanificacion.idPlan, {
             include: [
                 { model: TareaPlanificacion, as: 'tareas' }, 
@@ -82,26 +75,13 @@ exports.crearPlanificacion = async (req, res) => {
         res.status(201).json({ msg: 'Planificación creada exitosamente', planificacion: planificacionCompleta });
 
     } catch (error) {
-     
         if (transaction && transaction.finished !== 'commit' && transaction.finished !== 'rollback') {
-            try {
-                await transaction.rollback();
-            } catch (rollbackError) {
-                console.error('Error al intentar hacer rollback de la transacción:', rollbackError);
-            }
+            await transaction.rollback();
         }
-
-        if (error.name === 'SequelizeValidationError') {
-            const errores = error.errors.map(err => ({ campo: err.path, mensaje: err.message }));
-            console.error('Error de validación al crear planificación:', errores);
-            return res.status(400).json({ msg: 'Error de validación.', errores: errores });
-        }
-        console.error('Error al crear planificación:', error); 
-        const errorMessage = error.parent && error.parent.sqlMessage ? error.parent.sqlMessage : error.message;
-        res.status(500).json({ msg: 'Error interno del servidor al crear la planificación.', error: errorMessage });
+        console.error('Error al crear planificación:', error);
+        res.status(500).json({ msg: 'Error interno del servidor al crear la planificación.', error: error.message });
     }
 };
-
 
 exports.listarPlanificaciones = async (req, res) => {
     try {
@@ -168,33 +148,33 @@ exports.actualizarPlanificacion = async (req, res) => {
             descPlan,
             frecuencia,
             tipoFrecuencia,
+            fechaActivacion, 
             esActivoPlan,
             esPreventivo,
             tareas,
             vehiculosIds
         } = req.body;
 
-     
         const planificacion = await PlanificacionMantenimiento.findByPk(id);
         if (!planificacion) {
+            await transaction.rollback();
             return res.status(404).json({ msg: 'Planificación no encontrada.' });
         }
 
-      
         if (!descPlan || !tareas || !Array.isArray(tareas) || tareas.length === 0) {
+            await transaction.rollback();
             return res.status(400).json({ msg: 'La descripción y al menos una tarea son obligatorias.' });
         }
 
-       
         await planificacion.update({
             descPlan,
             frecuencia,
             tipoFrecuencia,
+            fechaActivacion, 
             esActivoPlan,
             esPreventivo
         }, { transaction });
 
-        
         await TareaPlanificacion.destroy({
             where: { planificacionMantenimientoIdPlan: id },
             transaction
@@ -213,7 +193,6 @@ exports.actualizarPlanificacion = async (req, res) => {
 
         await transaction.commit();
 
-        
         const planificacionActualizada = await PlanificacionMantenimiento.findByPk(id, {
             include: [
                 { model: TareaPlanificacion, as: 'tareas' },
@@ -228,13 +207,8 @@ exports.actualizarPlanificacion = async (req, res) => {
 
     } catch (error) {
         if (transaction && transaction.finished !== 'commit' && transaction.finished !== 'rollback') {
-            try {
-                await transaction.rollback();
-            } catch (rollbackError) {
-                console.error('Error al intentar hacer rollback:', rollbackError);
-            }
+            await transaction.rollback();
         }
-        
         console.error('Error al actualizar planificación:', error);
         res.status(500).json({ msg: 'Error interno del servidor al actualizar la planificación.', error: error.message });
     }

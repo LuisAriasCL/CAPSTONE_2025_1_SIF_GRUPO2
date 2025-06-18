@@ -36,10 +36,15 @@ exports.generarOtDesdePlan = async (req, res) => {
             await t.rollback();
             return res.status(404).json({ error: 'La asociación entre el vehículo y el plan no existe.' });
         }
-
+ let fechaParaOt = null;
+        if (planificacion.fechaActivacion) {
+            
+            fechaParaOt = `${planificacion.fechaActivacion}T00:00:00`;
+        }
         const nuevaOt = await OrdenTrabajo.create({
             km_ot: vehiculo.kmVehi,
             descripcion_ot: `OT generada desde el plan: "${planificacion.descPlan}"`,
+             fec_ini_ot: fechaParaOt,
             vehiculoIdVehi: id_vehi,
             usuarioIdUsuSolicitante: id_usuario_solicitante,
             vehiculoPlanificacionVehiculoIdVehi: id_vehi,
