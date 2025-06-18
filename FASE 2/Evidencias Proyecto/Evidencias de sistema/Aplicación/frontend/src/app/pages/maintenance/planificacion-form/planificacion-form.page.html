@@ -83,14 +83,13 @@
             <ion-col size="12">
               <div class="input-wrapper">
                 <ion-label position="floating">Fecha de Activación</ion-label>
-                <ion-datetime 
+                <ion-input id="fechaActivacion" 
     formControlName="fechaActivacion" 
-    presentation="date"
-
+    type="date"
     done-text="Aceptar" 
     cancel-text="Cancelar" 
     [readonly]="isViewMode">
-</ion-datetime>
+</ion-input>
               </div>
             </ion-col>
           </ion-row>
