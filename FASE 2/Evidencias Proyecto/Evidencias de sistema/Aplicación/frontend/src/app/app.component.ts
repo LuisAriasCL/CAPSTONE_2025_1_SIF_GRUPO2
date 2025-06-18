@@ -1,9 +1,10 @@
 // src/app/app.component.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from './services/auth.service';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, combineLatest, startWith } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common'; // Necesario para directivas como *ngIf si es standalone
+import { Router, NavigationEnd } from '@angular/router';
 
 // Módulos de Ionic necesarios para el template de app.component.html
 import {
@@ -34,16 +35,40 @@ import { SidebarComponent } from './componentes/sidebar/sidebar.component'; // I
 })
 export class AppComponent implements OnInit {
   private authService = inject(AuthService);
+  private router = inject(Router);
  
   shouldShowSidebar$: Observable<boolean> | undefined;
+  shouldShowHeader$: Observable<boolean> | undefined;
+  currentUrl$: Observable<string> | undefined;
 
   constructor() {}
 
-  ngOnInit() {
-  
-    this.shouldShowSidebar$ = this.authService.currentUser$.pipe(
-      map(user => {
-        return !user || (user.rol !== 'tecnico' && user.rol !== 'conductor');
+  ngOnInit() {    // Observable para detectar cambios de ruta
+    this.currentUrl$ = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      map(event => (event as NavigationEnd).url),
+      startWith(this.router.url) // Incluir la URL inicial
+    );
+
+    // Observable para mostrar/ocultar sidebar
+    this.shouldShowSidebar$ = combineLatest([
+      this.authService.currentUser$,
+      this.currentUrl$
+    ]).pipe(
+      map(([user, url]) => {
+        // Ocultar sidebar si no hay usuario autenticado, si es técnico/conductor, o si está en login/register
+        const isAuthPage = url === '/login' || url === '/register';
+        const shouldHideForRole = user && (user.rol === 'tecnico' || user.rol === 'conductor');
+        
+        return !isAuthPage && !!user && !shouldHideForRole;
+      })
+    );
+
+    // Observable para mostrar/ocultar header
+    this.shouldShowHeader$ = this.currentUrl$.pipe(
+      map(url => {
+        // Ocultar header solo en páginas de login y register
+        return url !== '/login' && url !== '/register';
       })
     );
   }
