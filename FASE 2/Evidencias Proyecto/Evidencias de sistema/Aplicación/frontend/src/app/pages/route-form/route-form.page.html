@@ -38,7 +38,7 @@ crossorigin=""></script>
     </ion-item-divider>
     <p class="ion-padding-start ion-padding-end"><small>Haz clic en el mapa para marcar el Origen y luego el Destino. La ruta se calculará automáticamente.</small></p>
     <div id="routeFormMapContainer" class="map-container">
-      <div id="routeFormMap" #routeMap (click)="expandMap()" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+      <div id="routeFormMap" #routeMap style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
     </div>    <!-- Indicadores de estado del cálculo -->
     <ion-loading [isOpen]="isCalculatingRoute" message="Calculando ruta automáticamente..."></ion-loading>
     <ion-text color="danger" *ngIf="routeCalculationError" class="ion-padding">
