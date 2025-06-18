@@ -68,6 +68,7 @@ export interface PlanificacionMantenimientoResumen {
   esPreventivo: boolean;
   fecCrePlan?: string;
   fecActPlan?: string;
+  createdAt?: string;
   tareas?: TareaPlanificacionResumen[];
   vehiculosEnPlan?: VehiculoAsignacionInfo[];
 }

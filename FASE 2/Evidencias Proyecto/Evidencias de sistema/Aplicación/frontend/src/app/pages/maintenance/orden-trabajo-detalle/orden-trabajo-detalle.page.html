@@ -3,7 +3,7 @@
     <ion-title>{{ ordenTrabajo ? 'OT #' + ordenTrabajo.id_ot : 'Orden de Trabajo' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()" fill="clear" color="light">
-        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        <ion-icon name="close" color="light"></ion-icon>
       </ion-button>
     </ion-buttons>
     
@@ -26,7 +26,7 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Detalles Generales</ion-card-title>
-        <ion-badge [color]="getColorForStatus(ordenTrabajo.estado_ot)" class="ion-margin-top">{{ ordenTrabajo.estado_ot | titlecase }}</ion-badge>
+        <ion-badge [color]="getColorForStatus(ordenTrabajo.estado_ot)" class="ion-margin-top">{{ getStatusDisplayName(ordenTrabajo.estado_ot) }}</ion-badge>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="none">
@@ -129,7 +129,7 @@
   </ion-button>
 
   <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
-    <ion-button (click)="guardarProgresoTareas()" expand="block" color="secondary">
+    <ion-button (click)="guardarProgresoTareas()" expand="block" style="--background: var(--ion-color-primary); --background-hover: #0056b3;" class="ion-margin-top">
       <ion-icon name="save-outline" slot="start"></ion-icon>
       Guardar Progreso
     </ion-button>

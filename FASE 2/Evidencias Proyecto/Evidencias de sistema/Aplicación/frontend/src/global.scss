@@ -62,18 +62,45 @@ ion-select,
 ion-searchbar,
 ion-textarea,
 ion-datetime {
-  --background: var(--form-background);
-  --color: var(--form-text-color);
-  --border-radius: var(--form-element-border-radius);
-  --padding-start: var(--form-padding-horizontal);
-  --padding-end: var(--form-padding-horizontal);
-  --padding-top: var(--form-padding-vertical);
-  --padding-bottom: var(--form-padding-vertical);
-  border: 1px solid var(--form-border-color);
-  min-height: var(--form-input-min-height);
-  max-height: var(--form-input-max-height);
-  margin-bottom: var(--form-margin-bottom);
-  font-size: var(--form-font-size);
+  --border-color: var(--form-border-color, #ccc);
+  --border-style: solid;
+  --border-width: 1px;
+  --min-height: var(--form-input-min-height, 48px);
+  --max-height: var(--form-input-max-height, auto);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 1px solid var(--form-border-color, #ccc);
+  border-radius: 8px;
+  margin-bottom: var(--form-margin-bottom, 16px);
+  font-size: var(--form-font-size, 16px);
+  background: var(--ion-color-light, #fff);
+}
+
+/* Estilos específicos para ion-select para igualar altura */
+ion-select {
+  min-height: 48px !important;
+  height: 48px !important;
+  max-height: 48px !important;
+  
+  &::part(container) {
+    min-height: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+  }
+  
+  &::part(text) {
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+  }
+  
+  &::part(icon) {
+    height: 20px;
+    width: 20px;
+  }
 }
 
 /* Estilos para textareas */
@@ -91,16 +118,18 @@ ion-label {
 
 /* Estilos para placeholders */
 ion-input::placeholder,
-ion-textarea::placeholder {
-  color: var(--form-placeholder-color);
-  font-style: var(--form-placeholder-font-style);
+ion-textarea::placeholder,
+ion-select::placeholder,
+ion-datetime::placeholder {
+  --color: var(--form-placeholder-color);
+  --font-style: var(--form-placeholder-font-style);
 }
 
 /* Estilos para elementos deshabilitados */
 ion-input[disabled],
 ion-select[disabled],
 ion-textarea[disabled],
-ion-datetime[disabled] {
+ion-datetime[disabled]{
   --background: var(--form-disabled-background);
   --color: var(--form-disabled-text-color);
   opacity: 0.8;
@@ -200,25 +229,10 @@ ion-router-outlet {
 /* -------------------------------------------------------------------------- */
 /* Estilos para el modal de vehículos - Pantalla completa */
 /* -------------------------------------------------------------------------- */
-.vehicle-form-modal {
-  --width: 98% !important;
-  --height: 98% !important;
-  --max-width: 1400px !important;
-  --max-height: 900px !important;
-  --border-radius: 12px !important;
-  --backdrop-opacity: 0.8 !important;
-}
 
-.vehicle-form-modal .modal-wrapper {
-  border-radius: var(--border-radius) !important;
-}
 
 /* Para pantallas pequeñas, ocupar completamente la pantalla */
 @media (max-width: 768px) {
-  .vehicle-form-modal {
-    --width: 100% !important;
-    --height: 100% !important;
-    --border-radius: 0 !important;
-  }
+
 }
 

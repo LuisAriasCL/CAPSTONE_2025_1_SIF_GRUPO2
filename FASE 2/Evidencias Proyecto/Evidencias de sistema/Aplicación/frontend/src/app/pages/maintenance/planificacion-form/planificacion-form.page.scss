@@ -6,16 +6,16 @@ ion-content.ultra-compact {
   --padding: 16px;
 }
 
-/* Estilos para las pestañas */
-.custom-tabs {
+/* Estilos para los segmentos (tabs) */
+ion-segment {
   --background: var(--ion-color-light);
   margin-bottom: 20px;
   
-  ion-tab-button {
+  ion-segment-button {
     --color: var(--ion-color-medium);
-    --color-selected: var(--ion-color-primary);
+    --color-checked: var(--ion-color-primary);
     
-    &.tab-selected {
+    &.segment-button-checked {
       font-weight: bold;
     }
   }
@@ -84,6 +84,84 @@ ion-button[type="submit"] {
   gap: 16px;
   align-items: center;
   margin-bottom: var(--form-margin-bottom);
+}
+
+/* Estilos específicos para uniformizar elementos de formulario */
+ion-input,
+ion-select,
+ion-datetime {
+  min-height: 48px !important;
+  height: 48px !important;
+  --min-height: 48px;
+  --height: 48px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border: 1px solid var(--form-border-color, #ccc);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  
+  &::part(native) {
+    min-height: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Ajustes específicos para ion-select */
+ion-select {
+  &::part(container) {
+    min-height: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+  }
+  
+  &::part(text) {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    line-height: 20px;
+  }
+  
+  &::part(icon) {
+    height: 20px;
+    width: 20px;
+  }
+}
+
+/* Ajustes para labels flotantes */
+ion-label[position="floating"] {
+  transform-origin: left top;
+  transition: all 0.2s ease;
+}
+
+/* Contenedor específico para inputs con altura uniforme */
+.uniform-input-wrapper {
+  margin-bottom: 16px;
+  
+  ion-input,
+  ion-select {
+    min-height: 48px;
+    height: 48px;
+    
+    /* Forzar altura consistente */
+    &::part(native),
+    &::part(container) {
+      min-height: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+/* Asegurar que los labels tengan el mismo espaciado */
+.input-wrapper ion-label {
+  margin-bottom: 8px;
+  display: block;
+  font-weight: 500;
+  color: var(--ion-color-dark);
 }
 
 /* Media queries para responsive */

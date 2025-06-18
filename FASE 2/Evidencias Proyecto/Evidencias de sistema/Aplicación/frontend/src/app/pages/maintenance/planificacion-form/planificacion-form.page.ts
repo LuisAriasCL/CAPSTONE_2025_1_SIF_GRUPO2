@@ -16,13 +16,11 @@ import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-person
   selector: 'app-planificacion-form',
   templateUrl: './planificacion-form.page.html',
   styleUrls: ['./planificacion-form.page.scss'],
-  standalone: true,
-  imports: [
+  standalone: true,  imports: [
     CommonModule,
     ReactiveFormsModule,
     IonicModule,
-    FormsModule,
-    AlertaPersonalizadaComponent
+    FormsModule
   ]
 })
 export class PlanificacionFormPage implements OnInit {
@@ -184,39 +182,25 @@ export class PlanificacionFormPage implements OnInit {
     }
 
     this.isSubmitted = true;
-    this.planForm.markAllAsTouched();
-
-    if (this.planForm.invalid) {
+    this.planForm.markAllAsTouched();    if (this.planForm.invalid) {
       const firstError = this.getFirstError();
       if (firstError) {
-        // Obtener referencia a los tabs
-        const tabs = document.querySelector('ion-tabs');
-        
-        // Primero, asegurar que estamos en el tab correcto
-        await tabs?.select(firstError.tab);
-
-        // Esperar a que cambie el tab y la vista se actualice
-        setTimeout(() => {
-          const errorElement = document.getElementById(firstError.id);
-          if (errorElement) {
-            // Asegurar que el elemento es visible después del cambio de tab
-            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            errorElement.classList.add('shake-animation');
-            setTimeout(() => errorElement.classList.remove('shake-animation'), 1000);
-
-            // Generar mensaje específico según el tipo de error
-            let fieldName = '';
-            switch (firstError.id) {
-              case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
-              case 'tipoFrecuencia': fieldName = 'tipo de frecuencia'; break;
-              case 'frecuencia': fieldName = 'frecuencia'; break;
-              case 'vehiculosIds': fieldName = 'vehículos asignados'; break;
-              default: fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
-            }
-            this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
+        try {
+          // Cambiar al tab correcto si es necesario
+          if (this.selectedTab !== firstError.tab) {
+            this.selectedTab = firstError.tab;
+            // Usar setTimeout para permitir que Angular actualice la vista
+            setTimeout(() => {
+              this.focusOnError(firstError);
+            }, 300);
+          } else {
+            this.focusOnError(firstError);
           }
-        }, 300); // Dar más tiempo para que el cambio de tab sea efectivo
-        
+        } catch (error) {
+          console.error('Error al cambiar de tab:', error);
+          // Si falla el cambio de tab, al menos mostrar el mensaje de error
+          this.mostrarToast('Por favor, revise todos los campos del formulario.', 'warning');
+        }
         return;
       }
     }
@@ -305,6 +289,27 @@ export class PlanificacionFormPage implements OnInit {
         this.mostrarToast(error.message || errorMessage, 'danger', 5000);
       }
     });
+  }
+
+  private focusOnError(firstError: { id: string, tab: string }) {
+    const errorElement = document.getElementById(firstError.id);
+    if (errorElement) {
+      // Asegurar que el elemento es visible después del cambio de tab
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorElement.classList.add('shake-animation');
+      setTimeout(() => errorElement.classList.remove('shake-animation'), 1000);
+
+      // Generar mensaje específico según el tipo de error
+      let fieldName = '';
+      switch (firstError.id) {
+        case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
+        case 'tipoFrecuencia': fieldName = 'tipo de frecuencia'; break;
+        case 'frecuencia': fieldName = 'frecuencia'; break;
+        case 'vehiculosIds': fieldName = 'vehículos asignados'; break;
+        default: fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
+      }
+      this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
+    }
   }
 
   getFirstError(): { id: string, tab: string } | null {
@@ -411,11 +416,8 @@ export class PlanificacionFormPage implements OnInit {
       this.planForm.get('frecuencia')?.reset();
     }
   }
-
-  // Añadir este método
+  // Método para cambiar entre segmentos
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
-    const tabs = document.querySelector('ion-tabs');
-    tabs?.select(event.detail.value);
   }
 }

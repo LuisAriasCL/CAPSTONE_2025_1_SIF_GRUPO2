@@ -45,9 +45,8 @@
     <!-- Tab: Información Básica -->
     <div *ngIf="selectedTab === 'infoBasica'">
       <ion-grid class="ultra-compact">        <!-- Patente y Chasis -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Patente <ion-text color="danger">*</ion-text></ion-label>
+        <ion-row>          <ion-col size="12" size-md="6">            <div class="uniform-input-wrapper">
+              <ion-label>Patente <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="patente" 
                 type="text" 
@@ -55,18 +54,15 @@
                 placeholder="XXXX-XX (Ej: ABCD-12)"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched)" class="error-container">
+            </div>            <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['patente'].errors?.['required']">Patente es requerida.</small>
-                <small *ngIf="f['patente'].errors?.['pattern']">Formato debe ser XXXX-XX, con los últimos dos caracteres numéricos.</small>
+                <div *ngIf="f['patente'].errors?.['required']">Patente es requerida.</div>
+                <div *ngIf="f['patente'].errors?.['pattern']">Formato debe ser XXXX-XX, con los últimos dos caracteres numéricos.</div>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Chasis <ion-text color="danger">*</ion-text></ion-label>
+          </ion-col>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Chasis <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="chasis" 
                 type="text" 
@@ -75,48 +71,42 @@
                 autocapitalize="characters"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched)" class="error-container">
+            </div>            <div *ngIf="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['chasis'].errors?.['required']">Chasis es requerido.</small>
-                <small *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']">Chasis debe tener 17 caracteres.</small>
+                <div *ngIf="f['chasis'].errors?.['required']">Chasis es requerido.</div>
+                <div *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']">Chasis debe tener 17 caracteres.</div>
               </div>
             </div>
           </ion-col>
         </ion-row>
 
         <!-- Marca y Modelo -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Marca <ion-text color="danger">*</ion-text></ion-label>
+        <ion-row>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Marca <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="marca" 
                 type="text" 
                 required
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched)" class="error-container">
+            </div>            <div *ngIf="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['marca'].errors?.['required']">Marca es requerida.</small>
+                <div *ngIf="f['marca'].errors?.['required']">Marca es requerida.</div>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Modelo <ion-text color="danger">*</ion-text></ion-label>
+          </ion-col>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Modelo <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="modelo" 
                 type="text" 
                 required
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched)" class="error-container">
+            </div>            <div *ngIf="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['modelo'].errors?.['required']">Modelo es requerido.</small>
+                <div *ngIf="f['modelo'].errors?.['required']">Modelo es requerido.</div>
               </div>
             </div>
           </ion-col>
@@ -124,8 +114,8 @@
 
         <!-- Año y Kilometraje -->
         <ion-row>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Año <ion-text color="danger">*</ion-text></ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Año <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="anio" 
                 type="number" 
@@ -136,16 +126,15 @@
                 placeholder="Entre 1970 y 2025"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched)" class="error-container">
+            </div>            <div *ngIf="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['anio'].errors?.['required']">Año es requerido.</small>
-                <small *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']">Año debe estar entre 1970 y 2025.</small>
+                <div *ngIf="f['anio'].errors?.['required']">Año es requerido.</div>
+                <div *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']">Año debe estar entre 1970 y 2025.</div>
               </div>
             </div>
           </ion-col>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Kilometraje <ion-text color="danger">*</ion-text></ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Kilometraje <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="kmVehi" 
                 type="number" 
@@ -156,12 +145,11 @@
                 placeholder="Máximo 1.000.000 km"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched)" class="error-container">
+            </div>            <div *ngIf="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['kmVehi'].errors?.['required']">Kilometraje es requerido.</small>
-                <small *ngIf="f['kmVehi'].errors?.['min']">Kilometraje debe ser positivo.</small>
-                <small *ngIf="f['kmVehi'].errors?.['max']">Kilometraje no puede superar 1.000.000 km.</small>
+                <div *ngIf="f['kmVehi'].errors?.['required']">Kilometraje es requerido.</div>
+                <div *ngIf="f['kmVehi'].errors?.['min']">Kilometraje debe ser positivo.</div>
+                <div *ngIf="f['kmVehi'].errors?.['max']">Kilometraje no puede superar 1.000.000 km.</div>
               </div>
             </div>
           </ion-col>
@@ -169,8 +157,8 @@
 
         <!-- Fecha de Adquisición y Estado -->
         <ion-row>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Fecha de Adquisición <ion-text color="danger">*</ion-text></ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Fecha de Adquisición <ion-text color="danger">*</ion-text></ion-label>
               <ion-input 
                 formControlName="fecAdqui" 
                 type="date" 
@@ -180,18 +168,15 @@
                 placeholder="Fecha de adquisición"
                 [readonly]="isViewMode">
               </ion-input>
-              <small class="helper-text">Por defecto se usa la fecha actual</small>
-            </div>
-            <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched)" class="error-container">
+              <div class="helper-text">Por defecto se usa la fecha actual</div>
+            </div>            <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['fecAdqui'].errors?.['required']">Fecha de adquisición es requerida.</small>
+                <div *ngIf="f['fecAdqui'].errors?.['required']">Fecha de adquisición es requerida.</div>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Estado <ion-text color="danger">*</ion-text></ion-label>
+          </ion-col>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Estado <ion-text color="danger">*</ion-text></ion-label>
               <ion-select 
                 formControlName="estadoVehi" 
                 interface="popover" 
@@ -201,10 +186,9 @@
                   {{ estado | titlecase }}
                 </ion-select-option>
               </ion-select>
-            </div>
-            <div *ngIf="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched)" class="error-container">
+            </div>            <div *ngIf="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['estadoVehi'].errors?.['required']">Estado es requerido.</small>
+                <div *ngIf="f['estadoVehi'].errors?.['required']">Estado es requerido.</div>
               </div>
             </div>
           </ion-col>
@@ -216,8 +200,8 @@
     <div *ngIf="selectedTab === 'infoAdicional'">
       <ion-grid class="ultra-compact">        <!-- Tipo de Vehículo y Tipo de Combustible -->
         <ion-row>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Tipo de Vehículo</ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Tipo de Vehículo</ion-label>
               <ion-select 
                 formControlName="tipoVehi" 
                 interface="popover" 
@@ -230,8 +214,8 @@
               </ion-select>
             </div>
           </ion-col>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Tipo de Combustible</ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Tipo de Combustible</ion-label>
               <ion-select 
                 formControlName="tipoCombVehi" 
                 interface="popover" 
@@ -250,8 +234,8 @@
 
         <!-- Kilometraje Vida Útil y Eficiencia Combustible -->
         <ion-row>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Kilometraje Vida Útil</ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Kilometraje Vida Útil</ion-label>
               <ion-input 
                 formControlName="kmVidaUtil" 
                 type="number" 
@@ -261,16 +245,15 @@
                 placeholder="Entre 1.000 y 5.000.000 km"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched)" class="error-container">
+            </div>            <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['kmVidaUtil'].errors?.['min']">Kilometraje vida útil debe ser al menos 1.000 km.</small>
-                <small *ngIf="f['kmVidaUtil'].errors?.['max']">Kilometraje vida útil no puede superar 5.000.000 km.</small>
+                <div *ngIf="f['kmVidaUtil'].errors?.['min']">Kilometraje vida útil debe ser al menos 1.000 km.</div>
+                <div *ngIf="f['kmVidaUtil'].errors?.['max']">Kilometraje vida útil no puede superar 5.000.000 km.</div>
               </div>
             </div>
           </ion-col>          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Eficiencia Combustible (km/L)</ion-label>
+            <div class="uniform-input-wrapper">
+              <ion-label>Eficiencia Combustible (km/L)</ion-label>
               <ion-input 
                 formControlName="efiComb" 
                 type="number" 
@@ -281,21 +264,19 @@
                 placeholder="Entre 2 y 30 km/L"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched)" class="error-container">
+            </div>            <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['efiComb'].errors?.['min']">Eficiencia debe ser al menos 2 km/L.</small>
-                <small *ngIf="f['efiComb'].errors?.['max']">Eficiencia no puede superar 30 km/L.</small>
+                <div *ngIf="f['efiComb'].errors?.['min']">Eficiencia debe ser al menos 2 km/L.</div>
+                <div *ngIf="f['efiComb'].errors?.['max']">Eficiencia no puede superar 30 km/L.</div>
               </div>
             </div>
           </ion-col>
         </ion-row>
 
         <!-- Ubicación GPS -->
-        <ion-row>
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Latitud</ion-label>
+        <ion-row>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Latitud</ion-label>
               <ion-input 
                 formControlName="latitud" 
                 type="number" 
@@ -304,17 +285,14 @@
                 placeholder="-33.12345678"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched)" class="error-container">
+            </div>            <div *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['latitud'].errors?.['min'] || f['latitud'].errors?.['max']">Latitud debe estar entre -90 y 90.</small>
+                <div *ngIf="f['latitud'].errors?.['min'] || f['latitud'].errors?.['max']">Latitud debe estar entre -90 y 90.</div>
               </div>
             </div>
-          </ion-col>
-
-          <ion-col size="12" size-md="6">
-            <div class="input-wrapper">
-              <ion-label position="floating">Longitud</ion-label>
+          </ion-col>          <ion-col size="12" size-md="6">
+            <div class="uniform-input-wrapper">
+              <ion-label>Longitud</ion-label>
               <ion-input 
                 formControlName="longitud" 
                 type="number" 
@@ -323,10 +301,9 @@
                 placeholder="-70.12345678"
                 [readonly]="isViewMode">
               </ion-input>
-            </div>
-            <div *ngIf="f['longitud'].invalid && (f['longitud'].dirty || f['longitud'].touched)" class="error-container">
+            </div>            <div *ngIf="f['longitud'].invalid && (f['longitud'].dirty || f['longitud'].touched || isSubmitted)" class="error-container">
               <div class="error-message">
-                <small *ngIf="f['longitud'].errors?.['min'] || f['longitud'].errors?.['max']">Longitud debe estar entre -180 y 180.</small>
+                <div *ngIf="f['longitud'].errors?.['min'] || f['longitud'].errors?.['max']">Longitud debe estar entre -180 y 180.</div>
               </div>
             </div>
           </ion-col>

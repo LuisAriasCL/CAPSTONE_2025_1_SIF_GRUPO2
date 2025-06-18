@@ -1,0 +1,159 @@
+/* Importar variables de theme */
+@import "../../../theme/variables.scss";
+
+/* Estilos específicos para el formulario de vehículos */
+ion-content.ultra-compact {
+  --padding: 16px;
+}
+
+/* Estilos específicos para uniformizar elementos de formulario */
+ion-input,
+ion-select,
+ion-datetime {
+  min-height: 48px !important;
+  height: 48px !important;
+  --min-height: 48px;
+  --height: 48px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border: 1px solid var(--form-border-color, #ccc);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  
+  &::part(native) {
+    min-height: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Ajustes específicos para ion-select */
+ion-select {
+  &::part(container) {
+    min-height: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+  }
+  
+  &::part(text) {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    line-height: 20px;
+  }
+  
+  &::part(icon) {
+    height: 20px;
+    width: 20px;
+  }
+  
+  /* Forzar consistencia en la altura */
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+}
+
+/* Contenedor específico para inputs con altura uniforme */
+.uniform-input-wrapper {
+  margin-bottom: 16px;
+  
+  ion-input,
+  ion-select,
+  ion-datetime {
+    min-height: 48px;
+    height: 48px;
+    
+    /* Forzar altura consistente */
+    &::part(native),
+    &::part(container) {
+      min-height: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+    }
+  }
+  
+  /* Forzar específicamente para selects */
+  ion-select {
+    height: 48px !important;
+    --height: 48px !important;
+    min-height: 48px !important;
+    --min-height: 48px !important;
+  }
+}
+
+/* Estilos para etiquetas */
+ion-label {
+  margin-bottom: 8px;
+  display: block;
+  font-weight: 500;
+  color: var(--ion-color-dark);
+}
+
+/* Estilos para tarjetas en pestañas */
+ion-card {
+  margin: 16px 0;
+}
+
+/* Estilos para segmentos (tabs) */
+ion-segment {
+  --background: var(--ion-color-light);
+  margin-bottom: 20px;
+  
+  ion-segment-button {
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    
+    &.segment-button-checked {
+      font-weight: bold;
+    }
+  }
+}
+
+/* Ajustes para labels flotantes */
+ion-label[position="floating"] {
+  transform-origin: left top;
+  transition: all 0.2s ease;
+}
+
+/* Mensajes de error */
+.error-container {
+  min-height: 20px;
+  margin-top: -8px;
+  margin-bottom: 16px;
+  padding: 4px;
+}
+
+.error-message {
+  color: var(--ion-color-danger, #eb445a);
+  font-size: 12px;
+  font-weight: 400;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.error-message small {
+  display: block;
+  margin-bottom: 4px;
+  padding-left: 4px;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Media queries para responsive */
+@media (max-width: 576px) {
+  ion-segment {
+    overflow-x: auto;
+  }
+  
+  ion-segment-button {
+    min-width: 120px;
+  }
+  
+  ion-grid.ultra-compact {
+    padding: 0;
+  }
+}
