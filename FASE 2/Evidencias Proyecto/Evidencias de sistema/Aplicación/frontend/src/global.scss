@@ -186,7 +186,7 @@ ion-router-outlet {
 }
 
 .has-header ion-router-outlet {
-  margin-top: var(--header-height); // Ajusta este valor a la altura real de tu header
+  margin-top: 60px
 }
 
 /* Estilo específico para el modal de éxito de logout (si aún se necesita) */
