@@ -4,11 +4,13 @@ const { OrdenTrabajo, DetalleOt, PlanificacionMantenimiento, Vehiculo, VehiculoP
 
 
 exports.generarOtDesdePlan = async (req, res) => {
-    const { id_plan, id_vehi, id_usuario_solicitante } = req.body;
+     console.log('Usuario desde token:', req.usuario);
 
-    if (!id_plan || !id_vehi || !id_usuario_solicitante) {
-        return res.status(400).json({ error: 'Faltan datos requeridos: id_plan, id_vehi y id_usuario_solicitante son obligatorios.' });
-    }
+const { id_plan, id_vehi, id_usuario_solicitante } = req.body;
+
+if (!id_plan || !id_vehi || !id_usuario_solicitante) {
+    return res.status(400).json({ error: 'Faltan datos requeridos: id_plan, id_vehi y id_usuario_solicitante son obligatorios.' });
+}
 
     const t = await sequelize.transaction();
 
@@ -27,7 +29,11 @@ exports.generarOtDesdePlan = async (req, res) => {
             await t.rollback();
             return res.status(404).json({ error: 'Planificación no encontrada o no tiene tareas asociadas.' });
         }
-
+ const solicitante = await Usuario.findByPk(id_usuario_solicitante, { transaction: t });
+        if (!solicitante) {
+            await t.rollback();
+            return res.status(404).json({ error: `El usuario solicitante con ID ${id_usuario_solicitante} extraído del token no fue encontrado en la base de datos.` });
+        }
         const vehiculoPlan = await VehiculoPlanificacion.findOne({
             where: { vehiculoIdVehi: id_vehi, planificacionMantenimientoIdPlan: id_plan }
         });
