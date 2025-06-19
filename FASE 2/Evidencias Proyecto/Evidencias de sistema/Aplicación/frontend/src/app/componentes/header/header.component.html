@@ -11,7 +11,7 @@
         <ion-title class="header-title">{{ title }}</ion-title>
       </div>
       <div class="header-right" *ngIf="currentUser">
-        <app-icono-alerta [count]="notificationCount"></app-icono-alerta>
+      
         <app-dropdown-usuario 
           [userName]="currentUser.priNomUsu" 
           [userRole]="currentUser.rol">
