@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { isConductorGuard } from './guards/conductor.guard';
 import { isTecnicoGuard } from './guards/tecnico.guard';
+import { GestorGuard } from './guards/gestor.guard'; 
 export const routes: Routes = [
   // --- Rutas Públicas ---
   {
@@ -142,10 +143,31 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page').then(m => m.OrdenTrabajoDetallePage)
   },
   {
+    path: 'gestion-usuarios',
+    loadComponent: () => import('./pages/gestion-usuarios/gestion-usuarios.page').then( m => m.GestionUsuariosPage),
+    canActivate: [GestorGuard] 
+  },
+   
+   {
+    path: 'gestion-siniestros',
+    loadComponent: () => import('./pages/gestion-siniestros/gestion-siniestros.page').then( m => m.GestionSiniestrosPage),
+    canActivate: [GestorGuard] // <-- Añade el guard aquí también
+  },
+  {
+    // --- MODIFICAR ESTA RUTA ---
+    path: 'siniestro-detalle/:id', // Añadimos el parámetro :id
+    loadComponent: () => import('./pages/siniestro-detalle/siniestro-detalle.page').then( m => m.SiniestroDetallePage),
+    canActivate: [GestorGuard] // La protegemos con el mismo guard
+  },
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
   },
+  
+
+  
+  
   
 
 ];

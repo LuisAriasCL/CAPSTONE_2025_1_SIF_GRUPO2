@@ -32,7 +32,46 @@ Object.keys(db).forEach(modelName => {
 });
 
 // --- ASOCIACIONES EXISTENTES ---
+if (db.Siniestro && db.Usuario && db.Vehiculo) {
 
+    // Un siniestro es reportado por un Usuario (conductor)
+    db.Siniestro.belongsTo(db.Usuario, {
+        foreignKey: {
+            name: 'conductorId',
+            field: 'usuario_id_usu_conductor', // Nombre exacto de la columna en tu SQL
+            allowNull: false
+        },
+        as: 'conductor'
+    });
+    db.Usuario.hasMany(db.Siniestro, {
+        foreignKey: 'usuario_id_usu_conductor',
+        as: 'siniestrosComoConductor'
+    });
+
+    // Un siniestro también tiene un usuario que reporta (puede ser el mismo o no)
+    db.Siniestro.belongsTo(db.Usuario, {
+        foreignKey: {
+            name: 'reportaId',
+            field: 'usuario_id_usu_reporta', // Nombre exacto de la columna en tu SQL
+            allowNull: false
+        },
+        as: 'reporta'
+    });
+
+    // Un siniestro pertenece a un Vehiculo
+    db.Siniestro.belongsTo(db.Vehiculo, {
+        foreignKey: {
+            name: 'vehiculoId',
+            field: 'vehiculo_id_vehi', // Nombre exacto de la columna en tu SQL
+            allowNull: false
+        },
+        as: 'vehiculo'
+    });
+    db.Vehiculo.hasMany(db.Siniestro, {
+        foreignKey: 'vehiculo_id_vehi',
+        as: 'siniestros'
+    });
+}
 // Modelo: AsignacionRecorrido
 if (db.AsignacionRecorrido && db.Vehiculo) {
   db.AsignacionRecorrido.belongsTo(db.Vehiculo, {

@@ -1,6 +1,5 @@
-
-<!-- Lista de navegación principal -->
 <ion-list id="menu-list">
+  
   <ion-menu-toggle auto-hide="false" *ngFor="let page of appPages; let i = index">
     <ion-item
       button
@@ -19,4 +18,29 @@
       <ion-label>{{ page.title }}</ion-label>
     </ion-item>
   </ion-menu-toggle>
+
+  <ng-container *ngIf="esRol('gestor') || esRol('admin')">
+    <ion-item-divider>
+        <ion-label>Menu Gestor</ion-label>
+    </ion-item-divider>
+
+    <ion-menu-toggle auto-hide="false" *ngFor="let page of adminPages; let i = index">
+        <ion-item
+          button
+          [routerLink]="page.url"
+          routerDirection="root"
+          routerLinkActive="selected"
+          lines="none"
+          detail="false"
+        >
+          <ion-icon
+            aria-hidden="true"
+            slot="start"
+            [name]="page.icon + '-outline'"
+          ></ion-icon>
+          <ion-label>{{ page.title }}</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+  </ng-container>
+
 </ion-list>

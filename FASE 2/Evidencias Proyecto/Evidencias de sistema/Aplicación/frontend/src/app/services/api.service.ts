@@ -5,16 +5,49 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import * as L from 'leaflet';
 
-// ... (todas las interfaces permanecen igual) ...
-// --- INTERFACES ---
+
 
 // Interfaz para la respuesta de OSRM (como la definimos antes)
 export interface OsrmRouteData {
   points: L.LatLngTuple[];
-  distance: number; // Distancia en metros
-  duration: number; // Duración en segundos
+  distance: number; 
+  duration: number; 
 }
-
+export interface UsuarioSiniestro {
+  id_usu: number;
+  pri_nom_usu: string;
+  pri_ape_usu: string;
+}
+export interface VehiculoSiniestro {
+  id_vehi: number;
+  patente: string;
+  marca: string;
+  modelo: string;
+}
+export interface Siniestro {
+  id: number;
+  fecha: string;
+  descripcion: string | null;
+  tipo: string;
+  estado: string;
+  archivoUrl?: string;
+  costoEstimado?: number;
+  conductor?: UsuarioSiniestro;
+  vehiculo?: VehiculoSiniestro;
+}
+export interface Usuario {
+  id_usu: number;
+  pri_nom_usu: string;
+  seg_nom_usu?: string;
+  pri_ape_usu: string;
+  seg_ape_usu?: string;
+  email: string;
+  rol: 'admin' | 'conductor' | 'gestor' | 'mantenimiento' | 'tecnico';
+  rut_usu?: string;
+  celular?: string;
+  estado_usu?: 'activo' | 'inactivo' | 'licencia';
+  fec_cre_usu: string;
+}
 // Interfaz para RUTA (plantilla)
 export interface Route {
   idRuta: number;
@@ -202,9 +235,43 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/planificaciones`, data)
       .pipe(catchError(this.handleError));
   }
-
+  deleteUser(id_usu: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
+      .pipe(catchError(this.handleError));
+  }
+ createUser(data: Partial<Usuario> & { clave: string }): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.apiUrl}/usuarios`, data)
+      .pipe(catchError(this.handleError));
+  }
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
+      .pipe(catchError(this.handleError));
+  }
+    getAllUsers(rol?: string): Observable<Usuario[]> {
+    let params = new HttpParams();
+    if (rol) {
+
+      params = params.set('rol', rol);
+    }
+    
+
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
+      .pipe(catchError(this.handleError));
+  }
+   updateUser(id_usu: number, data: Partial<Usuario>): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
+      .pipe(catchError(this.handleError));
+  }
+   getSiniestros(): Observable<Siniestro[]> {
+    return this.http.get<Siniestro[]>(`${this.apiUrl}/siniestros`)
+      .pipe(catchError(this.handleError));
+  }
+    getSiniestroById(id: number): Observable<Siniestro> {
+    return this.http.get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+   updateSiniestroStatus(id: number, estado: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/siniestros/${id}/estado`, { estado_sin: estado })
       .pipe(catchError(this.handleError));
   }
     getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {

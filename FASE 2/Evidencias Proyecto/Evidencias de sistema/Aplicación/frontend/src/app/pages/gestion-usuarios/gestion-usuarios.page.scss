@@ -1,0 +1,59 @@
+// Quita cualquier estilo anterior y reemplázalo con esto
+
+ion-card.usuario-card, ion-card.skeleton-card {
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+ion-card-header {
+  padding-bottom: 8px;
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+ion-card-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium-shade);
+  padding-left: 28px; // Para alinear con el título
+}
+
+ion-card-content {
+  padding-top: 0;
+}
+
+.card-buttons {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 8px 4px;
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 0.8rem;
+    text-transform: none;
+  }
+}
+
+// Estilos para el esqueleto de carga
+ion-card.skeleton-card {
+  ion-card-header {
+    ion-skeleton-text {
+      height: 22px;
+    }
+  }
+  ion-card-content {
+    ion-skeleton-text {
+      height: 18px;
+      margin-bottom: 4px;
+    }
+  }
+}

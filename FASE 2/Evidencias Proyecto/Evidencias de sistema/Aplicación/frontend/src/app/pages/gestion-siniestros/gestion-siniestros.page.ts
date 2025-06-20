@@ -1,0 +1,89 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, DatePipe, TitleCasePipe, SlicePipe } from '@angular/common';
+import { 
+  IonicModule, 
+  ToastController 
+} from '@ionic/angular';
+import { Router } from '@angular/router';
+import { ApiService, Siniestro } from '../../services/api.service';
+import { HeaderComponent } from 'src/app/componentes/header/header.component';
+
+@Component({
+  selector: 'app-gestion-siniestros',
+  templateUrl: './gestion-siniestros.page.html',
+  styleUrls: ['./gestion-siniestros.page.scss'],
+  standalone: true,
+  // --- CORRECCIÓN PRINCIPAL AQUÍ ---
+  // Añadimos todos los componentes y pipes que el HTML necesita para funcionar
+  imports: [
+    IonicModule, 
+    CommonModule, 
+    HeaderComponent,
+    DatePipe,         // Para el formato de fecha {{ ... | date }}
+    TitleCasePipe,    // Para el formato de título {{ ... | titlecase }}
+    SlicePipe         // Para cortar texto {{ ... | slice }}
+  ]
+})
+export class GestionSiniestrosPage implements OnInit {
+  public siniestros: Siniestro[] = [];
+  public cargando = true;
+  public skeletonItems = Array(5);
+
+  private apiService = inject(ApiService);
+  private router = inject(Router);
+  private toastCtrl = inject(ToastController);
+
+  constructor() { }
+
+  ngOnInit() { }
+
+  ionViewWillEnter() {
+    this.cargarSiniestros();
+  }
+
+  cargarSiniestros() {
+    this.cargando = true;
+    console.log('[Gestión Siniestros] Iniciando carga de datos...');
+
+    this.apiService.getSiniestros().subscribe({
+      next: (data) => {
+        console.log('[Gestión Siniestros] Datos recibidos del backend:', data);
+        this.siniestros = data;
+        this.cargando = false;
+        console.log(`[Gestión Siniestros] Carga finalizada. Se recibieron ${data.length} registros.`);
+      },
+      error: (err) => {
+        console.error('[Gestión Siniestros] ¡ERROR! La petición al API falló:', err);
+        this.cargando = false;
+        this.mostrarToast('Error al cargar los incidentes.', 'danger');
+      }
+    });
+  }
+
+  verDetalles(id: number | undefined) {
+    if (!id) {
+      console.error('No se puede navegar, el ID del siniestro es indefinido.');
+      return;
+    }
+    this.router.navigate(['/siniestro-detalle', id]);
+  }
+
+  getColorForStatus(estado: string): string {
+    switch (estado) {
+      case 'reportado': return 'warning';
+      case 'en_revision': return 'primary';
+      case 'resuelto': return 'success';
+      case 'cancelado': return 'medium';
+      default: return 'light';
+    }
+  }
+
+  async mostrarToast(mensaje: string, color: string) {
+    const toast = await this.toastCtrl.create({
+      message: mensaje,
+      duration: 3000,
+      color: color
+    });
+    toast.present();
+  }
+}

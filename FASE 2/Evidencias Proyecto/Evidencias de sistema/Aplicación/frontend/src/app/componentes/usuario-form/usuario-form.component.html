@@ -1,0 +1,123 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode ? 'Editar Usuario' : 'Nuevo Usuario' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="confirm()" novalidate>
+    <ion-list lines="none">
+      
+      <ion-item>
+        <ion-input
+          label="Nombre"
+          labelPlacement="floating"
+          formControlName="pri_nom_usu"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('pri_nom_usu')?.invalid && form.get('pri_nom_usu')?.touched"
+        ></ion-input>
+      </ion-item>
+      <div class="error-container" *ngIf="form.get('pri_nom_usu')?.invalid && form.get('pri_nom_usu')?.touched">
+        <ion-text color="danger" *ngIf="form.get('pri_nom_usu')?.errors?.['required']">
+          El nombre es requerido.
+        </ion-text>
+      </div>
+
+      <ion-item>
+        <ion-input
+          label="Apellido"
+          labelPlacement="floating"
+          formControlName="pri_ape_usu"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('pri_ape_usu')?.invalid && form.get('pri_ape_usu')?.touched"
+        ></ion-input>
+      </ion-item>
+      <div class="error-container" *ngIf="form.get('pri_ape_usu')?.invalid && form.get('pri_ape_usu')?.touched">
+        <ion-text color="danger" *ngIf="form.get('pri_ape_usu')?.errors?.['required']">
+          El apellido es requerido.
+        </ion-text>
+      </div>
+
+      <ion-item>
+        <ion-input
+          label="Email"
+          labelPlacement="floating"
+          type="email"
+          formControlName="email"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+        ></ion-input>
+      </ion-item>
+      <div class="error-container" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+        <ion-text color="danger" *ngIf="form.get('email')?.errors?.['required']">
+          El email es requerido.
+        </ion-text>
+        <ion-text color="danger" *ngIf="form.get('email')?.errors?.['email']">
+          El formato del email no es válido.
+        </ion-text>
+      </div>
+
+      <ion-item>
+        <ion-select
+          label="Rol"
+          labelPlacement="floating"
+          formControlName="rol"
+          interface="popover"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('rol')?.invalid && form.get('rol')?.touched"
+        >
+          <ion-select-option *ngFor="let rol of roles" [value]="rol">
+            {{ rol | titlecase }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div class="error-container" *ngIf="form.get('rol')?.invalid && form.get('rol')?.touched">
+        <ion-text color="danger" *ngIf="form.get('rol')?.errors?.['required']">
+          Debe seleccionar un rol.
+        </ion-text>
+      </div>
+
+      <ion-item *ngIf="!isEditMode">
+        <ion-input
+          label="Contraseña"
+          labelPlacement="floating"
+          type="password"
+          formControlName="clave"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('clave')?.invalid && form.get('clave')?.touched"
+        ></ion-input>
+      </ion-item>
+      <div class="error-container" *ngIf="form.get('clave')?.invalid && form.get('clave')?.touched">
+        <ion-text color="danger" *ngIf="form.get('clave')?.errors?.['required']">
+          La contraseña es requerida.
+        </ion-text>
+      </div>
+
+    </ion-list>
+
+    <ion-button
+      type="submit"
+      expand="block"
+      class="ion-margin-top"
+      [disabled]="form.invalid"
+    >
+      <ion-icon slot="start" [name]="isEditMode ? 'save' : 'add'"></ion-icon>
+      {{ isEditMode ? 'Actualizar Usuario' : 'Crear Usuario' }}
+    </ion-button>
+  </form>
+</ion-content>

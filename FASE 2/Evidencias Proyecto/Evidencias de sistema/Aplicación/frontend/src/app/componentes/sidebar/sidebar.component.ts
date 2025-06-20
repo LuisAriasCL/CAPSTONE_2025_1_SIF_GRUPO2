@@ -6,6 +6,7 @@ import {
   IonItem,
   IonIcon,
   IonLabel,
+  IonItemDivider,
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -25,10 +26,7 @@ import {
 
 import { AuthService } from '../../services/auth.service';
 
-/**
- * Componente de navegación lateral.
- * Contiene solo la lista de navegación principal.
- */
+
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
@@ -42,6 +40,7 @@ import { AuthService } from '../../services/auth.service';
     IonItem,
     IonIcon,
     IonLabel,
+    IonItemDivider,
   ],
 })
 export class SidebarComponent {
@@ -61,8 +60,12 @@ export class SidebarComponent {
     { title: 'Órdenes de Trabajo', url: '/orden-trabajo-list', icon: 'clipboard' },
     { title: 'Gestión de Rutas', url: '/rutas', icon: 'map' },
     { title: 'Recorridos', url: '/recorridos', icon: 'navigate' },
+    { title: 'Gestión de Incidentes', url: '/gestion-siniestros', icon: 'warning' }
+    
   ];
-
+  public adminPages = [
+    { title: 'Gestión de Usuarios', url: '/gestion-usuarios', icon: 'people-circle' }
+  ];
   private authService = inject(AuthService);
 
   constructor() {
@@ -80,5 +83,9 @@ export class SidebarComponent {
       businessOutline,
       clipboardOutline
     });
+  }
+   esRol(rol: 'admin' | 'gestor' | 'conductor' | 'mantenimiento' | 'tecnico'): boolean {
+    const usuario = this.authService.getCurrentUser();
+    return usuario ? usuario.rol === rol : false;
   }
 }
