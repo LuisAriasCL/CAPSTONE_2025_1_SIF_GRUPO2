@@ -1,10 +1,11 @@
 // backend/routes/vehiculos.js
 const express = require('express');
 const router = express.Router();
+const vehiculoController = require('../controllers/vehiculoController');
 
 const { Vehiculo, sequelize } = require('../models'); // Importa desde el index.js de la carpeta models
 
-
+router.get('/:id/historial', vehiculoController.getHistorialByVehiculoId);
 router.get('/', async (req, res) => {
     try {
    

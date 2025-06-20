@@ -24,6 +24,19 @@ export interface VehiculoSiniestro {
   marca: string;
   modelo: string;
 }
+export interface HistorialItem {
+  tipo: 'Mantenimiento' | 'Siniestro' | 'Combustible';
+  fecha: string;
+  titulo: string;
+  subtitulo: string;
+  costo: number | null;
+  id: number;
+  icon: string;
+  color: string;
+  descripcion?: string;
+  archivoUrl?: string;
+  urlComprobante?: string;
+}
 export interface Siniestro {
   id: number;
   fecha: string;
@@ -243,6 +256,13 @@ export class ApiService {
     return this.http.post<Usuario>(`${this.apiUrl}/usuarios`, data)
       .pipe(catchError(this.handleError));
   }
+ getHistorialVehiculo(id: number): Observable<HistorialItem[]> {
+  // Asegúrate de que la URL se construya con backticks (`) y no comillas simples (')
+  return this.http.get<HistorialItem[]>(`${this.apiUrl}/vehiculos/${id}/historial`)
+    .pipe(catchError(this.handleError));
+}
+
+  
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
@@ -257,6 +277,9 @@ export class ApiService {
 
     return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
       .pipe(catchError(this.handleError));
+  }
+    getVehiculos(): Observable<Vehiculo[]> {
+    return this.http.get<Vehiculo[]>(this.apiUrl);
   }
    updateUser(id_usu: number, data: Partial<Usuario>): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
@@ -396,7 +419,7 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
   }
 
   getVehicle(id: number): Observable<Vehiculo> {
-    return this.http.get<Vehiculo>(`${this.apiUrl}/vehicles/${id}`)
+    return this.http.get<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`)
       .pipe(catchError(this.handleError));
   }
   getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {

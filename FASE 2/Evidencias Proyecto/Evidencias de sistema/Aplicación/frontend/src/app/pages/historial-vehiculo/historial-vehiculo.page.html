@@ -1,0 +1,86 @@
+<!-- Fichero: src/app/pages/historial-vehiculo/historial-vehiculo.page.html -->
+
+<ion-header>
+  <!-- ... (tu header informativo no cambia) ... -->
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/vehicle-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title *ngIf="vehiculoActual">
+      {{ vehiculoActual.patente }}
+      <p class="header-subtitle">{{ vehiculoActual.marca }} {{ vehiculoActual.modelo }}</p>
+    </ion-title>
+    <ion-title *ngIf="!vehiculoActual">
+      Historial del Vehículo
+    </ion-title>
+  </ion-toolbar>
+
+  <ion-toolbar *ngIf="vehiculoActual">
+    <ion-chip slot="start" class="ion-margin-start">
+      <ion-icon name="speedometer-outline"></ion-icon>
+      <ion-label>{{ vehiculoActual.kmVehi | number }} km</ion-label>
+    </ion-chip>
+    <ion-chip slot="end" class="ion-margin-end" [color]="vehiculoActual.estadoVehi === 'activo' ? 'success' : 'medium'">
+      <ion-label>{{ vehiculoActual.estadoVehi | titlecase }}</ion-label>
+    </ion-chip>
+  </ion-toolbar>
+</ion-header>
+
+<!-- CAMBIO: Añadimos una nueva toolbar para los filtros -->
+<ion-toolbar>
+  <ion-searchbar
+    placeholder="Buscar en historial..."
+    animated="true"
+    (ionInput)="filtrarHistorial()"
+    [(ngModel)]="terminoBusqueda">
+  </ion-searchbar>
+</ion-toolbar>
+
+<ion-content [fullscreen]="true">
+  <!-- Segmento para filtrar por tipo de evento -->
+  <ion-segment [(ngModel)]="filtroTipo" (ionChange)="filtrarHistorial()" value="todos" class="ion-padding-horizontal">
+    <ion-segment-button value="todos">
+      <ion-label>Todos</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Mantenimiento">
+      <ion-label>Mantenimiento</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Siniestro">
+      <ion-label>Siniestros</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Combustible">
+      <ion-label>Combustible</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  
+  <div *ngIf="isLoading" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && historialFiltrado.length === 0" class="empty-state">
+    <ion-icon name="archive-outline"></ion-icon>
+    <p>No se encontraron registros que coincidan con los filtros.</p>
+  </div>
+
+  <ion-list *ngIf="!isLoading && historialFiltrado.length > 0">
+    <!-- CAMBIO: Añadido (click)="verDetalle(item)" y class="clickable" -->
+    <ion-card 
+      *ngFor="let item of historialFiltrado" 
+      class="history-card clickable"
+      (click)="verDetalle(item)">
+        
+      <ion-item lines="none">
+        <ion-icon [name]="item.icon" slot="start" [color]="item.color" class="ion-icon-big"></ion-icon>
+        <ion-label>
+          <h2 class="ion-text-wrap"><strong>{{ item.titulo }}</strong></h2>
+          <p>{{ item.subtitulo }}</p>
+        </ion-label>
+        <ion-note slot="end" color="medium">{{ item.fecha | date:'dd/MM/yy' }}</ion-note>
+      </ion-item>
+      <div class="costo-chip" *ngIf="item.costo">
+        <ion-chip><ion-label>{{ item.costo | currency:'CLP':'symbol-narrow':'1.0-0' }}</ion-label></ion-chip>
+      </div>
+    </ion-card>
+  </ion-list>
+</ion-content>

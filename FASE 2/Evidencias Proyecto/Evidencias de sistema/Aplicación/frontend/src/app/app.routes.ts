@@ -158,7 +158,11 @@ export const routes: Routes = [
     path: 'siniestro-detalle/:id', // Añadimos el parámetro :id
     loadComponent: () => import('./pages/siniestro-detalle/siniestro-detalle.page').then( m => m.SiniestroDetallePage),
     canActivate: [GestorGuard] // La protegemos con el mismo guard
-  },
+  },{
+  path: 'historial-vehiculo/:id', // La ruta espera el ID del vehículo
+  loadComponent: () => import('./pages/historial-vehiculo/historial-vehiculo.page').then( m => m.HistorialVehiculoPage),
+  canActivate: [authGuard, GestorGuard]
+},
   {
     path: '',
     redirectTo: 'dashboard',

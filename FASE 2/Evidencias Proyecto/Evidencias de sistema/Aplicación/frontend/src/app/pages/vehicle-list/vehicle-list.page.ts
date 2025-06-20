@@ -4,24 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, LoadingController, ToastController, RefresherCustomEvent, NavController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline } from 'ionicons/icons';
+// CAMBIO 1: Añadir el nuevo icono 'newspaperOutline' y 'eyeOutline'
+import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline, eyeOutline, newspaperOutline } from 'ionicons/icons';
 
-// CORREGIDO: Importar ApiService y la NUEVA interfaz Vehiculo y el tipo EstadoVehiculo
-// Asegúrate de que Vehiculo y EstadoVehiculo estén EXPORTADOS desde api.service.ts
-// o desde un archivo de interfaces dedicado (ej. ../../interfaces/vehiculo.interface.ts)
 import { ApiService, Vehiculo, EstadoVehiculo } from '../../services/api.service';
-import { HttpErrorResponse } from '@angular/common/http'; // Para tipar errores
+import { HttpErrorResponse } from '@angular/common/http';
 
-// Importamos el componente DataTable y sus interfaces
 import { DataTableComponent, Column, PageEvent, ActionButton } from '../../componentes/data-table/data-table.component';
-
-// Importamos el formulario de vehículos para usarlo como modal
 import { VehicleFormPage } from '../vehicle-form/vehicle-form.page';
-
-// Importamos el componente de alerta personalizada
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
 
-@Component({  
+@Component({
   selector: 'app-vehicle-list',
   templateUrl: './vehicle-list.page.html',
   styleUrls: ['./vehicle-list.page.scss'],
@@ -34,44 +27,48 @@ export class VehicleListPage implements OnInit {
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
   private modalController = inject(ModalController);
-  // private navCtrl = inject(NavController); // Opcional, si prefieres usar NavController
 
-  vehiculos: Vehiculo[] = []; // CORREGIDO: Usar la nueva interfaz Vehiculo
+  vehiculos: Vehiculo[] = [];
   isLoading = false;
 
-  // Configuración del header
   pageTitle = 'Listado de Vehículos';
-  // Paginación
   currentPage = 1;
   pageSize = 10;
-  totalPages = 1; // Se actualizará según la cantidad de vehículos
-  // Configuración de las columnas para el DataTable
+  totalPages = 1;
+
   tableColumns: Column[] = [
     { header: 'Patente', field: 'patente', sortable: true },
     { header: 'Marca', field: 'marca', sortable: true },
     { header: 'Modelo', field: 'modelo', sortable: true },
     { header: 'Año', field: 'anio', sortable: true },
-    { 
-      header: 'Estado', 
-      field: 'estadoVehi', 
+    {
+      header: 'Estado',
+      field: 'estadoVehi',
       sortable: true,
       cell: (data: Vehiculo) => this.getStatusBadge(data.estadoVehi)
     },
-    { header: 'Kilometraje', field: 'kmVehi', sortable: true },
-    { 
-      header: 'Acciones', 
+    { header: 'Kilometraje', field: 'kmVehi', sortable: true, cell: (data: Vehiculo) => `${data.kmVehi.toLocaleString('es-CL')} km` },
+    {
+      header: 'Acciones',
       field: 'actions',
-      width: '120px',
-      isAction: true // Indicamos que esta columna es para los botones de acción
+      width: '150px', // Aumentamos un poco el ancho para el nuevo botón
+      isAction: true
     }
   ];
-  // Configuración de los botones de acción
-  actionButtons = [
+
+  // CAMBIO 2: Añadir el nuevo botón de historial al array de acciones
+  actionButtons: ActionButton[] = [
     {
       icon: 'eye-outline',
       color: 'primary',
       tooltip: 'Ver detalles',
       onClick: (row: Vehiculo) => this.goToViewVehicle(row.idVehi)
+    },
+    {
+      icon: 'newspaper-outline',
+      color: 'success', // Un color distintivo
+      tooltip: 'Ver historial',
+      onClick: (row: Vehiculo) => this.verHistorial(row.idVehi)
     },
     {
       icon: 'pencil-outline',
@@ -88,47 +85,40 @@ export class VehicleListPage implements OnInit {
   ];
 
   constructor() {
-    addIcons({ pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline });
+    addIcons({ pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline, eyeOutline, newspaperOutline });
   }
 
-  ngOnInit() {
-    // ionViewWillEnter se encarga de la carga inicial
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
-    this.loadVehicles(); // La llamada aquí es correcta
+    this.loadVehicles();
   }
 
   async loadVehicles(showLoading = true, event?: RefresherCustomEvent) {
     let loadingIndicator: HTMLIonLoadingElement | undefined;
-    // Solo mostrar el loading global si no es un refresher y no hay otro loader activo
     if (showLoading && !event && !(await this.loadingController.getTop())) {
       this.isLoading = true;
       loadingIndicator = await this.loadingController.create({ message: 'Cargando vehículos...' });
       await loadingIndicator.present();
     } else if (showLoading && !event) {
-      // Si ya hay un loader, no hacemos nada con isLoading para no interferir
-      showLoading = false; // Evita que se intente cerrar un loader no creado por esta instancia
+      showLoading = false;
     }
 
-
-    this.apiService.getVehicles().subscribe({ 
-      next: (data: Vehiculo[]) => { 
+    this.apiService.getVehicles().subscribe({
+      next: (data: Vehiculo[]) => {
         this.vehiculos = data;
-        this.totalPages = Math.ceil(this.vehiculos.length / this.pageSize); // Actualizar total de páginas
+        this.totalPages = Math.ceil(this.vehiculos.length / this.pageSize);
         if (showLoading && !event) this.isLoading = false;
-        if (loadingIndicator) loadingIndicator.dismiss(); // Solo cerrar si lo creamos aquí
+        if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
-        console.log('Vehículos cargados:', this.vehiculos);
       },
-      error: async (error: HttpErrorResponse | Error) => { 
+      error: async (error: HttpErrorResponse | Error) => {
         console.error('Error al cargar vehículos:', error);
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
         const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        
-        // Cambiamos presentAlert por modal personalizado
+
         const modal = await this.modalController.create({
           component: AlertaPersonalizadaComponent,
           componentProps: {
@@ -144,22 +134,18 @@ export class VehicleListPage implements OnInit {
     });
   }
 
-
-  getStatusBadge(estadoVehi: EstadoVehiculo|string|undefined): string {
-  const estado = estadoVehi ?? 'desconocido';
-  const color = this.getStatusColor(estado);
-  // Inyectamos la clase directamente
-  return `<ion-badge class="status-${estado}" color="${color}">${estado}</ion-badge>`;
-}
-
+  getStatusBadge(estadoVehi: EstadoVehiculo | string | undefined): string {
+    const estado = estadoVehi ?? 'desconocido';
+    const color = this.getStatusColor(estado);
+    const estadoCapitalized = estado.charAt(0).toUpperCase() + estado.slice(1);
+    return `<ion-badge color="${color}">${estadoCapitalized}</ion-badge>`;
+  }
 
   handleRefresh(event: RefresherCustomEvent) {
-    console.log('Recargando lista de vehículos...');
     this.loadVehicles(false, event);
   }
+
   async goToAddVehicle() {
-    // Crear el modal para nuevo vehículo
-    console.log('Abriendo modal para nuevo vehículo');
     const modal = await this.modalController.create({
       component: VehicleFormPage,
       cssClass: 'vehicle-form-modal'
@@ -167,19 +153,15 @@ export class VehicleListPage implements OnInit {
 
     modal.onDidDismiss().then((result) => {
       if (result.data) {
-        // Si se creó un vehículo, recargar la lista
-        console.log('Vehículo creado:', result.data);
         this.loadVehicles(false);
       }
     });
 
     return await modal.present();
   }
-  // idVehi es la PK de la interfaz Vehiculo (antes era 'id')
+
   async goToEditVehicle(idVehi?: number) {
     if (idVehi !== undefined) {
-      console.log('Abriendo modal para editar vehículo con ID:', idVehi);
-      
       const modal = await this.modalController.create({
         component: VehicleFormPage,
         componentProps: {
@@ -191,8 +173,6 @@ export class VehicleListPage implements OnInit {
 
       modal.onDidDismiss().then((result) => {
         if (result.data) {
-          // Si se actualizó un vehículo, recargar la lista
-          console.log('Vehículo actualizado:', result.data);
           this.loadVehicles(false);
         }
       });
@@ -205,8 +185,6 @@ export class VehicleListPage implements OnInit {
 
   async goToViewVehicle(idVehi?: number) {
     if (idVehi !== undefined) {
-      console.log('Abriendo modal para ver vehículo con ID:', idVehi);
-      
       const modal = await this.modalController.create({
         component: VehicleFormPage,
         componentProps: {
@@ -215,22 +193,27 @@ export class VehicleListPage implements OnInit {
         },
         cssClass: 'vehicle-form-modal'
       });
-
       return await modal.present();
     } else {
       this.presentToast('No se especificó un ID para visualizar.', 'danger');
     }
   }
 
-  // idVehi es la PK, patente es vehiculo.patente
+  // CAMBIO 3: Añadir el método para ver el historial
+  verHistorial(idVehi?: number) {
+    if (idVehi !== undefined) {
+      this.router.navigate(['/historial-vehiculo', idVehi]);
+    } else {
+      this.presentToast('No se especificó un ID para ver el historial.', 'danger');
+    }
+  }
+
   async confirmDeleteVehicle(idVehi: number | undefined, patente: string | undefined) {
     if (idVehi === undefined || patente === undefined) {
-      console.error('ID de vehículo o patente indefinidos para eliminar');
       this.presentToast('Error: Datos del vehículo no válidos para eliminar.', 'danger');
       return;
     }
-    
-    // Reemplazamos AlertController por el modal personalizado
+
     const modal = await this.modalController.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
@@ -246,30 +229,27 @@ export class VehicleListPage implements OnInit {
       cssClass: 'custom-alert-modal'
     });
     await modal.present();
-    
+
     const { data } = await modal.onDidDismiss();
     if (data === 'confirm') {
       this.deleteVehicle(idVehi);
     }
   }
 
-  private async deleteVehicle(idVehi: number) { // idVehi es la PK
+  private async deleteVehicle(idVehi: number) {
     const loading = await this.loadingController.create({ message: 'Eliminando...' });
     await loading.present();
 
     this.apiService.deleteVehicle(idVehi).subscribe({
-      next: async (res: { message: string }) => { 
-        console.log('Vehículo eliminado:', res.message);
+      next: async (res: { message: string }) => {
         await loading.dismiss();
         this.presentToast('Vehículo eliminado exitosamente.', 'success');
         this.loadVehicles(false);
       },
-      error: async (error: HttpErrorResponse | Error) => { 
+      error: async (error: HttpErrorResponse | Error) => {
         await loading.dismiss();
-        console.error('Error al eliminar vehículo:', error);
         const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        
-        // Cambiamos presentAlert por modal personalizado
+
         const modal = await this.modalController.create({
           component: AlertaPersonalizadaComponent,
           componentProps: {
@@ -285,40 +265,14 @@ export class VehicleListPage implements OnInit {
     });
   }
 
-  // El parámetro estado ahora es de tipo EstadoVehiculo
-  getStatusColor(estado: EstadoVehiculo | string): string { // Permitir string por si acaso, pero idealmente es EstadoVehiculo
+  getStatusColor(estado: EstadoVehiculo | string): string {
     switch (estado) {
       case 'activo': return 'success';
       case 'inactivo': return 'medium';
       case 'mantenimiento': return 'warning';
       case 'taller': return 'danger';
       default: return 'light';
-    }  }
-
-  // Método para manejar las acciones del header
-  onHeaderAction(action: string) {
-    switch (action) {
-      case 'add':
-        this.goToAddVehicle();
-        break;
-      default:
-        console.log('Acción no reconocida:', action);
     }
-  }
-
-  async presentAlert(header: string, message: string) {
-    // Reemplazamos este método por el modal personalizado
-    const modal = await this.modalController.create({
-      component: AlertaPersonalizadaComponent,
-      componentProps: {
-        title: header,
-        message: message,
-        icon: 'info',
-        buttons: [{ text: 'Aceptar', role: 'confirm' }]
-      },
-      cssClass: 'custom-alert-modal'
-    });
-    await modal.present();
   }
 
   async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
@@ -326,109 +280,28 @@ export class VehicleListPage implements OnInit {
     toast.present();
   }
 
-  // Métodos para la paginación
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
-
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  // Métodos para DataTable
+  // CAMBIO 4: Añadir implementación a los métodos que necesita la tabla para no dar error
   onPageChange(event: PageEvent) {
-    this.currentPage = event.pageIndex + 1; // El DataTable usa pageIndex basado en 0
+    console.log('Cambio de página:', event);
+    this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
-    // Si la paginación es en servidor, aquí se haría una llamada API
   }
 
   onRowClick(row: Vehiculo) {
     console.log('Fila seleccionada:', row);
-    // No navegamos directamente aquí, dependiendo del contexto podríamos
-    // mostrar un modal o navegar a detalles
   }
 
-  // Helper para manejar botones de acción en la tabla
-  getActionButtons(idVehi: number | undefined, patente: string | undefined): string {
-    if (idVehi === undefined || patente === undefined) {
-      return '<div>ID o patente no disponible</div>';
-    }
-    
-    return `
-      <div class="action-buttons">
-        <ion-button fill="clear" size="small" class="view-btn" data-id="${idVehi}">
-          <ion-icon name="eye-outline" color="primary"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" class="edit-btn" data-id="${idVehi}">
-          <ion-icon name="pencil-outline" color="primary"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" class="delete-btn" data-id="${idVehi}" data-patente="${patente}">
-          <ion-icon name="trash-outline" color="danger"></ion-icon>
-        </ion-button>
-      </div>
-    `;
-  }
-
-  // Manejador para eventos del DataTable
-  handleTableEvent(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const viewBtn = target.closest('.view-btn');
-    const editBtn = target.closest('.edit-btn');
-    const deleteBtn = target.closest('.delete-btn');
-    
-    if (viewBtn) {
-      event.stopPropagation(); // Evitar que se active onRowClick
-      const idVehi = Number(viewBtn.getAttribute('data-id'));
-      if (!isNaN(idVehi)) {
-        this.goToViewVehicle(idVehi);
-      }
-    } else if (editBtn) {
-      event.stopPropagation(); // Evitar que se active onRowClick
-      const idVehi = Number(editBtn.getAttribute('data-id'));
-      if (!isNaN(idVehi)) {
-        this.goToEditVehicle(idVehi);
-      }
-    } else if (deleteBtn) {
-      event.stopPropagation(); // Evitar que se active onRowClick
-      const idVehi = Number(deleteBtn.getAttribute('data-id'));
-      const patente = deleteBtn.getAttribute('data-patente');
-      if (!isNaN(idVehi) && patente) {
-        this.confirmDeleteVehicle(idVehi, patente);
-      }
-    }
-  }
-
-  // Método que se ejecuta después de que la vista se inicializa
-  ionViewDidEnter() {
-    // Agregar listener para eventos de botones en el DataTable
-    document.addEventListener('click', this.handleTableEvent.bind(this));
-  }
-
-  // Método que se ejecuta cuando la vista se va a abandonar
-  ionViewWillLeave() {
-    // Limpiar listener al salir para evitar memory leaks
-    document.removeEventListener('click', this.handleTableEvent.bind(this));
-  }
-
-  onSortColumn(event: {column: string, direction: 'asc' | 'desc'}) {
+  onSortColumn(event: { column: string, direction: 'asc' | 'desc' }) {
     console.log('Ordenar por:', event);
-    // Aquí podríamos implementar la lógica de ordenamiento
-    // Si es en servidor, se haría una llamada API con los parámetros de ordenamiento
   }
+
   onExport(format: string) {
     console.log('Exportar en formato:', format);
-    // Aquí implementaríamos la lógica para exportar los datos
-    // Por ejemplo, usar una biblioteca como ExcelJS para Excel o jsPDF para PDF
+    this.presentToast(`Funcionalidad de exportar a ${format} no implementada.`, 'warning');
   }
 
   onImport(format: string) {
     console.log('Importar desde formato:', format);
-    // Aquí implementaríamos la lógica para importar datos
-    // Por ejemplo, abrir un selector de archivos y procesar el archivo seleccionado
-    this.presentToast('Funcionalidad de importación en desarrollo', 'warning');
+    this.presentToast(`Funcionalidad de importar desde ${format} no implementada.`, 'warning');
   }
 }
