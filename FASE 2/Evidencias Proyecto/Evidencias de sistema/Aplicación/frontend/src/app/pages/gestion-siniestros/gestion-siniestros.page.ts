@@ -13,15 +13,14 @@ import { HeaderComponent } from 'src/app/componentes/header/header.component';
   templateUrl: './gestion-siniestros.page.html',
   styleUrls: ['./gestion-siniestros.page.scss'],
   standalone: true,
-  // --- CORRECCIÓN PRINCIPAL AQUÍ ---
-  // Añadimos todos los componentes y pipes que el HTML necesita para funcionar
+  
   imports: [
     IonicModule, 
     CommonModule, 
     HeaderComponent,
-    DatePipe,         // Para el formato de fecha {{ ... | date }}
-    TitleCasePipe,    // Para el formato de título {{ ... | titlecase }}
-    SlicePipe         // Para cortar texto {{ ... | slice }}
+    DatePipe,         
+    TitleCasePipe,   
+    SlicePipe         
   ]
 })
 export class GestionSiniestrosPage implements OnInit {

@@ -25,6 +25,12 @@ module.exports = (sequelize) => {
       allowNull: true,
       field: 'desc_sini'
     },
+     estado: {
+      type: DataTypes.ENUM('reportado', 'en_revision', 'resuelto', 'cancelado'),
+      allowNull: false,
+      defaultValue: 'reportado', // Un valor por defecto es una excelente práctica
+      field: 'estado_sin'
+    },
     ubicacion: {
       type: DataTypes.STRING,
       allowNull: true,

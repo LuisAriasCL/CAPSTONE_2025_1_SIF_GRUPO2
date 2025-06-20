@@ -271,9 +271,10 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
    updateSiniestroStatus(id: number, estado: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/siniestros/${id}/estado`, { estado_sin: estado })
+      return this.http.put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
       .pipe(catchError(this.handleError));
   }
+
     getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
     return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`);
   }

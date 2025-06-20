@@ -1,8 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; // <-- 1. IMPORTAR ChangeDetectorRef
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
 import { IonicModule, ToastController, AlertController, NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-// Esta importación ahora trae la interfaz camelCase correcta
 import { ApiService, Siniestro } from '../../services/api.service';
 import { HeaderComponent } from 'src/app/componentes/header/header.component';
 
@@ -23,6 +22,7 @@ export class SiniestroDetallePage implements OnInit {
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
   private navCtrl = inject(NavController);
+  private cdr = inject(ChangeDetectorRef); 
 
   constructor() { }
 
@@ -30,7 +30,6 @@ export class SiniestroDetallePage implements OnInit {
     this.cargarDetalleSiniestro();
   }
 
- 
   cargarDetalleSiniestro() {
     this.cargando = true;
     const siniestroId = this.route.snapshot.paramMap.get('id');
@@ -42,12 +41,10 @@ export class SiniestroDetallePage implements OnInit {
 
     this.apiService.getSiniestroById(+siniestroId).subscribe({
       next: (data) => {
-     
-        console.log('Datos completos del siniestro recibidos del API:', data);
-        
-        
         this.siniestro = data;
         this.cargando = false;
+        // --- 3. LÍNEA CLAVE PARA FORZAR LA ACTUALIZACIÓN VISUAL ---
+        this.cdr.detectChanges(); 
       },
       error: (err) => {
         this.cargando = false;
@@ -56,6 +53,7 @@ export class SiniestroDetallePage implements OnInit {
       }
     });
   }
+
   async actualizarEstado() {
     if (!this.siniestro) return;
 
@@ -68,7 +66,7 @@ export class SiniestroDetallePage implements OnInit {
         type: 'radio',
         label: estado.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         value: estado,
-        checked: this.siniestro?.estado === estado // Correcto: usa 'estado'
+        checked: this.siniestro?.estado === estado
       })),
       buttons: [
         { text: 'Cancelar' },
@@ -76,12 +74,12 @@ export class SiniestroDetallePage implements OnInit {
           text: 'Actualizar',
           handler: (nuevoEstado) => {
             if (nuevoEstado && this.siniestro) {
-              // Correcto: usa 'id' para la llamada al API
               this.apiService.updateSiniestroStatus(this.siniestro.id, nuevoEstado).subscribe({
                 next: () => {
                   this.mostrarToast('Estado actualizado con éxito.', 'success');
                   if (this.siniestro) {
-                    this.siniestro.estado = nuevoEstado; // Correcto: actualiza 'estado'
+                    this.siniestro.estado = nuevoEstado;
+                    this.cdr.detectChanges(); // Forzar actualización aquí también es buena idea
                   }
                 },
                 error: (err) => this.mostrarToast('Error al actualizar el estado.', 'danger')
@@ -91,6 +89,7 @@ export class SiniestroDetallePage implements OnInit {
         }
       ]
     });
+
     await alert.present();
   }
   

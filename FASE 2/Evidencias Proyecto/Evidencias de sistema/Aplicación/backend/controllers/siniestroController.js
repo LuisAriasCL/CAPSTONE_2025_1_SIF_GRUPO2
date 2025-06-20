@@ -91,9 +91,18 @@ exports.getSiniestroById = async (req, res) => {
         const { id } = req.params;
         const siniestro = await Siniestro.findByPk(id, {
             include: [
-                // Usamos los alias correctos aquí también
-                { model: Usuario, as: 'conductor' },
-                { model: Vehiculo, as: 'vehiculo' }
+                { 
+                    model: Usuario, 
+                    as: 'conductor',
+                    // --- AÑADIMOS ESTO PARA FORZAR EL FORMATO SNAKE_CASE ---
+                    // Ahora esta función devuelve los datos del conductor en el mismo formato que la lista.
+                    attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email']
+                },
+                { 
+                    model: Vehiculo, 
+                    as: 'vehiculo',
+                    attributes: ['id_vehi', 'patente', 'marca', 'modelo', 'anio']
+                }
             ]
         });
 
