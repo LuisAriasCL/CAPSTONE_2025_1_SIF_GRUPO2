@@ -53,6 +53,7 @@ app.get('/', (req, res) => {
 });
 
 // --- REGISTRO DE RUTAS API ---
+
 app.use('/api/stats', statsRoutes);
 app.use('/api/siniestros', siniestroRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

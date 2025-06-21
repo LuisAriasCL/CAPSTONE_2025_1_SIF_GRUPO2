@@ -7,6 +7,7 @@ import { IonicModule, LoadingController, ToastController, ModalController } from
 import { ActivatedRoute, Router } from '@angular/router';
 import { HeaderComponent } from 'src/app/componentes/header/header.component';
 import { ApiService, HistorialItem, Vehiculo } from 'src/app/services/api.service';
+import { OrdenTrabajoDetallePage } from '../maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page';
 
 // --- NUEVO COMPONENTE MODAL PARA VER IMÁGENES ---
 @Component({
@@ -40,7 +41,7 @@ export class VerImagenModal {
   templateUrl: './historial-vehiculo.page.html',
   styleUrls: ['./historial-vehiculo.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HeaderComponent, DatePipe, CurrencyPipe, TitleCasePipe, VerImagenModal]
+  imports: [IonicModule, CommonModule, FormsModule, HeaderComponent, DatePipe, CurrencyPipe, TitleCasePipe, VerImagenModal, OrdenTrabajoDetallePage]
 })
 export class HistorialVehiculoPage implements OnInit {
   private todoElHistorial: HistorialItem[] = [];
@@ -108,20 +109,26 @@ export class HistorialVehiculoPage implements OnInit {
     this.historialFiltrado = historialTemp;
   }
 
-  // CAMBIO: Añadido el método que maneja los clics
-  async verDetalle(item: HistorialItem) {
+   async verDetalle(item: HistorialItem) {
     switch (item.tipo) {
       case 'Mantenimiento':
-        this.router.navigate(['/orden-trabajo-detalle', item.id]);
+        // Abre la página de detalle de la OT como un modal
+        const modalOt = await this.modalController.create({
+          component: OrdenTrabajoDetallePage,
+          componentProps: {
+             ordenTrabajoId: item.id // Pasa el ID de la OT al modal
+          }
+        });
+        await modalOt.present();
         break;
 
       case 'Siniestro':
-        // Ahora, los siniestros te llevarán a su propia página de detalle.
-        // Asegúrate de que tienes una ruta '/siniestro-detalle/:id'
+        // Esto ya funciona correctamente
         this.router.navigate(['/siniestro-detalle', item.id]);
         break;
         
       case 'Combustible':
+        // Por ahora, mantenemos el modal. Lo cambiaremos en el siguiente paso.
         if (item.urlComprobante) {
           this.abrirModalImagen('Comprobante de Combustible', item.urlComprobante);
         } else {
@@ -130,7 +137,6 @@ export class HistorialVehiculoPage implements OnInit {
         break;
     }
   }
-
   // Helper para abrir el modal
   async abrirModalImagen(titulo: string, url: string) {
     const modal = await this.modalController.create({
