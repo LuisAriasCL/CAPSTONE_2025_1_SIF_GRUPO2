@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { IonicModule, ToastController, LoadingController, AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router'; // <- 1. Importa RouterModule
 import { addIcons } from 'ionicons';
-import { idCardOutline, callOutline, mailOutline, lockClosedOutline } from 'ionicons/icons'; // Íconos para RUT, Celular, Email y Contraseña
+// 2. Importa todos los íconos que usas en el HTML
+import { idCardOutline, callOutline, mailOutline, lockClosedOutline, personOutline, settingsOutline, chevronBackOutline } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
 
+// Validador para asegurar que las contraseñas coincidan
 export function passwordMatchValidator(controlName: string, matchingControlName: string) {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     const fg = formGroup as FormGroup;
@@ -28,7 +30,6 @@ export function passwordMatchValidator(controlName: string, matchingControlName:
     } else {
       if (matchingControl.errors?.['passwordMismatch']) {
         delete matchingControl.errors['passwordMismatch'];
-
         if (Object.keys(matchingControl.errors).length === 0) {
           matchingControl.setErrors(null);
         }
@@ -46,28 +47,32 @@ export function passwordMatchValidator(controlName: string, matchingControlName:
   imports: [
     IonicModule,
     CommonModule,
-    ReactiveFormsModule, // <-- Necesario para [formGroup], formControlName, etc.
+    ReactiveFormsModule,
+    RouterModule // <- 3. Añade RouterModule aquí
   ],
 })
 export class RegisterPage implements OnInit {
-  registerForm!: FormGroup; // El ! indica que se inicializará en ngOnInit
-  isSubmitted = false; // Flag para mostrar errores solo después del primer intento de envío
-  availableRoles: string[] = ['gestor', 'mantenimiento', 'conductor', 'tecnico'];
+  public registerForm!: FormGroup; // Hecho público explícitamente por claridad
+  isSubmitted = false;
+  availableRoles: string[] = ['gestor', 'tecnico', 'conductor'];
 
   constructor(
-    private formBuilder: FormBuilder, // Ayuda a crear formularios
-    private authService: AuthService, // Nuestro servicio de autenticación
-    private router: Router, // Para navegar
-    private toastController: ToastController, // Para mensajes de éxito/info
-    private loadingController: LoadingController, // Para indicador de "cargando"
-    private alertController: AlertController // Para mostrar errores
+    private formBuilder: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private toastController: ToastController,
+    private loadingController: LoadingController,
+    private alertController: AlertController
   ) {
-    // Registrar íconos personalizados
+    // 4. Registra todos los íconos necesarios
     addIcons({
-      idCardOutline, // Ícono para RUT
-      callOutline, // Ícono para Celular
-      mailOutline, // Ícono para Email
-      lockClosedOutline, // Ícono para Contraseña y Confirmar Contraseña
+      idCardOutline,
+      callOutline,
+      mailOutline,
+      lockClosedOutline,
+      personOutline,
+      settingsOutline,
+      chevronBackOutline
     });
   }
 
@@ -79,59 +84,59 @@ export class RegisterPage implements OnInit {
         pri_ape_usu: ['', [Validators.required]],
         seg_ape_usu: [''],
         email: ['', [Validators.required, Validators.email]],
-        rut_usu: [''], // Añadir validadores si es necesario
+        rut_usu: [''],
         celular: [''],
         clave: ['', [Validators.required, Validators.minLength(6)]],
-        confirmarClave: ['', [Validators.required]], // Para la validación de coincidencia
-        rol: ['conductor', [Validators.required]], // Valor por defecto y requerido
+        confirmarClave: ['', [Validators.required]],
+        rol: ['conductor', [Validators.required]],
       },
       {
-        // Validador para confirmarClave debe comparar con 'clave'
-        validators: passwordMatchValidator('clave', 'confirmarClave'), // <-- Pasamos los nombres de los controles
+        validators: passwordMatchValidator('clave', 'confirmarClave'),
       }
     );
   }
 
-  // --- Getters para acceso fácil a los controles en el HTML (opcional) ---
-  get email() {
-    return this.registerForm.get('email');
-  }
-  get clave() {
-    return this.registerForm.get('clave');
-  }
-  get confirmarClave() {
-    return this.registerForm.get('confirmarClave');
-  }
-  // --- Fin Getters ---
-
-  // --- Método llamado al enviar el formulario ---
   async register() {
     this.isSubmitted = true;
     if (this.registerForm.invalid) {
       console.log('Formulario inválido:', this.registerForm.value);
+      this.presentToast('Por favor, completa todos los campos requeridos correctamente.');
       return;
     }
 
     const loading = await this.loadingController.create({ message: 'Registrando...' });
     await loading.present();
 
-    const { pri_nom_usu, seg_nom_usu, pri_ape_usu, seg_ape_usu, email, rut_usu, celular, clave, rol } =
-      this.registerForm.value;
-
-    this.authService.register({ pri_nom_usu, seg_nom_usu, pri_ape_usu, seg_ape_usu, email, rut_usu, celular, clave, rol }).subscribe({
+    this.authService.register(this.registerForm.value).subscribe({
       next: async (res) => {
         await loading.dismiss();
-        console.log('Usuario registrado:', res);
-        const toast = await this.toastController.create({ /* ... */ });
-        await toast.present();
+        await this.presentToast('¡Usuario registrado con éxito!');
         this.router.navigateByUrl('/login', { replaceUrl: true });
       },
       error: async (error) => {
         await loading.dismiss();
-        console.error('Error en el registro:', error);
-        const alert = await this.alertController.create({ /* ... */ });
-        await alert.present();
+        const errorMessage = error.error?.message || 'Ocurrió un error desconocido.';
+        this.presentAlert('Error en el Registro', errorMessage);
       },
     });
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: 'top',
+      color: 'danger'
+    });
+    toast.present();
+  }
+
+  async presentAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 }
