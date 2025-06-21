@@ -1,0 +1,47 @@
+
+
+<ion-content [fullscreen]="true">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && registro" class="ion-padding">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Registro #{{ registro.id }}</ion-card-title>
+        <ion-card-subtitle>{{ registro.fecha | date:'fullDate' }} a las {{ registro.fecha | date:'shortTime' }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>Registrado por:</ion-label>
+            <ion-note slot="end">{{ registro.Usuario?.pri_nom_usu }} {{ registro.Usuario?.pri_ape_usu }}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label>Tipo Combustible:</ion-label>
+            <ion-note slot="end">{{ registro.tipoCombustible | titlecase }}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label>Litros Cargados:</ion-label>
+            <ion-note slot="end">{{ registro.litros }} Lts</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label>Monto Total:</ion-label>
+            <ion-note slot="end">{{ registro.monto | currency:'CLP':'symbol':'1.0-0' }}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label>Kilometraje:</ion-label>
+            <ion-note slot="end">{{ registro.kilometraje | number }} km</ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="registro.urlComprobante">
+      <ion-card-header>
+        <ion-card-title>Comprobante</ion-card-title>
+      </ion-card-header>
+      <img [src]="'http://localhost:8101' + registro.urlComprobante" alt="Comprobante"/>
+    </ion-card>
+  </div>
+</ion-content>

@@ -109,31 +109,23 @@ export class HistorialVehiculoPage implements OnInit {
     this.historialFiltrado = historialTemp;
   }
 
-   async verDetalle(item: HistorialItem) {
+     async verDetalle(item: HistorialItem) {
     switch (item.tipo) {
       case 'Mantenimiento':
-        // Abre la página de detalle de la OT como un modal
         const modalOt = await this.modalController.create({
           component: OrdenTrabajoDetallePage,
-          componentProps: {
-             ordenTrabajoId: item.id // Pasa el ID de la OT al modal
-          }
+          componentProps: { ordenTrabajoId: item.id }
         });
         await modalOt.present();
         break;
 
       case 'Siniestro':
-        // Esto ya funciona correctamente
         this.router.navigate(['/siniestro-detalle', item.id]);
         break;
         
+      // CAMBIO: Ahora navega a la nueva página de detalle
       case 'Combustible':
-        // Por ahora, mantenemos el modal. Lo cambiaremos en el siguiente paso.
-        if (item.urlComprobante) {
-          this.abrirModalImagen('Comprobante de Combustible', item.urlComprobante);
-        } else {
-          this.mostrarToast('Este registro no tiene un comprobante adjunto.');
-        }
+        this.router.navigate(['/combustible-detalle', item.id]);
         break;
     }
   }

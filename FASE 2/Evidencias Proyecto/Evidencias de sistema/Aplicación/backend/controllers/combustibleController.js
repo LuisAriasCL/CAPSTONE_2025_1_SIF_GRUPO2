@@ -1,6 +1,6 @@
 // backend/controllers/combustibleController.js
 
-const { RegistroCombustible, Vehiculo } = require('../models');
+const { RegistroCombustible, Vehiculo, Usuario } = require('../models');
 
 const multer = require('multer');
 const path = require('path');
@@ -74,4 +74,25 @@ exports.getHistorialPorConductor = async (req, res) => {
     console.error("Error al obtener el historial de combustible:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
+};
+
+exports.getCombustibleById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const registro = await RegistroCombustible.findByPk(id, {
+            include: [{
+                model: Usuario,
+                attributes: ['pri_nom_usu', 'pri_ape_usu']
+            }]
+        });
+
+        if (!registro) {
+            return res.status(404).json({ message: 'Registro de combustible no encontrado.' });
+        }
+        res.json(registro);
+
+    } catch (error) {
+        console.error("Error al obtener el registro de combustible:", error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
 };

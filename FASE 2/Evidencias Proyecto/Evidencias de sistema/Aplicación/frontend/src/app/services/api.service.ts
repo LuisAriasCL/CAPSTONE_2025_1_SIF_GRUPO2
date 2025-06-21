@@ -262,7 +262,10 @@ export class ApiService {
     .pipe(catchError(this.handleError));
 }
 
-  
+   getCombustibleById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/combustibles/${id}`)
+      .pipe(catchError(this.handleError));
+  }
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));

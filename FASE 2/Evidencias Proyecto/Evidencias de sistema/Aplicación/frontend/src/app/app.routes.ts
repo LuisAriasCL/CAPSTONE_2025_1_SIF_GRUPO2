@@ -163,6 +163,10 @@ export const routes: Routes = [
   loadComponent: () => import('./pages/historial-vehiculo/historial-vehiculo.page').then( m => m.HistorialVehiculoPage),
   canActivate: [authGuard, GestorGuard]
 },
+{
+  path: 'combustible-detalle/:id',
+  loadComponent: () => import('./pages/combustible-detalle/combustible-detalle.page').then( m => m.CombustibleDetallePage)
+},
   {
     path: '',
     redirectTo: 'dashboard',
