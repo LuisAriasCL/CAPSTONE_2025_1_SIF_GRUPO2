@@ -50,6 +50,11 @@ export class HistorialVehiculoPage implements OnInit {
   isLoading = true;
   terminoBusqueda: string = '';
   filtroTipo: string = 'todos';
+   kpis: any = {
+    costoMantenimiento: 0,
+    costoCombustible: 0,
+    rendimientoPromedio: 0
+  };
 
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
@@ -68,12 +73,14 @@ export class HistorialVehiculoPage implements OnInit {
     }
   }
 
-  cargarHistorial(vehiculoId: number) {
+   cargarHistorial(vehiculoId: number) {
     this.isLoading = true;
     this.apiService.getHistorialVehiculo(vehiculoId).subscribe({
       next: (data) => {
-        this.todoElHistorial = data;
-        this.historialFiltrado = data;
+        // CAMBIO: Extraer los KPIs y el historial de la nueva respuesta
+        this.kpis = data.kpis;
+        this.todoElHistorial = data.historial;
+        this.historialFiltrado = data.historial;
         this.isLoading = false;
       },
       error: async (err) => {

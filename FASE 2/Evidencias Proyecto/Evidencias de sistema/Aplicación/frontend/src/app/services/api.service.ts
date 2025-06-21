@@ -256,11 +256,11 @@ export class ApiService {
     return this.http.post<Usuario>(`${this.apiUrl}/usuarios`, data)
       .pipe(catchError(this.handleError));
   }
- getHistorialVehiculo(id: number): Observable<HistorialItem[]> {
-  // Asegúrate de que la URL se construya con backticks (`) y no comillas simples (')
-  return this.http.get<HistorialItem[]>(`${this.apiUrl}/vehiculos/${id}/historial`)
-    .pipe(catchError(this.handleError));
-}
+  getHistorialVehiculo(id: number): Observable<{ kpis: any, historial: HistorialItem[] }> {
+    return this.http.get<{ kpis: any, historial: HistorialItem[] }>(`${this.apiUrl}/vehiculos/${id}/historial`)
+      .pipe(catchError(this.handleError));
+  }
+
 
    getCombustibleById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/combustibles/${id}`)

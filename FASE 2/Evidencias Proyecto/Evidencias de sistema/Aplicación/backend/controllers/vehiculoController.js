@@ -97,16 +97,47 @@ exports.getHistorialByVehiculoId = async (req, res) => {
       };
     });
 
-    // --- 5. Combinar y ordenar ---
-    const historialCompleto = [...historialMantenimiento, ...historialSiniestro, ...historialCombustible];
-    historialCompleto.sort((a, b) => {
-        // Asegurarse de que las fechas son válidas antes de comparar
-        const dateA = a.fecha ? new Date(a.fecha) : 0;
-        const dateB = b.fecha ? new Date(b.fecha) : 0;
-        return dateB - dateA;
-    });
+      
+     const costoMantenimiento = historialMantenimiento.reduce((acc, item) => acc + Number(item.costo || 0), 0);
+    const costoCombustible = historialCombustible.reduce((acc, item) => acc + Number(item.costo || 0), 0);
+    let rendimientoPromedio = 0;
+    if (combustibles.length > 1) {
+      const combustiblesOrdenados = combustibles.sort((a, b) => Number(a.get('kilometraje')) - Number(b.get('kilometraje')));
+      let kmTotalesValidos = 0;
+      let litrosTotalesValidos = 0;
+      for (let i = 1; i < combustiblesOrdenados.length; i++) {
+        const kmAnterior = Number(combustiblesOrdenados[i - 1].get('kilometraje') || 0);
+        const kmActual = Number(combustiblesOrdenados[i].get('kilometraje') || 0);
+        const litrosActuales = Number(combustiblesOrdenados[i].get('litros') || 0);
+        const kmTramo = kmActual - kmAnterior;
+        if (kmTramo > 0 && litrosActuales > 0) {
+          kmTotalesValidos += kmTramo;
+          litrosTotalesValidos += litrosActuales;
+        }
+      }
+      if (litrosTotalesValidos > 0) {
+        rendimientoPromedio = kmTotalesValidos / litrosTotalesValidos;
+      }
+    }
+    
+    const kpis = {
+      costoMantenimiento,
+      costoCombustible,
+      rendimientoPromedio: parseFloat(rendimientoPromedio.toFixed(2))
+    };
 
-    res.json(historialCompleto);
+    // --- Combinar y ordenar ---
+    const historialCompleto = [...historialMantenimiento, ...historialSiniestro, ...historialCombustible];
+    historialCompleto.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Orden ascendente para timeline
+    historialCompleto.reverse(); // Invertir para que lo más nuevo quede arriba
+
+    // CAMBIO: Añadido el console.log para el objeto de KPIs
+    console.log("Objeto KPIs final enviado al frontend:", kpis);
+
+    res.json({
+      kpis,
+      historial: historialCompleto
+    });
 
   } catch (error) {
     console.error("Error detallado en el controlador del historial:", error);

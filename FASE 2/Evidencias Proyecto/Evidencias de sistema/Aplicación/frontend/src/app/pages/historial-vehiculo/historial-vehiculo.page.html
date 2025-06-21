@@ -1,7 +1,4 @@
-<!-- Fichero: src/app/pages/historial-vehiculo/historial-vehiculo.page.html -->
-
 <ion-header>
-  <!-- ... (tu header informativo no cambia) ... -->
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/vehicle-list"></ion-back-button>
@@ -24,38 +21,55 @@
       <ion-label>{{ vehiculoActual.estadoVehi | titlecase }}</ion-label>
     </ion-chip>
   </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Buscar en historial..."
+      animated="true"
+      (ionInput)="filtrarHistorial()"
+      [(ngModel)]="terminoBusqueda">
+    </ion-searchbar>
+  </ion-toolbar>
 </ion-header>
 
-<!-- CAMBIO: Añadimos una nueva toolbar para los filtros -->
-<ion-toolbar>
-  <ion-searchbar
-    placeholder="Buscar en historial..."
-    animated="true"
-    (ionInput)="filtrarHistorial()"
-    [(ngModel)]="terminoBusqueda">
-  </ion-searchbar>
-</ion-toolbar>
-
 <ion-content [fullscreen]="true">
-  <!-- Segmento para filtrar por tipo de evento -->
+
+  <ion-grid class="ion-no-padding">
+    <ion-row>
+     
+      <ion-col size="12" size-md="4">
+        <ion-card class="kpi-card">
+          <ion-card-content>
+            <ion-label>Costo Combustible</ion-label>
+            <h2 *ngIf="!isLoading; else skeleton">{{ kpis.costoCombustible | currency:'CLP':'symbol':'1.0-0' }}</h2>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-md="4">
+        <ion-card class="kpi-card">
+          <ion-card-content>
+            <ion-label>Rendimiento</ion-label>
+            <h2 *ngIf="!isLoading; else skeleton">{{ kpis.rendimientoPromedio | number:'1.1-1' }} <span class="unit">km/L</span></h2>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ng-template #skeleton>
+    <ion-skeleton-text animated="true" style="width: 60%; height: 1.6rem; margin: 4px auto 0;"></ion-skeleton-text>
+  </ng-template>
+
   <ion-segment [(ngModel)]="filtroTipo" (ionChange)="filtrarHistorial()" value="todos" class="ion-padding-horizontal">
-    <ion-segment-button value="todos">
-      <ion-label>Todos</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="Mantenimiento">
-      <ion-label>Mantenimiento</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="Siniestro">
-      <ion-label>Siniestros</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="Combustible">
-      <ion-label>Combustible</ion-label>
-    </ion-segment-button>
+    <ion-segment-button value="todos"><ion-label>Todos</ion-label></ion-segment-button>
+    <ion-segment-button value="Mantenimiento"><ion-label>Mantenimiento</ion-label></ion-segment-button>
+    <ion-segment-button value="Siniestro"><ion-label>Siniestros</ion-label></ion-segment-button>
+    <ion-segment-button value="Combustible"><ion-label>Combustible</ion-label></ion-segment-button>
   </ion-segment>
 
-  
   <div *ngIf="isLoading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando historial...</p>
   </div>
 
   <div *ngIf="!isLoading && historialFiltrado.length === 0" class="empty-state">
@@ -64,7 +78,6 @@
   </div>
 
   <ion-list *ngIf="!isLoading && historialFiltrado.length > 0">
-    <!-- CAMBIO: Añadido (click)="verDetalle(item)" y class="clickable" -->
     <ion-card 
       *ngFor="let item of historialFiltrado" 
       class="history-card clickable"
@@ -83,4 +96,5 @@
       </div>
     </ion-card>
   </ion-list>
+  
 </ion-content>
