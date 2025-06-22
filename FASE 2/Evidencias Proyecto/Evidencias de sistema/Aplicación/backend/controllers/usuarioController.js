@@ -4,29 +4,37 @@ const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize'); // <-- AÑADIR ESTA LÍNEA
 exports.getUsuarios = async (req, res) => {
     try {
-        const { rol } = req.query;
+        // --- CAMBIO 1: Leer el parámetro 'estado' además del 'rol' ---
+        const { rol, estado } = req.query;
         
-        // --- CAMBIO 1: Asegurar que solo se obtengan usuarios activos ---
-        let whereClause = { estado_usu: 'activo' }; 
-        if (rol) {
+        // --- CAMBIO 2: Hacer el filtro de estado dinámico ---
+        // Si no se envía un 'estado', por defecto busca 'activo'.
+        // Si se envía 'inactivo', buscará los inactivos.
+        let whereClause = { 
+            estado_usu: estado || 'activo' 
+        }; 
+        
+        // Se mantiene tu lógica para el filtro de rol
+        if (rol && rol !== 'todos') { // Se añade la condición para ignorar 'todos'
             whereClause.rol = rol;
         }
 
         const usuarios = await Usuario.findAll({
             where: whereClause,
-            // --- CAMBIO 2: Incluir el campo 'estado_usu' en los atributos ---
+            // Se mantienen los atributos que ya habías definido
             attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email', 'rol', 'estado_usu'],
             raw: true 
         });
 
-        
+        // Tu mapeo de datos se mantiene igual, lo cual es correcto
+        // ya que los nombres de columna coinciden.
         const usuariosMapeados = usuarios.map(u => ({
             id_usu: u.id_usu,
             pri_nom_usu: u.pri_nom_usu,
             pri_ape_usu: u.pri_ape_usu,
             email: u.email, 
             rol: u.rol,
-            estado_usu: u.estado_usu // Devolver también el estado
+            estado_usu: u.estado_usu
         }));
         
         res.status(200).json(usuariosMapeados);
@@ -36,7 +44,6 @@ exports.getUsuarios = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
-
 exports.deleteUsuario = async (req, res) => {
     try {
         const { id } = req.params;
@@ -104,7 +111,30 @@ exports.deleteUsuario = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
+exports.reactivateUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuario = await Usuario.findByPk(id);
 
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        
+        // Verifica si el usuario ya está activo para no hacer un update innecesario
+        if (usuario.estadoUsu === 'activo') {
+            return res.status(400).json({ message: 'El usuario ya se encuentra activo.' });
+        }
+        
+        // Actualiza el estado a 'activo'
+        await usuario.update({ estadoUsu: 'activo' });
+        
+        res.status(200).json({ message: 'Usuario reactivado exitosamente' });
+
+    } catch (error) {
+        console.error('Error al reactivar usuario:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
 
 exports.updateUsuario = async (req, res) => {
     try {
