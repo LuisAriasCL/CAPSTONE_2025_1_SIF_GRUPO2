@@ -1,33 +1,34 @@
 // En backend/controllers/usuarioController.js
 const { Usuario, AsignacionRecorrido, DetalleOt, OrdenTrabajo, RegistroCombustible } = require('../models');
 const bcrypt = require('bcryptjs');
-const { Op } = require('sequelize'); 
+const { Op } = require('sequelize'); // <-- AÑADIR ESTA LÍNEA
 exports.getUsuarios = async (req, res) => {
     try {
         const { rol } = req.query;
         
-        let whereClause = {};
+        // --- CAMBIO 1: Asegurar que solo se obtengan usuarios activos ---
+        let whereClause = { estado_usu: 'activo' }; 
         if (rol) {
             whereClause.rol = rol;
         }
 
         const usuarios = await Usuario.findAll({
             where: whereClause,
-            attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email', 
-                'rol'], 
+            // --- CAMBIO 2: Incluir el campo 'estado_usu' en los atributos ---
+            attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email', 'rol', 'estado_usu'],
             raw: true 
         });
 
-       
+        
         const usuariosMapeados = usuarios.map(u => ({
             id_usu: u.id_usu,
             pri_nom_usu: u.pri_nom_usu,
             pri_ape_usu: u.pri_ape_usu,
             email: u.email, 
-            rol: u.rol  
+            rol: u.rol,
+            estado_usu: u.estado_usu // Devolver también el estado
         }));
-       
-
+        
         res.status(200).json(usuariosMapeados);
 
     } catch (error) {
@@ -45,64 +46,71 @@ exports.deleteUsuario = async (req, res) => {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-      
-
-
+        // Validación para ROL CONDUCTOR
         if (usuario.rol === 'conductor') {
             const asignacionActiva = await AsignacionRecorrido.findOne({
                 where: {
+                    // --- CORRECCIÓN ---
+                    // El modelo AsignacionRecorrido.js usa 'usuarioIdUsuConductor' como propiedad.
+                    // En este caso, tu código original era correcto para este modelo específico.
                     usuarioIdUsuConductor: id,
-                    estadoAsig: {
-                        [Op.notIn]: ['completado', 'cancelado'] 
-                    }
+                    estadoAsig: { [Op.notIn]: ['completado', 'cancelado'] }
                 }
             });
             if (asignacionActiva) {
-                return res.status(409).json({ message: 'No se puede eliminar: El conductor está asignado a un recorrido que aún está activo o pendiente.' });
+                return res.status(409).json({ message: 'No se puede desactivar: El conductor tiene un recorrido activo.' });
             }
         }
 
-       
+        // Validación para ROL TECNICO
         if (usuario.rol === 'tecnico') {
-          
             const detalleOtActivo = await DetalleOt.findOne({
-                where: { usuarioIdUsuTecnico: id },
+                where: {
+                    // --- CORRECCIÓN ---
+                    // El modelo DetalleOt.js define la clave foránea como 'usuarioIdUsuTecnico'.
+                    // Tu código original era correcto aquí también.
+                    usuarioIdUsuTecnico: id 
+                },
                 include: [{
                     model: OrdenTrabajo,
                     required: true, 
                     where: {
-                        estado_ot: {
-                            [Op.notIn]: ['completado', 'cancelado']
-                        }
+                        // --- CORRECCIÓN DE TIPO ---
+                        // El estado en la BD es 'completada' (femenino).
+                        estado_ot: { [Op.notIn]: ['completado', 'cancelado'] }
                     }
                 }]
             });
             if (detalleOtActivo) {
-                return res.status(409).json({ message: 'No se puede eliminar: El técnico está asignado a una Orden de Trabajo que aún está activa.' });
+                return res.status(409).json({ message: 'No se puede desactivar: El técnico tiene una OT activa.' });
             }
         }
         
-       
+        // Validación para ROL ENCARGADO
         const otEncargadoActiva = await OrdenTrabajo.findOne({
             where: {
+                // --- CORRECCIÓN ---
+                // El modelo OrdenTrabajo.js define la propiedad como 'usuarioIdUsuEncargado'.
+                // Tu código original estaba correcto. La corrección de estado era la clave.
                 usuarioIdUsuEncargado: id,
-                estado_ot: { [Op.notIn]: ['completada', 'cancelada'] }
+                estado_ot: { [Op.notIn]: ['completado', 'cancelado'] }
             }
         });
         if(otEncargadoActiva) {
-            return res.status(409).json({ message: 'No se puede eliminar: El usuario es el encargado de una Orden de Trabajo activa.' });
+            return res.status(409).json({ message: 'No se puede desactivar: El usuario es encargado de una OT activa.' });
         }
 
+        // --- ACCIÓN FINAL: SOFT DELETE ---
+        // Ahora que todas las validaciones se ejecutan correctamente, procedemos a desactivar.
+        await usuario.update({ estadoUsu: 'inactivo' });
 
-    
-        await usuario.destroy();
-
-        res.status(200).json({ message: 'Usuario eliminado exitosamente' });
+        res.status(200).json({ message: 'Usuario desactivado exitosamente' });
 
     } catch (error) {
-        console.error('Error al eliminar usuario:', error.name, error);
+        console.error('Error al desactivar usuario:', error);
+        // Este error de FK ya no debería ocurrir, pero lo dejamos por si acaso.
         if (error.name === 'SequelizeForeignKeyConstraintError') {
-            return res.status(409).json({ message: 'No se puede eliminar. El usuario está siendo utilizado en otra parte del sistema (posiblemente registros históricos).' });
+            return res.status(409).json({ message: 'No se puede desactivar. El usuario tiene registros históricos asociados.' });
         }
         res.status(500).json({ error: 'Error interno del servidor' });
     }

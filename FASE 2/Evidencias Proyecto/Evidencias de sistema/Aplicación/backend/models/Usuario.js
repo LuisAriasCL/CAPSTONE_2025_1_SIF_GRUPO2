@@ -80,6 +80,13 @@ const Usuario = sequelize.define('Usuario', {
     clave: { 
         type: DataTypes.STRING(255),
         allowNull: false
+    },
+     
+    estadoUsu: {
+        type: DataTypes.ENUM('activo', 'inactivo'),
+        allowNull: false,
+        defaultValue: 'activo',
+        field: 'estado_usu'
     }
 }, {
     tableName: 'USUARIO', 

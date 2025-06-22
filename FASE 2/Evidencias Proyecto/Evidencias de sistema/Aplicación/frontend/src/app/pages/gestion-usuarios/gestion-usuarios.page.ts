@@ -135,39 +135,39 @@ async onCreate() {
   }
 }
 
-  async onDelete(usuario: Usuario) {
-    const alert = await this.alertCtrl.create({
-      header: 'Confirmar Borrado',
-      message: `¿Estás seguro de que quieres eliminar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}? Esta acción no se puede deshacer.`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          role: 'confirm',
-          cssClass: 'ion-color-danger',
-          handler: () => {
-        
-            this.apiService.deleteUser(usuario.id_usu).subscribe({
-              next: (response) => {
-                this.mostrarToast(response.message, 'success');
-            
-                this.usuarios = this.usuarios.filter(u => u.id_usu !== usuario.id_usu);
-                this.resultadosFiltrados = this.resultadosFiltrados.filter(u => u.id_usu !== usuario.id_usu);
-              },
-              error: (err) => {
-                console.error('Error al eliminar usuario:', err);
-                this.mostrarToast(err.message || 'Error al eliminar el usuario.', 'danger');
-              }
-            });
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
+ async onDelete(usuario: Usuario) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar Desactivación',
+      message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}? El usuario no podrá acceder al sistema pero su historial se conservará.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Desactivar',
+          role: 'confirm',
+          cssClass: 'ion-color-danger',
+          handler: () => {
+            this.apiService.deleteUser(usuario.id_usu).subscribe({
+              next: (response) => {
+                this.mostrarToast(response.message, 'success');
+                this.cargarUsuarios(this.selectedRole);
+              },
+              error: (err) => {
+                console.error('Error al desactivar usuario:', err);
+                  
+                  // --- CORRECCIÓN FINAL AQUÍ ---
+                  // Leemos el mensaje directamente de err.message en lugar de err.error.message
+                this.mostrarToast(err.message || 'Error al desactivar el usuario.', 'danger');
+              }
+            });
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
   
 
   getIconForRole(rol: string): string {

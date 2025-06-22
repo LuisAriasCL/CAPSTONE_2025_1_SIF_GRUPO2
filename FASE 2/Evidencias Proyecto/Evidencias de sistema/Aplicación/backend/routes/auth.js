@@ -87,34 +87,38 @@ router.post('/login', async (req, res) => {
     try {
         const user = await Usuario.findOne({ where: { email: email } });
         if (!user) {
-            return res.status(401).json({ message: 'Credenciales inválidas (usuario no encontrado).' });
+            return res.status(401).json({ message: 'Credenciales inválidas.' });
         }
 
         const isMatch = await bcrypt.compare(clave, user.clave);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Credenciales inválidas (clave incorrecta).' });
+            return res.status(401).json({ message: 'Credenciales inválidas.' });
         }
+    console.log('Objeto de usuario recibido por Sequelize:', user.toJSON());
+        // --- CAMBIO 1: VERIFICAR SI EL USUARIO ESTÁ ACTIVO ---
+        if (user.estadoUsu !== 'activo') {
+            return res.status(403).json({ message: 'Su cuenta ha sido desactivada. Por favor, contacte al administrador.' });
+        }
+        // --- FIN DEL CAMBIO 1 ---
 
         const payload = {
-            userId: user.idUsu,
+            userId: user.id_usu, // Corregido para que coincida con el modelo
             email: user.email,
             rol: user.rol,
-            nombre: user.priNomUsu // Puedes añadir más datos al payload del token si lo deseas
+            nombre: user.pri_nom_usu
         };
 
-        // Asegúrate de tener JWT_SECRET en tus variables de entorno
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_jwt_por_defecto', { expiresIn: '24h' }); // Aumentado el tiempo de expiración
+        const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_jwt_por_defecto', { expiresIn: '24h' });
 
         res.status(200).json({
             message: 'Login exitoso!',
             token: token,
-            user: { // Enviar información del usuario al frontend
-                idUsu: user.idUsu,
-                priNomUsu: user.priNomUsu,
-                priApeUsu: user.priApeUsu,
+            user: {
+                id_usu: user.id_usu,
+                pri_nom_usu: user.pri_nom_usu,
+                pri_ape_usu: user.pri_ape_usu,
                 email: user.email,
                 rol: user.rol
-                // No envíes la clave
             }
         });
 
@@ -123,18 +127,21 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor durante el login.' });
     }
 });
-
 // GET /api/auth/users - Para listar usuarios (ej. para selectores de conductor)
 router.get('/users', async (req, res) => {
     try {
-        const { rol } = req.query; // Permite filtrar por rol, ej. /api/auth/users?rol=conductor
-        const whereClause = {};
+        const { rol } = req.query;
+        
+        // --- CAMBIO 2: FILTRAR SIEMPRE POR USUARIOS ACTIVOS ---
+        const whereClause = { estado_usu: 'activo' };
         if (rol) {
             whereClause.rol = rol;
         }
+        // --- FIN DEL CAMBIO 2 ---
+
         const usuarios = await Usuario.findAll({
             where: whereClause,
-            attributes: ['idUsu', 'priNomUsu', 'segNomUsu', 'priApeUsu', 'segApeUsu', 'email', 'rol'] // Excluir 'clave' y otros datos sensibles
+            attributes: ['id_usu', 'pri_nom_usu', 'seg_nom_usu', 'pri_ape_usu', 'seg_ape_usu', 'email', 'rol']
         });
         res.json(usuarios);
     } catch (error) {
