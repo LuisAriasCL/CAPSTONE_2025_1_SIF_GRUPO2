@@ -130,7 +130,7 @@ async onCreate() {
       },
       error: (err) => {
         this.mostrarToast(err.message || 'Error al actualizar el usuario', 'danger');
-      }
+      }s
     });
   }
 }

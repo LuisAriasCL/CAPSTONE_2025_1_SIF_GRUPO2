@@ -283,17 +283,20 @@ getMantenimientoReport(filtros: any): Observable<any[]> {
     return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
       .pipe(catchError(this.handleError));
   }
-    getAllUsers(rol?: string): Observable<Usuario[]> {
-    let params = new HttpParams();
-    if (rol) {
-
-      params = params.set('rol', rol);
-    }
-    
-
-    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
-      .pipe(catchError(this.handleError));
+   getAllUsers(rol?: string, estado: string = 'activo'): Observable<Usuario[]> {
+  let params = new HttpParams();
+  if (rol) {
+    params = params.append('rol', rol);
   }
+  // Siempre se enviará el estado, por defecto 'activo'
+  params = params.append('estado', estado);
+
+  return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params });
+}
+reactivateUser(id: number): Observable<any> {
+  return this.http.put(`${this.apiUrl}/usuarios/reactivate/${id}`, {});
+}
+
     getVehiculos(): Observable<Vehiculo[]> {
     return this.http.get<Vehiculo[]>(this.apiUrl);
   }

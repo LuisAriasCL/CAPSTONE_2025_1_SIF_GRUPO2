@@ -158,23 +158,25 @@ exports.updateUsuario = async (req, res) => {
 
 exports.createUsuario = async (req, res) => {
     try {
-    
-        const { pri_nom_usu, pri_ape_usu, email, rol, clave } = req.body;
+        // --- CAMBIO 1: Añadir 'rut_usu' a la desestructuración ---
+        const { pri_nom_usu, pri_ape_usu, email, rol, clave, rut_usu } = req.body;
 
-        if (!pri_nom_usu || !pri_ape_usu || !email || !rol || !clave) {
-            return res.status(400).json({ message: 'Todos los campos son requeridos.' });
+        // --- CAMBIO 2: Añadir 'rut_usu' a la validación ---
+        if (!pri_nom_usu || !pri_ape_usu || !email || !rol || !clave || !rut_usu) {
+            return res.status(400).json({ message: 'Todos los campos son requeridos, incluyendo el RUT.' });
         }
 
         const hashedPassword = await bcrypt.hash(clave, 10);
-
-       
+        
         const nuevoUsuario = await Usuario.create({
-            priNomUsu: pri_nom_usu,   
+            priNomUsu: pri_nom_usu,  
             priApeUsu: pri_ape_usu, 
+            // --- CAMBIO 3: Añadir 'rutUsu' al objeto de creación ---
+            rutUsu: rut_usu,
             email: email,
             rol: rol,
             clave: hashedPassword
-          
+            // No es necesario añadir 'estado_usu', se establece por defecto.
         });
 
         const usuarioParaDevolver = { ...nuevoUsuario.toJSON() };
@@ -185,9 +187,11 @@ exports.createUsuario = async (req, res) => {
     } catch (error) {
         console.error('Error al crear usuario:', error);
         if (error.name === 'SequelizeUniqueConstraintError') {
-            return res.status(409).json({ message: 'El email proporcionado ya está registrado.' });
+            // Mensaje de error más específico
+            const field = error.errors[0]?.path || 'desconocido';
+            return res.status(409).json({ message: `El ${field} proporcionado ya está registrado.` });
         }
-       
+        
         if (error.name === 'SequelizeValidationError') {
             const messages = error.errors.map(e => e.message).join(', ');
             return res.status(400).json({ message: `Datos inválidos: ${messages}` });

@@ -28,6 +28,7 @@ export class UsuarioFormComponent implements OnInit {
     this.form = this.fb.group({
         pri_nom_usu: [this.usuario?.pri_nom_usu || '', Validators.required],
         pri_ape_usu: [this.usuario?.pri_ape_usu || '', Validators.required],
+        rut_usu: [this.usuario?.rut_usu || '', Validators.required],
         email: [this.usuario?.email || '', [Validators.required, Validators.email]],
         rol: [this.usuario?.rol || null, Validators.required],
 
