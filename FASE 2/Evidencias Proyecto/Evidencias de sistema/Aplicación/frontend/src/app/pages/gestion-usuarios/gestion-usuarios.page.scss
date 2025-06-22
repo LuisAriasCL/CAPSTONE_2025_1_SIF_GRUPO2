@@ -1,59 +1,80 @@
-// Quita cualquier estilo anterior y reemplázalo con esto
+// Estilo del botón flotante para crear
+ion-fab-button {
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --box-shadow: 0 6px 20px rgba(var(--ion-color-primary-rgb), 0.4);
+  transition: transform 0.2s ease-out;
 
-ion-card.usuario-card, ion-card.skeleton-card {
-  margin-left: 16px;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-}
-
-ion-card-header {
-  padding-bottom: 8px;
-}
-
-ion-card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-ion-card-subtitle {
-  font-size: 0.9rem;
-  color: var(--ion-color-medium-shade);
-  padding-left: 28px; // Para alinear con el título
-}
-
-ion-card-content {
-  padding-top: 0;
-}
-
-.card-buttons {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 8px 4px;
-
-  ion-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
-    font-size: 0.8rem;
-    text-transform: none;
+  &:hover {
+    transform: scale(1.1);
   }
 }
 
-// Estilos para el esqueleto de carga
-ion-card.skeleton-card {
-  ion-card-header {
-    ion-skeleton-text {
-      height: 22px;
+// MEJORA: Estilos que se aplican desde la página "hacia adentro" del componente app-data-table
+:host ::ng-deep app-data-table {
+  .table-container {
+    border: 1px solid var(--ion-color-step-150, #e0e0e0);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: var(--ion-color-background, #fff);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  thead th {
+    background-color: var(--ion-color-light-tint, #f8f8f8);
+    color: var(--ion-color-primary, #3880ff);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--ion-color-primary-tint, #d1e0ff);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+    transition: background-color 0.2s ease-in-out;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: var(--ion-color-light-shade, #f0f4ff);
     }
   }
-  ion-card-content {
-    ion-skeleton-text {
-      height: 18px;
-      margin-bottom: 4px;
+
+  tbody td {
+    padding: 16px;
+    color: var(--ion-color-step-800, #333);
+    vertical-align: middle;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+
+    ion-button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --border-radius: 8px;
+      height: 32px;
+      font-size: 1rem;
+
+      &.edit-button {
+        --background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+        --color: var(--ion-color-tertiary-shade);
+      }
+      &.delete-button {
+        --background: rgba(var(--ion-color-danger-rgb), 0.1);
+        --color: var(--ion-color-danger-shade);
+      }
     }
   }
 }
