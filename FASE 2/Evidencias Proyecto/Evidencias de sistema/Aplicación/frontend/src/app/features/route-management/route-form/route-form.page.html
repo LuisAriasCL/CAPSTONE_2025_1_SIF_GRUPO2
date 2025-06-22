@@ -1,0 +1,74 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+
+<app-modal-header 
+  [title]="pageTitle"
+  (close)="closeModal()">
+</app-modal-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-loading [isOpen]="isLoading" message="Cargando datos..."></ion-loading>  <form *ngIf="form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>    <div class="uniform-input-wrapper">
+      <ion-label>Nombre de la Ruta <ion-text color="danger">*</ion-text></ion-label>
+      <ion-input type="text" formControlName="nombre" required placeholder="Ingrese nombre de la ruta"></ion-input>
+    </div>
+    <app-form-field [control]="f['nombre']" fieldName="Nombre de la ruta" [isSubmitted]="isSubmitted"></app-form-field>    <div class="uniform-input-wrapper">
+      <ion-label>Descripción (Opcional)</ion-label>
+      <ion-textarea formControlName="descripcion" rows="2" placeholder="Describa brevemente la ruta"></ion-textarea>
+    </div>
+    <app-form-field [control]="f['descripcion']" fieldName="Descripción" [isSubmitted]="isSubmitted"></app-form-field><ion-item-divider class="ion-margin-top">
+      <ion-label>Definir Ruta en Mapa</ion-label>
+       <ion-button fill="clear" size="small" (click)="clearMapSelection()" slot="end" *ngIf="origenCoords || destinoCoords" color="warning">
+           <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+           Limpiar Puntos
+       </ion-button>
+    </ion-item-divider>
+    <p class="ion-padding-start ion-padding-end"><small>Haz clic en el mapa para marcar el Origen y luego el Destino. La ruta se calculará automáticamente.</small></p>
+    <div id="routeFormMapContainer" class="map-container">
+      <div id="routeFormMap" #routeMap style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+    </div>    <!-- Indicadores de estado del cálculo -->
+    <ion-loading [isOpen]="isCalculatingRoute" message="Calculando ruta automáticamente..."></ion-loading>
+    <ion-text color="danger" *ngIf="routeCalculationError" class="ion-padding">
+        <small>{{ routeCalculationError }}</small>
+    </ion-text>
+
+    <ion-list lines="none">
+       <ion-item *ngIf="origenCoords">
+           <ion-icon name="navigate-circle-outline" slot="start" color="success"></ion-icon>
+           <ion-label>Origen:</ion-label>
+           <ion-note slot="end">{{ origenCoords[0] | number:'1.5-5' }}, {{ origenCoords[1] | number:'1.5-5' }}</ion-note>
+       </ion-item>
+        <ion-item *ngIf="destinoCoords">
+           <ion-icon name="location-outline" slot="start" color="danger"></ion-icon>
+           <ion-label>Destino:</ion-label>
+           <ion-note slot="end">{{ destinoCoords[0] | number:'1.5-5' }}, {{ destinoCoords[1] | number:'1.5-5' }}</ion-note>
+        </ion-item>    </ion-list>
+
+     <ion-item class="ion-margin-top ion-text-center" lines="none">
+        <ion-icon name="speedometer-outline" slot="start" color="primary" style="margin-right: 8px;"></ion-icon>
+        <ion-label color="primary">
+            Distancia Estimada: <strong>{{ calculatedDistance !== null ? (calculatedDistance | number:'1.1-2') + ' km' : 'N/A' }}</strong>
+        </ion-label>
+        </ion-item>     <div *ngIf="isSubmitted && !calculatedPoints && origenCoords && destinoCoords && !routeCalculationError" class="error-message ion-padding-start ion-text-center">
+        <ion-text color="warning">La ruta se está calculando automáticamente...</ion-text>
+    </div>
+     <div *ngIf="isSubmitted && !origenCoords" class="error-message ion-padding-start ion-text-center">
+         <ion-text color="warning">Debes seleccionar un punto de Origen en el mapa.</ion-text>
+     </div>
+     <div *ngIf="isSubmitted && !destinoCoords && origenCoords" class="error-message ion-padding-start ion-text-center">
+         <ion-text color="warning">Debes seleccionar un punto de Destino en el mapa para que se calcule la ruta automáticamente.</ion-text>
+     </div>  </form>
+</ion-content>
+
+<app-modal-footer
+  [submitLabel]="isEditMode ? 'Actualizar Ruta' : 'Crear Ruta'"
+  [icon]="'save'"
+  [submitColor]="'primary'"
+  [submitType]="'button'"  [isDisabled]="form.invalid || isLoading"
+  [showCancel]="false"
+  (submit)="onSubmit()">
+</app-modal-footer>
+

@@ -80,10 +80,9 @@
 
         <ion-item lines="full">
           <ion-icon slot="start" name="settings-outline"></ion-icon>
-          <ion-label position="floating">Rol</ion-label>
-          <ion-select formControlName="rol" interface="popover" required>
-            <ion-select-option *ngFor="let roleOption of availableRoles" [value]="roleOption">
-              {{ roleOption.charAt(0).toUpperCase() + roleOption.slice(1) }}
+          <ion-label position="floating">Rol</ion-label>          <ion-select formControlName="rol" interface="popover" required [compareWith]="compareWith">
+            <ion-select-option *ngFor="let roleOption of availableRoles" [value]="roleOption.value">
+              {{ roleOption.label }}
             </ion-select-option>
           </ion-select>
         </ion-item>
@@ -117,9 +116,8 @@
           <ion-text color="danger"><small>Las contraseñas no coinciden.</small></ion-text>
         </div>
 
-        </ion-list>
-
-      <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="registerForm.invalid">
+        </ion-list>      <ion-button class="ion-margin-top submit-button" type="submit" expand="block">
+        <ion-icon slot="start" name="person-add-outline"></ion-icon>
         Registrarse
       </ion-button>
     </form>

@@ -1,0 +1,22 @@
+// Estilo específico para el mapa
+.map-container {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+
+// Texto informativo
+ion-note {
+  font-size: 13px;
+}
+
+// Mensajes de error
+.error-message {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin: 4px 0;
+}
+

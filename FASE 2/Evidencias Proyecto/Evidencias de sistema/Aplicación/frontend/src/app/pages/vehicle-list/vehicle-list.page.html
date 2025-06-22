@@ -1,49 +1,44 @@
-<ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-  <ion-refresher-content></ion-refresher-content>
-</ion-refresher>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header Component -->
+  <app-page-header 
+    title="Gestión de Vehículos"
+    buttonText="Crear Nuevo Vehículo"
+    buttonIcon="add-circle-outline"
+    (buttonClick)="goToAddVehicle()">
+  </app-page-header>
 
-<!-- Estado de Carga -->
-<div *ngIf="isLoading" class="ion-text-center ion-padding-top">
-  <ion-spinner name="crescent" color="primary"></ion-spinner>
-  <p>Cargando vehículos...</p>
-</div>
+  <!-- Refresher para actualizar datos -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-<!-- Estado Vacío -->
-<div *ngIf="!isLoading && vehiculos.length === 0" class="ion-text-center ion-padding-top">
-  <ion-icon name="car-sport-outline" style="font-size: 4em;" color="medium"></ion-icon>
-  <p>No hay vehículos registrados.</p>
-  <ion-button expand="block" (click)="goToAddVehicle()" class="ion-margin-top">
-    <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-    Registrar Primer Vehículo
-  </ion-button>
-</div>
-
-<!-- Tabla de datos (solo se muestra si no está cargando y hay vehículos) -->
-<div class="data-table-container" *ngIf="!isLoading && vehiculos.length > 0">
-  <div class="header-row ion-padding-bottom">
-    <h1 class="page-title">{{ pageTitle }}</h1>
-    <ion-button (click)="goToAddVehicle()" fill="solid" class="add-button">
-      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-      Registrar Nuevo Vehículo
-    </ion-button>
+  <!-- Estado de Carga -->
+  <div *ngIf="isLoading" class="ion-text-center ion-padding-top">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando vehículos...</p>
   </div>
-  
-  <app-data-table 
-    [columns]="tableColumns"
-    [data]="vehiculos"
-    [pageSize]="pageSize"
-    [actionButtons]="actionButtons"
-    
-  
-    [totalItems]="vehiculos.length"  
-    [showPagination]="true"          
-    [showExport]="true"
-    [showImport]="true"
 
-    (page)="onPageChange($event)"    
-    (rowClick)="onRowClick($event)"
-    (sort)="onSortColumn($event)"
-    (export)="onExport($event)"
-    (import)="onImport($event)">
-  </app-data-table>
-</div>
+  <!-- Tabla de datos (solo se muestra si no está cargando y hay vehículos) -->
+  <div class="data-table-container" *ngIf="!isLoading && vehiculos.length > 0">
+
+    
+    <app-data-table 
+      [columns]="tableColumns"
+      [data]="vehiculos"
+      [pageSize]="pageSize"
+      [actionButtons]="actionButtons"
+      
+    
+      [totalItems]="vehiculos.length"  
+      [showPagination]="true"          
+      [showExport]="true"
+      [showImport]="true"
+
+      (page)="onPageChange($event)"    
+      (rowClick)="onRowClick($event)"
+      (sort)="onSortColumn($event)"
+      (export)="onExport($event)"
+      (import)="onImport($event)">
+    </app-data-table>
+  </div>
+</ion-content>

@@ -1,0 +1,25 @@
+.error-container {
+  min-height: var(--form-error-container-min-height, 24px);
+  margin-top: var(--form-error-container-margin-top, 2px);
+  margin-bottom: var(--form-error-container-margin-bottom, 8px);
+  padding: var(--form-error-container-padding, 0 4px);
+  position: relative;
+  height: 24px; /* Altura fija para evitar desplazamiento */
+  /* Transparente cuando no hay error */
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.error-container.has-error {
+  opacity: 1;
+}
+
+.error-message {
+  color: var(--form-error-color, var(--ion-color-danger, #eb445a));
+  font-size: var(--form-error-font-size, 12px);
+  font-weight: var(--form-error-font-weight, normal);
+  position: absolute; /* Posicionamiento absoluto para evitar afectar el flujo del documento */
+  width: 100%;
+  padding-left: 16px;
+  display: block;
+}

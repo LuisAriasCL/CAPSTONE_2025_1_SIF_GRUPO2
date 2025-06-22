@@ -1,0 +1,160 @@
+<app-modal-header 
+  [title]="ordenTrabajo ? 'OT #' + ordenTrabajo.id_ot : 'Orden de Trabajo'"
+  (close)="closeModal()">
+  <ion-buttons slot="end" *ngIf="ordenTrabajo?.encargado">
+    <ion-chip color="light" outline>
+      <ion-icon name="person-circle"></ion-icon>
+      <ion-label>{{ ordenTrabajo?.encargado?.pri_nom_usu }}</ion-label>
+    </ion-chip>
+  </ion-buttons>
+</app-modal-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando información...</p>
+  </div>
+
+  <div *ngIf="!isLoading && ordenTrabajo">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Detalles Generales</ion-card-title>
+        <ion-badge [color]="getColorForStatus(ordenTrabajo.estado_ot)" class="ion-margin-top">{{ getStatusDisplayName(ordenTrabajo.estado_ot) }}</ion-badge>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon name="car-sport-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Vehículo</h3>
+              <p>{{ ordenTrabajo.vehiculo.marca }} {{ ordenTrabajo.vehiculo.modelo }} ({{ ordenTrabajo.vehiculo.patente }})</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon name="speedometer-outline" slot="start" color="primary"></ion-icon>
+            <ion-label position="stacked">
+              <h3>Kilometraje</h3>
+            </ion-label>
+            <ion-input type="number" placeholder="Ingrese kilometraje del vehículo"
+                       [(ngModel)]="ordenTrabajo.km_ot"
+                       [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode">
+            </ion-input>
+          </ion-item>
+
+         <ion-item>
+             <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+             <ion-label position="stacked">
+               <h3>Descripción del Trabajo Realizado</h3>
+             </ion-label>
+             <ion-textarea placeholder="Describa el trabajo efectuado..."
+                           [(ngModel)]="ordenTrabajo.descripcion_ot"
+                           [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+                           rows="4">
+             </ion-textarea>
+           </ion-item>
+
+          <ion-item>
+            <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Solicitante</h3>
+              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'N/A' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || '' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item lines="full">
+            <ion-label>
+              <h3>Fechas</h3>
+              <p *ngIf="ordenTrabajo.fec_ini_ot && isValidDate(ordenTrabajo.fec_ini_ot)">
+                <ion-icon name="calendar-outline" class="align-middle"></ion-icon>
+                <strong>Fecha Inicio:</strong> {{ ordenTrabajo.fec_ini_ot | date:'dd/MM/yy HH:mm' }}
+              </p>
+              <p *ngIf="ordenTrabajo.fec_fin_ot && isValidDate(ordenTrabajo.fec_fin_ot)">
+                <ion-icon name="checkmark-done-outline" class="align-middle"></ion-icon>
+                <strong>Fecha Cierre:</strong> {{ ordenTrabajo.fec_fin_ot | date:'dd/MM/yy HH:mm' }}
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="ordenTrabajo.estado_ot !== 'completado'">
+      <ion-list-header>
+        <ion-label>Tareas a Realizar</ion-label>
+      </ion-list-header>
+      <ion-card *ngFor="let tarea of ordenTrabajo.detalles" class="task-card">
+        <ion-item lines="none" class="task-card-header">
+          <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <p>{{ tarea.desc_det }}</p>
+          </ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="tarea.checklist" [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"></ion-checkbox>
+        </ion-item>
+        <ion-item lines="full" *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode">
+          <ion-button (click)="abrirSelectorTecnicos(tarea)" fill="clear" size="small">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Asignar Técnico
+          </ion-button>
+          <ion-label slot="end" class="ion-text-right info-col">
+            <p>
+              Técnico:
+              <span *ngIf="tarea.tecnico; else noAsignado">
+                {{ tarea.tecnico.pri_nom_usu }} {{ tarea.tecnico.pri_ape_usu }}
+              </span>
+              <ng-template #noAsignado>Sin asignar</ng-template>
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+    </div>
+
+    <div *ngIf="ordenTrabajo.estado_ot === 'completado'" class="ion-text-center ion-padding">
+      <ion-icon name="checkmark-done-circle" color="success" style="font-size: 4rem;"></ion-icon>
+      <p>Esta Orden de Trabajo fue finalizada.</p>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Modal Footer with Conditional Actions -->
+<div *ngIf="!isLoading && ordenTrabajo" class="modal-footer">
+  
+  <!-- Actions for requested status -->
+  <app-modal-footer
+    *ngIf="ordenTrabajo.estado_ot === 'solicitado' && !isViewMode"
+    submitLabel="Iniciar Orden de Trabajo"
+    icon="play-circle-outline"
+    [isDisabled]="false"
+    [showCancel]="true"
+    cancelLabel="Cerrar"
+    (submit)="iniciarOrdenDeTrabajo()"
+    (cancel)="closeModal()">
+  </app-modal-footer>
+
+  <!-- Actions for in progress status -->
+  <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode" class="ion-padding">
+    <ion-button (click)="guardarProgresoTareas()" expand="block" style="--background: var(--ion-color-primary); --background-hover: #0056b3;" class="ion-margin-bottom">
+      <ion-icon name="save-outline" slot="start"></ion-icon>
+      Guardar Progreso
+    </ion-button>
+    <app-modal-footer
+      submitLabel="Finalizar Orden de Trabajo"
+      icon="flag-outline"
+      [isDisabled]="false"
+      [showCancel]="true"
+      cancelLabel="Cerrar"
+      (submit)="finalizarOrdenDeTrabajo()"
+      (cancel)="closeModal()">
+    </app-modal-footer>
+  </div>
+
+  <!-- Actions for completed status or view mode -->
+  <app-modal-footer
+    *ngIf="isViewMode || ordenTrabajo.estado_ot === 'completado'"
+    submitLabel="Cerrar"
+    icon="close-outline"
+    [isDisabled]="false"
+    [showCancel]="false"
+    (submit)="closeModal()">
+  </app-modal-footer>
+  
+</div>

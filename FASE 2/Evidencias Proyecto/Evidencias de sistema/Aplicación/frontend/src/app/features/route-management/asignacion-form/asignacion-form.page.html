@@ -1,0 +1,110 @@
+<app-modal-header 
+  [title]="pageTitle"
+  (close)="closeModal()">
+</app-modal-header>
+
+<ion-content class="ion-padding">
+
+  
+  <form [formGroup]="form" novalidate>
+    <ion-list><!-- Conductor -->      <div class="uniform-input-wrapper">
+        <ion-label position="floating">Conductor <ion-text color="danger">*</ion-text></ion-label>        <ion-select formControlName="usuarioIdUsu" required [disabled]="isViewMode" 
+                   [compareWith]="compareWith" placeholder="Seleccione un conductor">
+          <ion-select-option *ngFor="let conductor of conductores" [value]="conductor.idUsu">
+            {{ conductor.priNomUsu }} {{ conductor.priApeUsu }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <app-form-field [control]="f['usuarioIdUsu']" fieldName="Conductor" [isSubmitted]="isSubmitting"></app-form-field><!-- Ruta -->      <div class="uniform-input-wrapper">
+        <ion-label>Ruta (Plantilla) <ion-text color="danger">*</ion-text></ion-label>        <ion-select formControlName="rutaIdRuta" required [disabled]="isViewMode" 
+                   [compareWith]="compareWith" placeholder="Seleccione una ruta">
+          <ion-select-option *ngFor="let ruta of rutasPlantilla" [value]="ruta.idRuta">
+            {{ ruta.nombreRuta }} ({{ ruta.kilometrosRuta | number:'1.1-2' }} km aprox.)
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <app-form-field [control]="f['rutaIdRuta']" fieldName="Ruta" [isSubmitted]="isSubmitting"></app-form-field><!-- Vehículo -->      <div class="uniform-input-wrapper">
+        <ion-label>Vehículo <ion-text color="danger">*</ion-text></ion-label>        <ion-select formControlName="vehiculoIdVehi" required (ionChange)="onVehiculoChange($event)" [disabled]="isViewMode"
+                   [compareWith]="compareWith" placeholder="Seleccione un vehículo">
+          <ion-select-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.idVehi">
+            {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <app-form-field [control]="f['vehiculoIdVehi']" fieldName="Vehículo" [isSubmitted]="isSubmitting"></app-form-field><!-- Fecha y Hora de Inicio -->      <div class="uniform-input-wrapper">
+        <ion-label>Fecha y Hora de Inicio <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input 
+          formControlName="fecIniRecor"
+          type="date" 
+          required 
+          displayFormat="YYYY-MM-DD" 
+          pickerFormat="YYYY-MM-DD"
+          placeholder="Fecha de inicio"
+          [value]="currentDate"
+          [readonly]="isViewMode">
+        </ion-input>
+      </div>
+      <app-form-field [control]="f['fecIniRecor']" fieldName="Fecha de inicio" [isSubmitted]="isSubmitting"></app-form-field>
+        <!-- Kilometraje Inicial -->      <div class="uniform-input-wrapper">
+        <ion-label>Kilometraje Inicial <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input type="number" formControlName="kmIniRecor" required placeholder="Ej: 150000" [readonly]="isViewMode"></ion-input>
+      </div>
+      <app-form-field [control]="f['kmIniRecor']" fieldName="Kilometraje inicial" [isSubmitted]="isSubmitting"></app-form-field>
+      
+      <ion-list-header>
+        <ion-label>Datos de Finalización</ion-label>
+      </ion-list-header>      <!-- Estado de la Asignación -->      <div class="uniform-input-wrapper">
+        <ion-label>Estado de la Asignación <ion-text color="danger">*</ion-text></ion-label>        <ion-select formControlName="estadoAsig" required [disabled]="isViewMode" 
+                   [compareWith]="compareWith" placeholder="Seleccione un estado">
+          <ion-select-option *ngFor="let option of constants.ESTADO_OPTIONS" [value]="option.value">
+            {{ option.label }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <app-form-field [control]="f['estadoAsig']" fieldName="Estado" [isSubmitted]="isSubmitting"></app-form-field><!-- Fecha y Hora de Fin -->      <div class="uniform-input-wrapper">
+        <ion-label>Fecha y Hora de Fin</ion-label>
+        <ion-input 
+          formControlName="fecFinRecor"
+          type="date" 
+          displayFormat="YYYY-MM-DD" 
+          pickerFormat="YYYY-MM-DD"
+          placeholder="Fecha de finalización"
+          [value]="currentDate"
+          [readonly]="isViewMode">
+        </ion-input>
+      </div>
+      <app-form-field [control]="f['fecFinRecor']" fieldName="Fecha de finalización" [isSubmitted]="isSubmitting"></app-form-field>
+        <!-- Error de validación cruzada para fecha final > inicial -->
+      <div *ngIf="form.errors?.['fechaFinalInvalida'] && f['fecFinRecor'].value && isSubmitting" class="error-container">
+        <div class="error-message">La fecha de finalización debe ser posterior a la fecha de inicio.</div>
+      </div>
+        <!-- Kilometraje Final -->      <div class="uniform-input-wrapper">
+        <ion-label>Kilometraje Final</ion-label>
+        <ion-input type="number" formControlName="kmFinRecor" placeholder="Ej: 150250" [readonly]="isViewMode"></ion-input>
+      </div>
+      <app-form-field [control]="f['kmFinRecor']" fieldName="Kilometraje final" [isSubmitted]="isSubmitting"></app-form-field>
+        <!-- Error de validación cruzada para kilometraje final > inicial -->
+      <div *ngIf="form.errors?.['kilometrajeFinalInvalido'] && f['kmFinRecor'].value && isSubmitting" class="error-container">
+        <div class="error-message">El kilometraje final debe ser mayor que el kilometraje inicial.</div>
+      </div><!-- Eficiencia Combustible -->      <div class="uniform-input-wrapper">
+        <ion-label>Eficiencia Combustible (km/l)</ion-label>
+        <ion-input type="number" formControlName="efiCombRecor" placeholder="Ej: 10.5" [readonly]="isViewMode"></ion-input>
+      </div>
+      <app-form-field [control]="f['efiCombRecor']" fieldName="Eficiencia de combustible" [isSubmitted]="isSubmitting"></app-form-field>
+
+      <!-- Notas -->
+      <div class="uniform-input-wrapper">
+        <ion-label>Notas Adicionales</ion-label>
+        <ion-textarea formControlName="notas" rows="3" [readonly]="isViewMode"></ion-textarea>
+      </div>    </ion-list>
+  </form>
+</ion-content>
+
+<app-modal-footer
+  [submitLabel]="isViewMode ? 'Cerrar' : (isEditMode ? 'Actualizar Asignación' : 'Guardar Asignación')"
+  [icon]="isViewMode ? 'close' : 'save'"
+  [submitColor]="isViewMode ? 'medium' : 'primary'"
+  [isDisabled]="!isViewMode && form.invalid"
+  [showCancel]="false"
+  (submit)="isViewMode ? closeModal() : onSubmit()">
+</app-modal-footer>

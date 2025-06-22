@@ -1,0 +1,30 @@
+// Estilos específicos para el formulario de vehículos
+.ultra-compact {
+  --ion-grid-padding: 0;
+  --ion-grid-column-padding: 6px;
+}
+
+// Texto de ayuda para campos de formulario
+.helper-text {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  margin-top: 2px;
+}
+
+// Estilos para tabs
+ion-segment {
+  margin: 16px 0;
+  ion-segment-button {
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}
+
+// Asegurar espaciado uniforme para elementos de formulario
+.uniform-input-wrapper {
+  margin-bottom: 0;
+  padding: 8px 0;
+}
+
+
+

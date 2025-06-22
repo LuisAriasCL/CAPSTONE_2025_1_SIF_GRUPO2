@@ -1,0 +1,107 @@
+/* ==========================================================================
+   VARIABLES DE DISEÑO - SISTEMA DE GESTIÓN DE FLOTA
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   PALETA DE COLORES CORPORATIVOS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Colores principales */
+  --color-primary: #005c93;
+  --color-primary-rgb: 0, 92, 147;
+  --color-secondary: #ffffff;
+  --color-secondary-rgb: 255, 255, 255;
+  
+  /* Colores de estado */
+  --color-success: #2dd36f;
+  --color-warning: #ffc409;  
+  --color-danger: #eb445a;
+  
+  /* Colores neutrales */
+  --color-dark: #222428;
+  --color-medium: #92949c;
+  --color-light: #f4f5f8;
+  --color-tertiary: #a5a5a8;
+
+  /* --------------------------------------------------------------------------
+     SISTEMA DE DISEÑO PARA FORMULARIOS
+     -------------------------------------------------------------------------- */
+  
+  /* === DIMENSIONES === */
+  --form-input-height: 40px;
+  --form-textarea-height: 80px;
+  --form-border-radius: 12px;
+  
+  /* === ESPACIADO === */
+  --form-padding-y: 12px;
+  --form-padding-x: 16px;
+  --form-margin-bottom: 16px;
+  --form-label-margin: 8px;
+  
+  /* === COLORES === */
+  --form-bg: #ffffff;
+  --form-border: #d1d5db;
+  --form-border-focus: var(--color-primary);
+  --form-text: var(--color-dark);
+  --form-placeholder: #9ca3af;
+  --form-error: var(--color-danger);
+  
+  /* === TIPOGRAFÍA === */
+  --form-font-size: 16px;
+  --form-label-size: 14px;
+  --form-label-weight: bold;
+  --form-error-size: 12px;
+  
+  /* === ESTADOS DESHABILITADOS === */
+  --form-disabled-bg: #f3f4f6;
+  --form-disabled-text: #9ca3af;
+  --form-disabled-opacity: 0.6;
+  
+  /* === EFECTOS === */
+  --form-shadow-focus: 0 0 0 2px rgba(0, 92, 147, 0.1);
+  --form-transition: all 0.3s ease;
+
+  /* --------------------------------------------------------------------------
+     MAPEO PARA COMPATIBILIDAD CON IONIC
+     -------------------------------------------------------------------------- */
+  
+  /* Ionic colors */
+  --ion-color-primary: var(--color-primary);
+  --ion-color-primary-rgb: var(--color-primary-rgb);
+  --ion-color-secondary: var(--color-secondary);
+  --ion-color-secondary-rgb: var(--color-secondary-rgb);
+  --ion-color-success: var(--color-success);
+  --ion-color-warning: var(--color-warning);
+  --ion-color-danger: var(--color-danger);
+  --ion-color-dark: var(--color-dark);
+  --ion-color-medium: var(--color-medium);
+  --ion-color-light: var(--color-light);
+  --ion-color-tertiary: var(--color-tertiary);
+  
+  /* Compatibilidad con variables heredadas */
+  --form-element-height: var(--form-input-height);
+  --form-element-border-radius: var(--form-border-radius);
+  --form-background: var(--form-bg);
+  --form-border-color: var(--form-border);
+  --form-text-color: var(--form-text);
+  --form-placeholder-color: var(--form-placeholder);
+  --form-error-color: var(--form-error);
+  --form-label-font-size: var(--form-label-size);
+  --form-label-font-weight: var(--form-label-weight);
+  --form-disabled-background: var(--form-disabled-bg);
+  --form-disabled-text-color: var(--form-disabled-text);
+}
+
+/* --------------------------------------------------------------------------
+   MODO OSCURO
+   -------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --form-bg: #1e1e1e;
+    --form-border: #3d3d3d;
+    --form-text: #ffffff;
+    --form-placeholder: #6b7280;
+    --form-disabled-bg: #2a2a2a;
+    --form-disabled-text: #6b7280;
+  }
+}

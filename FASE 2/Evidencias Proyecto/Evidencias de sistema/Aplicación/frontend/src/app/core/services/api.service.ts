@@ -1,0 +1,549 @@
+// src/app/services/api.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import * as L from 'leaflet';
+
+
+
+// Interfaz para la respuesta de OSRM (como la definimos antes)
+export interface OsrmRouteData {
+  points: L.LatLngTuple[];
+  distance: number; 
+  duration: number; 
+}
+export interface UsuarioSiniestro {
+  id_usu: number;
+  pri_nom_usu: string;
+  pri_ape_usu: string;
+}
+export interface VehiculoSiniestro {
+  id_vehi: number;
+  patente: string;
+  marca: string;
+  modelo: string;
+}
+export interface HistorialItem {
+  tipo: 'Mantenimiento' | 'Siniestro' | 'Combustible';
+  fecha: string;
+  titulo: string;
+  subtitulo: string;
+  costo: number | null;
+  id: number;
+  icon: string;
+  color: string;
+  descripcion?: string;
+  archivoUrl?: string;
+  urlComprobante?: string;
+}
+export interface Siniestro {
+  id: number;
+  fecha: string;
+  descripcion: string | null;
+  tipo: string;
+  estado: string;
+  archivoUrl?: string;
+  costoEstimado?: number;
+  conductor?: UsuarioSiniestro;
+  vehiculo?: VehiculoSiniestro;
+}
+export interface Usuario {
+  id_usu: number;
+  pri_nom_usu: string;
+  seg_nom_usu?: string;
+  pri_ape_usu: string;
+  seg_ape_usu?: string;
+  email: string;
+  rol: 'admin' | 'conductor' | 'gestor' | 'mantenimiento' | 'tecnico';
+  rut_usu?: string;
+  celular?: string;
+  estado_usu?: 'activo' | 'inactivo' | 'licencia';
+  fec_cre_usu: string;
+}
+// Interfaz para RUTA (plantilla)
+export interface Route {
+  idRuta: number;
+  nombreRuta: string;
+  descripcionRuta: string | null;
+  puntosRuta: Array<[number, number]>;
+  kilometrosRuta?: number | null;
+}
+
+// Interfaz para VEHICULO (simplificada para el contexto de asignación)
+export interface VehiculoAsignacionInfo {
+  idVehi: number;
+  patente: string;
+  modelo?: string;
+  marca?: string;
+}
+
+// Interfaz para USUARIO (conductor, simplificada)
+export interface UsuarioConductorInfo {
+  idUsu: number;
+  priNomUsu: string;
+  priApeUsu: string;
+  email?: string;
+}
+export interface TareaPlanificacionData {
+  nomTareaPlan: string;
+  descTareaPlan?: string | null;
+}
+
+export interface PlanificacionMantenimientoData {
+  descPlan: string;
+  frecuencia: number;
+  tipoFrecuencia: 'km' | 'dias' | 'semanas' | 'meses';
+  esActivoPlan: boolean;
+  fechaActivacion?: string | null;
+  esPreventivo: boolean;
+  tareas: TareaPlanificacionData[];
+  vehiculosIds: number[];
+}
+
+export interface TareaPlanificacionResumen extends TareaPlanificacionData {
+  idTareaPlan: number;
+  planificacionMantenimientoIdPlan: number;
+}
+
+export interface PlanificacionMantenimientoResumen {
+  idPlan: number;
+  descPlan: string;
+  frecuencia: number;
+  tipoFrecuencia: string;
+   fechaActivacion?: string | null;
+  esActivoPlan: boolean;
+  esPreventivo: boolean;
+  fecCrePlan?: string;
+  fecActPlan?: string;
+  createdAt?: string;
+  tareas?: TareaPlanificacionResumen[];
+  vehiculosEnPlan?: VehiculoAsignacionInfo[];
+}
+export interface AsignacionRecorrido {
+  idAsig: number;
+  estadoAsig: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
+  fecCreAsig: string; 
+  fecIniRecor: string;
+  fecFinRecor?: string | null;
+  efiCombRecor?: number | null;
+  kmIniRecor: number;
+  kmFinRecor?: number | null;
+  notas?: string | null;
+  vehiculoIdVehi: number;
+  usuarioIdUsu: number;
+  rutaIdRuta: number;
+
+  vehiculo?: VehiculoAsignacionInfo;
+  conductor?: UsuarioConductorInfo;
+  rutaPlantilla?: Route; 
+}
+
+export interface UsuarioResumen {
+  id_usu: number;
+  pri_nom_usu: string;
+  pri_ape_usu: string;
+}
+
+export interface VehiculoResumen {
+  patente: string;
+  marca: string;
+  modelo: string;
+}
+
+// --- Interfaces para Órdenes de Trabajo ---
+
+export interface DetalleOtData {
+  id_det: number;
+  desc_det: string;
+  checklist: boolean;
+  es_activo_det: boolean;
+  tecnico?: UsuarioResumen; 
+}
+
+export interface OrdenTrabajoResumen {
+  id_ot: number;
+  fec_ini_ot: string;
+  estado_ot: string;
+  prioridad: string;
+  km_ot: number;
+  descripcion_ot: string;
+  vehiculo: VehiculoResumen;
+  solicitante?: UsuarioResumen;
+  fec_fin_ot?: string;
+}
+
+export interface OrdenTrabajoDetalle extends OrdenTrabajoResumen {
+  fec_fin_ot?: string;
+  encargado?: UsuarioResumen;
+  detalles: DetalleOtData[];
+}
+export interface AsignacionRecorridoData {
+  fecIniRecor: string;
+  fecFinRecor?: string | null;
+  kmIniRecor?: number;
+  kmFinRecor?: number | null;
+  notas?: string | null;
+  vehiculoIdVehi: number;
+  usuarioIdUsu: number;
+  rutaIdRuta: number;
+  estadoAsig?: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
+  efiCombRecor?: number | null;
+}
+
+export type EstadoVehiculo = 'activo' | 'inactivo' | 'mantenimiento' | 'taller';
+export type TipoCombustibleVehiculo = 'gasolina_93' | 'gasolina_95' | 'gasolina_97' | 'diesel' | 'electrico' | 'otro';
+
+export interface Vehiculo {
+  idVehi?: number;
+  patente: string;
+  chasis: string;
+  tipoVehi?: string | null;
+  estadoVehi: EstadoVehiculo;
+  tipoCombVehi?: TipoCombustibleVehiculo | null;
+  kmVehi: number;
+  marca: string;
+  modelo: string;
+  anio: number;
+  kmVidaUtil?: number | null;
+  efiComb?: number | null;
+  fecAdqui: string;
+  latitud?: number | null;
+  longitud?: number | null;
+}
+
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+
+  private apiUrl = 'http://localhost:8101/api';
+
+  constructor(private http: HttpClient) { }
+
+  // --- Métodos para Rutas (plantillas) ---
+  getRoutePath(start: L.LatLngTuple, end: L.LatLngTuple): Observable<OsrmRouteData | null> {
+    const lonLatStart = `${start[1]},${start[0]}`;
+    const lonLatEnd = `${end[1]},${end[0]}`;
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lonLatStart};${lonLatEnd}?overview=full&geometries=geojson`;
+    return this.http.get<any>(osrmUrl).pipe(
+      map(response => {
+        if (response?.routes?.[0]?.geometry?.coordinates &&
+            typeof response.routes[0].distance === 'number' &&
+            typeof response.routes[0].duration === 'number') {
+          const routeLeg = response.routes[0];
+          const coordinates = routeLeg.geometry.coordinates;
+          const distanceInMeters = routeLeg.distance;
+          const durationInSeconds = routeLeg.duration;
+          const latLngPoints: L.LatLngTuple[] = coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+          return { points: latLngPoints, distance: distanceInMeters, duration: durationInSeconds };
+        }
+        return null;
+      }),
+      catchError(this.handleErrorSimple)
+    );
+  }
+  crearPlanificacion(data: PlanificacionMantenimientoData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/planificaciones`, data)
+      .pipe(catchError(this.handleError));
+  }
+  deleteUser(id_usu: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
+      .pipe(catchError(this.handleError));
+  }
+ createUser(data: Partial<Usuario> & { clave: string }): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.apiUrl}/usuarios`, data)
+      .pipe(catchError(this.handleError));
+  }
+ getHistorialVehiculo(id: number): Observable<HistorialItem[]> {
+  // Asegúrate de que la URL se construya con backticks (`) y no comillas simples (')
+  return this.http.get<HistorialItem[]>(`${this.apiUrl}/vehiculos/${id}/historial`)
+    .pipe(catchError(this.handleError));
+}
+
+  
+  getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
+    return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
+      .pipe(catchError(this.handleError));
+  }
+    getAllUsers(rol?: string): Observable<Usuario[]> {
+    let params = new HttpParams();
+    if (rol) {
+
+      params = params.set('rol', rol);
+    }
+    
+
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
+      .pipe(catchError(this.handleError));
+  }
+    getUser(id: number): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.apiUrl}/usuarios/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+    getVehiculos(): Observable<Vehiculo[]> {
+    return this.http.get<Vehiculo[]>(this.apiUrl);
+  }
+   updateUser(id_usu: number, data: Partial<Usuario>): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
+      .pipe(catchError(this.handleError));
+  }
+   getSiniestros(): Observable<Siniestro[]> {
+    return this.http.get<Siniestro[]>(`${this.apiUrl}/siniestros`)
+      .pipe(catchError(this.handleError));
+  }    getSiniestroById(id: number): Observable<Siniestro> {
+    return this.http.get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createSiniestro(data: any): Observable<Siniestro> {
+    return this.http.post<Siniestro>(`${this.apiUrl}/siniestros`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateSiniestro(id: number, data: any): Observable<Siniestro> {
+    return this.http.put<Siniestro>(`${this.apiUrl}/siniestros/${id}`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+   updateSiniestroStatus(id: number, estado: string): Observable<any> {
+      return this.http.put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
+      .pipe(catchError(this.handleError));
+  }
+
+    getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
+    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`);
+  }
+getHistorialCombustible(conductorId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
+  }
+  getStatsVehiculosPorTipo(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stats/vehiculos-por-tipo`);
+  }
+  getStatsMantenimientosPorEstado(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stats/mantenimientos-por-estado`);
+  }
+    registrarIncidente(data: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/siniestros`, data);
+  }  // Método para registrar la carga de combustible
+  registrarCargaCombustible(data: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/combustibles`, data);
+  }
+
+  createCombustible(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/combustibles`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateCombustible(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/combustibles/${id}`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  getCombustibleById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/combustibles/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getVehiculoActivo(conductorId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/asignaciones-recorrido/vehiculo-activo/conductor/${conductorId}`);
+  }
+  // --- Métodos para el Módulo de Órdenes de Trabajo ---
+  actualizarEstadoOt(id: number, estado: string, encargadoId?: number): Observable<any> {
+    const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
+      estado_ot: estado,
+    };
+    if (encargadoId) {
+      body.usuario_id_usu_encargado = encargadoId;
+    }
+    return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
+  }
+
+  generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
+    const body = { 
+      id_plan: idPlan, 
+      id_vehi: idVehi,
+      id_usuario_solicitante: idUsuario 
+    };
+    return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
+  }
+
+  getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
+    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
+  }
+
+
+  actualizarDetallesOt(idOt: number, payload: any): Observable<any> {
+      return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, payload);
+  }
+
+  getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
+    return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
+  }
+  
+  getUsuariosPorRol(rol: string): Observable<UsuarioResumen[]> {
+    return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, { params: { rol } });
+  }
+
+  asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: string }> {
+    const body = { 
+      id_detalle: idDetalle, 
+      id_tecnico: idTecnico 
+    };
+    return this.http.post<{ message: string }>(`${this.apiUrl}/ordenes-trabajo/asignar-tecnico`, body);
+  }
+
+  getPlanificacionById(id: number): Observable<PlanificacionMantenimientoResumen> {
+    return this.http.get<PlanificacionMantenimientoResumen>(`${this.apiUrl}/planificaciones/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  updatePlanificacion(id: number, data: Partial<PlanificacionMantenimientoData>): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/planificaciones/${id}`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  deletePlanificacion(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/planificaciones/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getRoutes(): Observable<Route[]> {
+    return this.http.get<Route[]>(`${this.apiUrl}/rutas`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getRoute(id: number): Observable<Route> {
+    return this.http.get<Route>(`${this.apiUrl}/rutas/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createRoute(routeData: Partial<Route>): Observable<Route> {
+    return this.http.post<Route>(`${this.apiUrl}/rutas`, routeData)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateRoute(id: number, routeData: Partial<Route>): Observable<Route> {
+    return this.http.put<Route>(`${this.apiUrl}/rutas/${id}`, routeData)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteRoute(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/rutas/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getVehicles(params?: { estado?: EstadoVehiculo, tipo?: string }): Observable<Vehiculo[]> {
+    let httpParams = new HttpParams();
+    if (params?.estado) {
+      httpParams = httpParams.set('estado', params.estado);
+    }
+    if (params?.tipo) {
+      httpParams = httpParams.set('tipo', params.tipo);
+    }
+    return this.http.get<Vehiculo[]>(`${this.apiUrl}/vehicles`, { params: httpParams })
+      .pipe(catchError(this.handleError));
+  }
+
+  getVehicle(id: number): Observable<Vehiculo> {
+    return this.http.get<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+  getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {
+    return this.http.get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`)
+      .pipe(catchError(this.handleError));
+  }
+  createVehicle(vehicleData: Vehiculo): Observable<Vehiculo> {
+    return this.http.post<Vehiculo>(`${this.apiUrl}/vehicles`, vehicleData)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateVehicle(id: number, vehicleData: Partial<Vehiculo>): Observable<Vehiculo> {
+    return this.http.put<Vehiculo>(`${this.apiUrl}/vehicles/${id}`, vehicleData)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteVehicle(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/vehicles/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getAsignacionesRecorrido(filtros?: any): Observable<AsignacionRecorrido[]> {
+    let params = new HttpParams();
+    if (filtros) {
+      Object.keys(filtros).forEach(key => {
+        if (filtros[key] !== null && filtros[key] !== undefined) {
+          params = params.set(key, filtros[key]);
+        }
+      });
+    }
+    return this.http.get<AsignacionRecorrido[]>(`${this.apiUrl}/asignaciones-recorrido`, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  getAsignacionRecorrido(idAsig: number): Observable<AsignacionRecorrido> {
+    return this.http.get<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createAsignacionRecorrido(data: AsignacionRecorridoData): Observable<AsignacionRecorrido> {
+    return this.http.post<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateAsignacionRecorrido(idAsig: number, data: Partial<AsignacionRecorridoData>): Observable<AsignacionRecorrido> {
+    return this.http.put<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteAsignacionRecorrido(idAsig: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getUsuarios(params?: { rol?: string }): Observable<UsuarioConductorInfo[]> {
+    let httpParams = new HttpParams();
+    if (params?.rol) {
+      httpParams = httpParams.set('rol', params.rol);
+    }
+    return this.http.get<UsuarioConductorInfo[]>(`${this.apiUrl}/auth/users`, { params: httpParams })
+      .pipe(catchError(this.handleError));
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Ocurrió un error desconocido.';
+    let userFriendlyMessage = 'No se pudo completar la operación. Inténtalo de nuevo.';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error del cliente o de red: ${error.error.message}`;
+      userFriendlyMessage = 'Error de red o del navegador. Por favor, revisa tu conexión.';
+    } else {
+      errorMessage = `Error del Servidor Código: ${error.status}\nMensaje: ${error.message}`;
+      if (error.error && typeof error.error === 'object' && error.error.message) {
+        errorMessage += `\nDetalle Backend: ${error.error.message}`;
+        userFriendlyMessage = error.error.message;
+      } else if (error.error && typeof error.error === 'string' && error.error.length < 200) { 
+        errorMessage += `\nDetalle Backend: ${error.error}`;
+        userFriendlyMessage = error.error;
+      } else if (error.status === 400) {
+        userFriendlyMessage = 'Solicitud incorrecta. Revisa los datos enviados.';
+      } else if (error.status === 401) {
+        userFriendlyMessage = 'No autorizado. Por favor, inicia sesión de nuevo.';
+      } else if (error.status === 403) {
+        userFriendlyMessage = 'Acceso prohibido. No tienes permisos para esta acción.';
+      } else if (error.status === 404) {
+        userFriendlyMessage = 'El recurso solicitado no fue encontrado en el servidor.';
+      } else if (error.status === 500) {
+        userFriendlyMessage = 'Error interno del servidor. Inténtalo más tarde.';
+      }
+    }
+    console.error('Error en ApiService:', errorMessage, error);
+    return throwError(() => ({ message: userFriendlyMessage, status: error.status, errorContent: error.error }));
+  }
+
+  private handleErrorSimple(error: HttpErrorResponse) {
+    console.error('Error en servicio externo:', error.message || error);
+    return of(null);
+  }
+}

@@ -2,12 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { IonicModule, ToastController, LoadingController, AlertController } from '@ionic/angular';
-import { Router, RouterModule } from '@angular/router'; // <- 1. Importa RouterModule
+import { Router, RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
-// 2. Importa todos los íconos que usas en el HTML
 import { idCardOutline, callOutline, mailOutline, lockClosedOutline, personOutline, settingsOutline, chevronBackOutline } from 'ionicons/icons';
 
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
+import { BaseFormComponent } from '../../core/base/base-form.component';
+import { UserService } from '../../core/services/user.service';
+import { USER_CONSTANTS } from '../../core/constants/user.constants';
+import { FormUtils } from '../../core/utils/form.utils';
 
 // Validador para asegurar que las contraseñas coincidan
 export function passwordMatchValidator(controlName: string, matchingControlName: string) {
@@ -48,23 +51,32 @@ export function passwordMatchValidator(controlName: string, matchingControlName:
     IonicModule,
     CommonModule,
     ReactiveFormsModule,
-    RouterModule // <- 3. Añade RouterModule aquí
+    RouterModule
   ],
 })
-export class RegisterPage implements OnInit {
-  public registerForm!: FormGroup; // Hecho público explícitamente por claridad
+export class RegisterPage extends BaseFormComponent implements OnInit {
+  form!: FormGroup; // Required by BaseFormComponent
+  public registerForm!: FormGroup; // Mantenemos esta para compatibilidad
   isSubmitted = false;
-  availableRoles: string[] = ['gestor', 'tecnico', 'conductor'];
+  
+  // Usar constantes centralizadas
+  readonly constants = USER_CONSTANTS;
+  availableRoles = this.constants.ROLES.filter(role => ['gestor', 'tecnico', 'conductor'].includes(role.value));
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private userService: UserService,
     private router: Router,
-    private toastController: ToastController,
-    private loadingController: LoadingController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    loadingController: LoadingController,
+    toastController: ToastController
   ) {
-    // 4. Registra todos los íconos necesarios
+    super(loadingController, toastController);
+    this.initializeIcons();
+  }
+
+  private initializeIcons(): void {
     addIcons({
       idCardOutline,
       callOutline,
@@ -75,18 +87,41 @@ export class RegisterPage implements OnInit {
       chevronBackOutline
     });
   }
-
   ngOnInit() {
+    this.initForm();
+  }
+
+  private initForm(): void {
     this.registerForm = this.formBuilder.group(
       {
-        pri_nom_usu: ['', [Validators.required]],
+        pri_nom_usu: [
+          '', 
+          [
+            Validators.required,
+            Validators.minLength(this.constants.FORM_CONFIG.MIN_NAME_LENGTH),
+            Validators.maxLength(this.constants.FORM_CONFIG.MAX_NAME_LENGTH)
+          ]
+        ],
         seg_nom_usu: [''],
-        pri_ape_usu: ['', [Validators.required]],
+        pri_ape_usu: [
+          '', 
+          [
+            Validators.required,
+            Validators.minLength(this.constants.FORM_CONFIG.MIN_NAME_LENGTH),
+            Validators.maxLength(this.constants.FORM_CONFIG.MAX_NAME_LENGTH)
+          ]
+        ],
         seg_ape_usu: [''],
         email: ['', [Validators.required, Validators.email]],
         rut_usu: [''],
         celular: [''],
-        clave: ['', [Validators.required, Validators.minLength(6)]],
+        clave: [
+          '', 
+          [
+            Validators.required, 
+            Validators.minLength(this.constants.FORM_CONFIG.MIN_PASSWORD_LENGTH)
+          ]
+        ],
         confirmarClave: ['', [Validators.required]],
         rol: ['conductor', [Validators.required]],
       },
@@ -94,23 +129,27 @@ export class RegisterPage implements OnInit {
         validators: passwordMatchValidator('clave', 'confirmarClave'),
       }
     );
+    
+    // Assign to form for BaseFormComponent compatibility
+    this.form = this.registerForm;
   }
 
+  // Usar utilidad centralizada
+  override compareWith = FormUtils.compareWith;
   async register() {
     this.isSubmitted = true;
     if (this.registerForm.invalid) {
-      console.log('Formulario inválido:', this.registerForm.value);
-      this.presentToast('Por favor, completa todos los campos requeridos correctamente.');
+      FormUtils.markFormGroupTouched(this.registerForm);
+      await this.showToast('Por favor, completa todos los campos requeridos correctamente.', 'danger');
       return;
     }
 
-    const loading = await this.loadingController.create({ message: 'Registrando...' });
-    await loading.present();
+    const loading = await this.showLoading('Registrando...');
 
     this.authService.register(this.registerForm.value).subscribe({
       next: async (res) => {
         await loading.dismiss();
-        await this.presentToast('¡Usuario registrado con éxito!');
+        await this.showToast('¡Usuario registrado con éxito!', 'success');
         this.router.navigateByUrl('/login', { replaceUrl: true });
       },
       error: async (error) => {
@@ -121,14 +160,15 @@ export class RegisterPage implements OnInit {
     });
   }
 
-  async presentToast(message: string) {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 3000,
-      position: 'top',
-      color: 'danger'
-    });
-    toast.present();
+  /**
+   * Obtiene el mensaje de error para un campo específico
+   */
+  getFieldErrorMessage(fieldName: string): string {
+    return FormUtils.getFieldErrorMessage(
+      this.registerForm, 
+      fieldName, 
+      this.constants.VALIDATION_MESSAGES[fieldName as keyof typeof this.constants.VALIDATION_MESSAGES]
+    ) || '';
   }
 
   async presentAlert(header: string, message: string) {

@@ -1,6 +1,6 @@
 // src/app/app.component.ts
 import { Component, inject, OnInit } from '@angular/core';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './core/services/auth.service';
 import { Observable, combineLatest, startWith } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common'; // Necesario para directivas como *ngIf si es standalone
@@ -14,8 +14,8 @@ import {
   IonContent,
   IonRouterOutlet,
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from './componentes/header/header.component'; // Importa tu HeaderComponent
-import { SidebarComponent } from './componentes/sidebar/sidebar.component'; // Importa tu SidebarComponent
+import { HeaderComponent } from './shared/components/header/header.component'; // Importa tu HeaderComponent
+import { SidebarComponent } from './shared/components/sidebar/sidebar.component'; // Importa tu SidebarComponent
 
 @Component({
   selector: 'app-root',

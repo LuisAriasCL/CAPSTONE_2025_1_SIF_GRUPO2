@@ -2,17 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { HeaderComponent } from 'src/app/componentes/header/header.component';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
-import { ApiService } from 'src/app/services/api.service';
+import { ApiService } from 'src/app/core/services/api.service';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HeaderComponent, BaseChartDirective]
+  imports: [CommonModule, IonicModule, PageHeaderComponent, BaseChartDirective]
 })
 export class DashboardPage implements OnInit {
 

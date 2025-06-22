@@ -1,0 +1,8 @@
+<ng-container>
+  <!-- Contenedor para errores siempre presente pero vacío cuando no hay error -->
+  <div class="error-container" [class.has-error]="hasError()">
+    <div *ngIf="hasError()" class="error-message">
+      {{ getErrorMessage() }}
+    </div>
+  </div>
+</ng-container>

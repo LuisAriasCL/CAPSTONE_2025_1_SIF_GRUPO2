@@ -2,14 +2,7 @@
  * Estilos Modernos para el Dashboard (2025)
  */
 
-// 1. Fondo sutil para el contenido de la página
-// Le da un poco de profundidad y hace que las tarjetas blancas resalten.
-:host {
-  ion-content {
-    --background: #f4f5f8;
-  }
-}
-
+/* Estilos del Dashboard */
 
 // 2. Estilo principal para las tarjetas del Dashboard
 ion-card {

@@ -1,4 +1,21 @@
-<ion-content>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Header Component -->
+  <app-page-header 
+    title="Dashboard - Sistema de Flotas"
+    [showButton]="false">
+  </app-page-header>
+
+  <!-- Refresher -->
+  <ion-refresher slot="fixed">
+    <ion-refresher-content 
+      pullingIcon="chevron-down"
+      pullingText="Desliza hacia abajo para actualizar"
+      refreshingSpinner="crescent"
+      refreshingText="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Contenido Principal -->
   <ion-grid>
     <ion-row>
       <!-- Gráfico de Tipos de Vehículo (ya existente) -->

@@ -1,0 +1,12 @@
+<div class="header-row ion-padding-bottom">
+  <h1 class="page-title">{{ title }}</h1>
+  <ion-button class="add-button"
+    *ngIf="showButton"
+    [fill]="buttonFill" 
+    [color]="buttonColor"
+    [class]="customButtonClass"
+    (click)="onButtonClick()">
+    <ion-icon slot="start" [name]="buttonIcon"></ion-icon>
+    {{ buttonText }}
+  </ion-button>
+</div>

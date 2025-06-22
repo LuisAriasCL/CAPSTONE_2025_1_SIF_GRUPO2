@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { IonicModule, LoadingController, AlertController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { mailOutline, lockClosedOutline, logInOutline } from 'ionicons/icons';
-import { AuthService, LoginResponse } from '../../services/auth.service';
+import { AuthService, LoginResponse } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',

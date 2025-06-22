@@ -1,0 +1,828 @@
+/* ==========================================================================
+   ESTILOS DE FORMULARIOS - SISTEMA DE GESTIÓN DE FLOTA
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   VARIABLES PARA FORMULARIOS Y VALIDACIÓN
+   -------------------------------------------------------------------------- */
+:root {
+  /* Variables para formularios y validación */
+  --form-border-color: #ccc;
+  --form-border-color-focus: var(--ion-color-primary);
+  --form-border-color-error: var(--ion-color-danger, #eb445a);
+  --form-border-color-success: var(--ion-color-success, #2dd36f);
+  --form-border-width: 1px;
+  --form-border-width-focus: 2px;
+  --form-shadow-focus: 0 0 0 3px rgba(0, 92, 147, 0.1);
+  --form-shadow-error: 0 0 0 3px rgba(235, 68, 90, 0.1);
+  --form-shadow-success: 0 0 0 3px rgba(45, 211, 111, 0.1);
+  --form-placeholder-color: #999;
+  
+  /* Variables de elementos de formulario */
+  --form-element-height: 48px;
+  --form-element-min-height: 48px;
+  --form-element-max-height: 48px;
+  --form-element-padding-horizontal: 16px;
+  --form-element-border-radius: 8px;
+  --form-text-color: var(--ion-color-dark, #000);
+  --form-transition: all 0.2s ease;
+  --form-margin-bottom: 16px;
+  
+  /* Variables para tipos específicos de elementos */
+  --form-textarea-min-height: 80px;
+  --form-textarea-padding: 12px;
+  --form-textarea-line-height: 1.4;
+  --form-datetime-height: 48px;
+  --form-datetime-min-height: 48px;
+  --form-datetime-background: transparent;
+  --form-datetime-padding: 16px;
+  --form-datetime-button-height: 48px;
+  --form-date-input-height: 48px;
+  --form-date-input-padding: 16px;
+  --form-date-input-text-align: center;
+  
+  /* Variables para botones y otros elementos */
+  --form-button-height: 48px;
+  --form-button-border-radius: 8px;
+  --form-button-font-weight: 600;
+  --form-button-letter-spacing: 0.5px;
+  --form-button-text-transform: uppercase;
+  --form-button-margin-vertical: 12px;
+  --form-button-padding-horizontal: 24px;
+  
+  /* Variables para wrappers y contenedores */
+  --form-wrapper-margin-bottom: 20px;
+  --form-label-margin-bottom: 8px;
+  --form-transition-fast: all 0.15s ease;
+  --form-disabled-opacity: 0.6;
+  --form-disabled-background: #f5f5f5;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS BASE PARA ELEMENTOS DE FORMULARIO */
+/* -------------------------------------------------------------------------- */
+
+/* Estilos base para todos los elementos de formulario */
+ion-input,
+ion-select,
+ion-searchbar,
+ion-textarea,
+ion-datetime {
+  min-height: var(--form-element-min-height) !important;
+  height: var(--form-element-height) !important;
+  max-height: var(--form-element-max-height) !important;
+  --min-height: var(--form-element-min-height);
+  --height: var(--form-element-height);
+  --max-height: var(--form-element-max-height);
+  --padding-start: var(--form-element-padding-horizontal);
+  --padding-end: var(--form-element-padding-horizontal);
+  --border-radius: var(--form-element-border-radius);
+  --color: var(--form-text-color);
+  --placeholder-color: var(--form-placeholder-color);
+  border: var(--form-border-width) solid var(--form-border-color);
+  border-radius: var(--form-element-border-radius);
+  margin-bottom: var(--form-margin-bottom);
+  font-size: var(--form-font-size, 16px);
+  background: var(--ion-color-light, #fff);
+  transition: var(--form-transition);
+  
+  &::part(native) {
+    background: transparent;
+    border: none;
+    border-radius: var(--form-element-border-radius);
+    transition: var(--form-transition);
+  }
+
+  // Estados de focus
+  &.ion-focused,
+  &:focus-within {
+    --border-color: var(--form-border-color-focus);
+    border-color: var(--form-border-color-focus);
+    border-width: var(--form-border-width-focus);
+    box-shadow: var(--form-shadow-focus);
+  }
+  
+  // Estados de validación (Excluir ion-select que tiene reglas específicas)
+  &.ion-invalid.ion-touched:not(ion-select) {
+    --border-color: var(--form-border-color-error);
+    border-color: var(--form-border-color-error);
+    box-shadow: var(--form-shadow-error);
+  }
+
+  &.ion-valid.ion-touched:not(ion-select) {
+    --border-color: var(--form-border-color-success);
+    border-color: var(--form-border-color-success);
+    box-shadow: var(--form-shadow-success);
+  }
+
+  // Reglas de validación de Angular (también excluir ion-select)
+  &.ng-invalid.ng-touched:not(ion-select) {
+    --border-color: var(--form-border-color-error);
+    border-color: var(--form-border-color-error);
+    box-shadow: var(--form-shadow-error);
+  }
+
+  &.ng-valid.ng-touched:not(ion-select) {
+    --border-color: var(--form-border-color-success);
+    border-color: var(--form-border-color-success);
+    box-shadow: var(--form-shadow-success);
+  }
+
+  // Estados deshabilitados
+  &[disabled],
+  &.ion-disabled {
+    opacity: var(--form-disabled-opacity);
+    background: var(--form-disabled-background);
+    cursor: not-allowed;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS ESPECÍFICOS PARA ION-SELECT */
+/* -------------------------------------------------------------------------- */
+ion-select {
+  --placeholder-color: var(--form-placeholder-color);
+  --placeholder-opacity: 1;
+  height: var(--form-element-height);
+  min-height: var(--form-element-min-height);
+  max-height: var(--form-element-max-height);
+  
+  /* Asegurar border-radius por defecto en todos los estados */
+  border-radius: var(--form-element-border-radius) !important;
+  
+  &::part(container) {
+    min-height: var(--form-element-min-height);
+    height: var(--form-element-height);
+  }
+  
+  &::part(text) {
+    color: var(--form-text-color);
+  }
+  
+  &::part(placeholder) {
+    color: var(--form-placeholder-color) !important;
+    opacity: 1 !important;
+  }
+  
+  &::part(icon) {
+    color: var(--form-text-color);
+    width: 20px;
+    height: 20px;
+  }
+
+  // Estados de validación específicos para ion-select - Solo borde inferior
+  &.ion-invalid.ion-touched,
+  &.ng-invalid.ng-touched {
+    border: none !important;
+    border-bottom: 2px solid var(--form-border-color-error) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  &.ion-valid.ion-touched,
+  &.ng-valid.ng-touched {
+    border: none !important;
+    border-bottom: 2px solid var(--form-border-color-success) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  // Estado normal y focus - mantener border-radius
+  &:not(.ion-invalid):not(.ng-invalid):not(.ion-valid):not(.ng-valid),
+  &.ion-focused:not(.ion-invalid):not(.ng-invalid),
+  &:focus-within:not(.ion-invalid):not(.ng-invalid) {
+    border: var(--form-border-width) solid var(--form-border-color);
+    border-radius: var(--form-element-border-radius) !important;
+  }
+  
+  // Estado focus específico con border-radius preservado
+  &.ion-focused:not(.ion-invalid):not(.ng-invalid),
+  &:focus-within:not(.ion-invalid):not(.ng-invalid) {
+    border-color: var(--form-border-color-focus);
+    border-width: var(--form-border-width-focus);
+    box-shadow: var(--form-shadow-focus);
+  }
+  
+  // Estados deshabilitados - mantener border-radius
+  &[disabled],
+  &.ion-disabled {
+    border-radius: var(--form-element-border-radius) !important;
+    opacity: var(--form-disabled-opacity);
+    background: var(--form-disabled-background);
+    cursor: not-allowed;
+  }
+  
+  // Estados expandido/desplegado - mantener border-radius redondeado
+  &.select-expanded:not(.ion-invalid):not(.ng-invalid),
+  &.ion-focused.select-expanded:not(.ion-invalid):not(.ng-invalid),
+  &[aria-expanded="true"]:not(.ion-invalid):not(.ng-invalid),
+  &.select-interface-popover:not(.ion-invalid):not(.ng-invalid),
+  &.select-interface-alert:not(.ion-invalid):not(.ng-invalid),
+  &.select-interface-action-sheet:not(.ion-invalid):not(.ng-invalid) {
+    border-radius: var(--form-element-border-radius) !important;
+    border: var(--form-border-width-focus) solid var(--form-border-color-focus) !important;
+    box-shadow: var(--form-shadow-focus);
+  }
+  
+  // Estados expandido CON validación - solo borde inferior
+  &.select-expanded.ion-invalid.ion-touched,
+  &.select-expanded.ng-invalid.ng-touched,
+  &[aria-expanded="true"].ion-invalid.ion-touched,
+  &[aria-expanded="true"].ng-invalid.ng-touched {
+    border: none !important;
+    border-bottom: 2px solid var(--form-border-color-error) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  &.select-expanded.ion-valid.ion-touched,
+  &.select-expanded.ng-valid.ng-touched,
+  &[aria-expanded="true"].ion-valid.ion-touched,
+  &[aria-expanded="true"].ng-valid.ng-touched {
+    border: none !important;
+    border-bottom: 2px solid var(--form-border-color-success) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS PARA DATETIME Y FECHAS */
+/* -------------------------------------------------------------------------- */
+
+/* Estilos para datetime */
+ion-datetime,
+ion-datetime-button {
+  height: var(--form-datetime-height);
+  min-height: var(--form-datetime-min-height);
+  background: var(--form-datetime-background);
+  --padding-start: var(--form-datetime-padding);
+  --padding-end: var(--form-datetime-padding);
+}
+
+ion-datetime-button {
+  height: var(--form-datetime-button-height);
+  margin-bottom: var(--form-margin-bottom);
+  border: var(--form-border-width) solid var(--form-border-color);
+  border-radius: var(--form-element-border-radius);
+  --border-radius: var(--form-element-border-radius);
+}
+
+/* Estilos para input de fecha */
+ion-input[type="date"] {
+  height: var(--form-date-input-height);
+  --padding-start: var(--form-date-input-padding);
+  --padding-end: var(--form-date-input-padding);
+  text-align: var(--form-date-input-text-align);
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS ESPECÍFICOS PARA TEXTAREA */
+/* -------------------------------------------------------------------------- */
+ion-textarea {
+  min-height: var(--form-textarea-min-height) !important;
+  --min-height: var(--form-textarea-min-height);
+  --padding-top: var(--form-textarea-padding);
+  --padding-bottom: var(--form-textarea-padding);
+  --padding-start: var(--form-textarea-padding);
+  --padding-end: var(--form-textarea-padding);
+  line-height: var(--form-textarea-line-height);
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS PARA BOTONES DE FORMULARIO */
+/* -------------------------------------------------------------------------- */
+
+/* Estilos para botones de formulario */
+ion-button.form-button,
+ion-button[type="submit"] {
+  height: var(--form-button-height);
+  --border-radius: var(--form-button-border-radius);
+  font-weight: var(--form-button-font-weight);
+  letter-spacing: var(--form-button-letter-spacing);
+  text-transform: var(--form-button-text-transform);
+  margin: var(--form-button-margin-vertical) 0;
+  --padding-start: var(--form-button-padding-horizontal);
+  --padding-end: var(--form-button-padding-horizontal);
+}
+
+/* Botones de envío estandarizados - Siempre activos */
+.submit-button {
+  --background: var(--ion-color-verde);
+  --background-hover: var(--ion-color-verde-shade);
+  --color: white;
+  --border-radius: var(--form-element-border-radius);
+  height: var(--form-element-height);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: var(--form-transition);
+  
+  &:hover {
+    --background: var(--ion-color-success-shade);
+    transform: translateY(-1px);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS PARA OTROS ELEMENTOS DE FORMULARIO */
+/* -------------------------------------------------------------------------- */
+
+/* Estilos para toggles */
+ion-toggle {
+  width: var(--form-toggle-width);
+  height: var(--form-toggle-height);
+  --border-radius: var(--form-toggle-border-radius);
+}
+
+/* Estilos para contenedores de card en formularios */
+ion-card.form-card {
+  border-radius: var(--form-card-border-radius);
+  box-shadow: var(--form-card-box-shadow);
+  margin: var(--form-card-margin);
+  padding: var(--form-card-padding);
+}
+
+/* Estilos para encabezados de listas en formularios */
+ion-list-header.form-list-header {
+  font-size: var(--form-list-header-font-size);
+  font-weight: var(--form-list-header-font-weight);
+  padding: var(--form-list-header-padding);
+}
+
+/* Estilos para textos auxiliares */
+.helper-text {
+  font-size: var(--form-helper-text-font-size);
+  color: var(--form-helper-text-color);
+  margin-top: var(--form-helper-text-margin-top);
+  margin-bottom: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* CONTENEDORES Y WRAPPERS DE FORMULARIO */
+/* -------------------------------------------------------------------------- */
+
+/* Contenedores uniformes para elementos de formulario */
+.uniform-input-wrapper {
+  margin-bottom: var(--form-wrapper-margin-bottom);
+  
+  ion-input,
+  ion-select,
+  ion-datetime,
+  ion-textarea {
+    width: 100%;
+    margin-bottom: 0;
+  }
+  
+  ion-label {
+    margin-bottom: var(--form-label-margin-bottom);
+  }
+}
+
+/* Contenedores de botones de acción */
+.action-buttons-container {
+  padding: 12px 16px;
+  background: var(--ion-color-light-tint);
+  border-top: 1px solid var(--form-border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  
+  ion-button {
+    height: 40px;
+    max-width: 300px;
+    width: 100%;
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+    
+    ion-button {
+      max-width: 200px;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS ADICIONALES PARA FORMULARIOS */
+/* -------------------------------------------------------------------------- */
+
+/* Estilos adicionales para formularios estandarizados */
+ion-content.ultra-compact {
+  --padding: 16px;
+  
+  @media (max-width: 576px) {
+    --padding: 12px;
+  }
+}
+
+/* Segmentos estandarizados para formularios */
+ion-segment {
+  --background: var(--ion-color-light);
+  margin-bottom: 20px;
+  
+  ion-segment-button {
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    
+    &.segment-button-checked {
+      --color: var(--ion-color-primary);
+    }
+  }
+}
+
+/* Headers de formularios modales */
+ion-header ion-toolbar {
+  &[color="primary"] {
+    --background: var(--ion-color-primary);
+    --color: white;
+  }
+  
+  ion-title {
+    font-weight: bold;
+    font-size: 18px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  ion-buttons ion-button {
+    --color: white;
+  }
+}
+
+/* Estados de carga para formularios */
+ion-loading {
+  --backdrop-opacity: 0.3;
+  --color: var(--ion-color-primary);
+}
+
+/* -------------------------------------------------------------------------- */
+/* ALINEACIÓN DE TEXTO EN ELEMENTOS DE FORMULARIO */
+/* -------------------------------------------------------------------------- */
+
+/* Centrar texto y placeholder en todos los elementos de formulario */
+ion-input,
+ion-select,
+ion-textarea,
+ion-datetime,
+ion-datetime-button,
+ion-searchbar {
+  text-align: center !important;
+  --text-align: center;
+
+  /* Centrar el contenido nativo */
+  &::part(native) {
+    text-align: center !important;
+  }
+
+  /* Centrar el texto dentro del input */
+  input,
+  textarea,
+  select {
+    text-align: center !important;
+  }
+}
+
+/* Centrar placeholder específicamente */
+ion-input::placeholder,
+ion-textarea::placeholder,
+ion-select::placeholder,
+ion-datetime::placeholder,
+ion-searchbar::placeholder {
+  text-align: center !important;
+  --text-align: center;
+}
+
+/* Centrar el texto en ion-select cuando está seleccionado */
+ion-select {
+  text-align: center !important;
+  --text-align: center !important;
+  
+  &::part(text) {
+    text-align: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  &::part(placeholder) {
+    text-align: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  &::part(container) {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Centrar el contenido interno del select */
+  .select-text,
+  .select-placeholder {
+    text-align: center !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  /* Asegurar que el botón/icono se mantenga a la derecha */
+  &::part(icon) {
+    position: absolute !important;
+    right: 12px !important;
+  }
+}
+
+/* Centrar el contenido en ion-datetime */
+ion-datetime {
+  &::part(text) {
+    text-align: center !important;
+  }
+}
+
+/* Centrar el texto en ion-datetime-button */
+ion-datetime-button {
+  &::part(native) {
+    text-align: center !important;
+  }
+}
+
+/* Centrar el texto en ion-searchbar */
+ion-searchbar {
+  &::part(native) {
+    text-align: center !important;
+  }
+  
+  .searchbar-input {
+    text-align: center !important;
+  }
+}
+
+/* Centrar contenido en inputs de tipo específico */
+ion-input[type="date"],
+ion-input[type="time"],
+ion-input[type="number"],
+ion-input[type="email"],
+ion-input[type="password"],
+ion-input[type="text"] {
+  text-align: center !important;
+  
+  input {
+    text-align: center !important;
+  }
+}
+
+/* Asegurar que los labels se mantengan alineados a la izquierda */
+ion-label {
+  text-align: left !important;
+}
+
+/* Centrar el contenido de botones de formulario */
+ion-button {
+  &::part(native) {
+    text-align: center !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS ESPECÍFICOS ADICIONALES PARA ION-SELECT */
+/* -------------------------------------------------------------------------- */
+
+/* Forzar centrado en todos los estados de ion-select */
+ion-select {
+  /* Centrar usando CSS Grid para mejor control */
+  display: grid !important;
+  place-items: center !important;
+  grid-template-columns: 1fr auto !important;
+  
+  /* Estilos específicos para el contenido */
+  .select-text-wrapper,
+  .select-wrapper {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
+  /* Centrar el texto seleccionado */
+  .select-text {
+    justify-content: center !important;
+  }
+  
+  /* Centrar el placeholder cuando no hay selección */
+  .select-placeholder {
+    justify-content: center !important;
+  }
+  
+  /* Asegurar que el ícono dropdown se mantenga visible */
+  .select-icon {
+    position: absolute !important;
+    right: 12px !important;
+  }
+}
+
+/* Estilos específicos para cuando ion-select está enfocado */
+ion-select.select-expanded,
+ion-select:focus-within {
+  .select-text,
+  .select-placeholder {
+    justify-content: center !important;
+  }
+}
+
+/* Sobrescribir estilos nativos de Ionic que puedan interferir */
+ion-select .native-wrapper {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* Para selectores con múltiples opciones */
+ion-select[multiple] {
+  .select-text {
+    justify-content: center !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* CLASES ESPECÍFICAS PARA TEXTAREA EXPANDIDO */
+/* -------------------------------------------------------------------------- */
+
+/* Clase para textarea con más espacio de escritura */
+.textarea-large {
+  ion-textarea {
+    min-height: 120px !important;
+  }
+}
+
+/* Variante extra grande para descripciones extensas */
+.textarea-extra-large {
+  ion-textarea {
+    min-height: 150px !important;
+  }
+}
+
+/* Para textarea en contenedores uniformes */
+.uniform-input-wrapper.textarea-large {
+  margin-bottom: 120px;
+  
+  ion-textarea {
+    min-height: 120px !important;
+  }
+}
+
+.uniform-input-wrapper.textarea-extra-large {
+  margin-bottom: 140px;
+  
+  ion-textarea {
+    min-height: 150px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS DE PLACEHOLDER CONSOLIDADOS */
+/* -------------------------------------------------------------------------- */
+
+/* Configuración base de placeholders para todos los elementos */
+ion-input,
+ion-select,
+ion-textarea,
+ion-datetime,
+ion-searchbar {
+  --placeholder-color: var(--form-placeholder-color) !important;
+  --placeholder-opacity: 1 !important;
+}
+
+/* Placeholders específicos con parte de Shadow DOM */
+ion-input::placeholder,
+ion-textarea::placeholder,
+ion-select::placeholder,
+ion-datetime::placeholder,
+ion-searchbar::placeholder {
+  color: var(--form-placeholder-color) !important;
+  opacity: 1 !important;
+  --color: var(--form-placeholder-color) !important;
+}
+
+/* Placeholders usando ::part para mayor compatibilidad */
+ion-input::part(placeholder),
+ion-select::part(placeholder),
+ion-textarea::part(placeholder),
+ion-datetime::part(placeholder) {
+  color: var(--form-placeholder-color) !important;
+  opacity: 1 !important;
+}
+
+/* Placeholder específico para ion-select en diferentes estados */
+ion-select {
+  .select-placeholder {
+    color: var(--form-placeholder-color) !important;
+    opacity: 1 !important;
+  }
+  
+  /* Para estados sin valor */
+  &:not([value]),
+  &[value=""] {
+    color: var(--form-placeholder-color) !important;
+  }
+}
+
+/* Robustecimiento específico para casos edge */
+ion-item ion-input::placeholder,
+ion-item ion-select::placeholder,
+ion-item ion-textarea::placeholder {
+  color: var(--form-placeholder-color) !important;
+  opacity: 1 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* PREVENCIÓN DE CONFLICTOS DE BORDES */
+/* -------------------------------------------------------------------------- */
+
+/* Prevenir conflictos de bordes en wrappers que contengan ion-select */
+.uniform-input-wrapper,
+.app-form-field {
+  ion-select.ion-invalid.ion-touched,
+  ion-select.ng-invalid.ng-touched,
+  ion-select.ion-valid.ng-touched,
+  ion-select.ng-valid.ng-touched {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Asegurar que los bordes del wrapper no interfieran con ion-select */
+.uniform-input-wrapper:has(ion-select.ion-invalid.ion-touched),
+.uniform-input-wrapper:has(ion-select.ng-invalid.ng-touched),
+.app-form-field:has(ion-select.ion-invalid.ion-touched),
+.app-form-field:has(ion-select.ng-invalid.ng-touched) {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* MEJORAS PARA ACCESIBILIDAD */
+/* -------------------------------------------------------------------------- */
+
+/* Mejoras para accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .submit-button,
+  .uniform-input-wrapper *,
+  ion-input,
+  ion-select,
+  ion-datetime {
+    transition: none;
+    animation: none;
+  }
+  
+  .submit-button:hover {
+    transform: none;
+  }
+}
+
+/* Estilos para labels */
+ion-label {
+  color: var(--form-text-color);
+  font-size: var(--form-label-font-size);
+  font-weight: var(--form-label-font-weight);
+  margin-bottom: var(--form-label-margin);
+}
+
+/* Estilos para placeholders */
+ion-input::placeholder,
+ion-textarea::placeholder,
+ion-select::placeholder,
+ion-datetime::placeholder {
+  --color: var(--form-placeholder-color);
+  --font-style: var(--form-placeholder-font-style);
+}
+
+/* Clase contenedora para inputs */
+.input-wrapper {
+  margin-bottom: var(--form-margin-bottom);
+}
+
+/* Contenedor para mensajes de error */
+.error-container {
+  min-height: 20px;
+  margin-bottom: var(--form-margin-bottom);
+}
+
+/* Mensaje de error */
+.error-message {
+  color: var(--form-error-color);
+  font-size: var(--form-error-font-size);
+  margin-top: var(--form-error-margin-top);
+  display: none;
+}
+
+/* Mostrar mensaje de error cuando es visible */
+.error-message.visible {
+  display: block;
+}

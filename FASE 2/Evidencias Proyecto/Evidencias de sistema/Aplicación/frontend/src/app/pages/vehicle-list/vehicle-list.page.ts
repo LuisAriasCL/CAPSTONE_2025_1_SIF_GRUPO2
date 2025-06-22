@@ -7,19 +7,20 @@ import { addIcons } from 'ionicons';
 // CAMBIO 1: Añadir el nuevo icono 'newspaperOutline' y 'eyeOutline'
 import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline, eyeOutline, newspaperOutline } from 'ionicons/icons';
 
-import { ApiService, Vehiculo, EstadoVehiculo } from '../../services/api.service';
+import { ApiService, Vehiculo, EstadoVehiculo } from '../../core/services/api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { DataTableComponent, Column, PageEvent, ActionButton } from '../../componentes/data-table/data-table.component';
-import { VehicleFormPage } from '../vehicle-form/vehicle-form.page';
-import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { DataTableComponent, Column, PageEvent, ActionButton } from '../../shared/components/data-table/data-table.component';
+import { VehicleFormPage } from '../../features/vehicle-management/vehicle-form/vehicle-form.page';
+import { AlertaPersonalizadaComponent } from '../../shared/components/alerta-personalizada/alerta-personalizada.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-vehicle-list',
   templateUrl: './vehicle-list.page.html',
   styleUrls: ['./vehicle-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent, AlertaPersonalizadaComponent]
+  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent, AlertaPersonalizadaComponent, PageHeaderComponent]
 })
 export class VehicleListPage implements OnInit {
   private apiService = inject(ApiService);
@@ -133,12 +134,22 @@ export class VehicleListPage implements OnInit {
       }
     });
   }
-
   getStatusBadge(estadoVehi: EstadoVehiculo | string | undefined): string {
     const estado = estadoVehi ?? 'desconocido';
     const color = this.getStatusColor(estado);
-    const estadoCapitalized = estado.charAt(0).toUpperCase() + estado.slice(1);
-    return `<ion-badge color="${color}">${estadoCapitalized}</ion-badge>`;
+    const estadoLabel = this.getEstadoLabel(estado);
+    return `<ion-badge color="${color}">${estadoLabel}</ion-badge>`;
+  }
+
+  // Función helper para mostrar etiquetas de estado más amigables
+  private getEstadoLabel(estado: string): string {
+    const labels: { [key: string]: string } = {
+      'activo': 'Activo',
+      'inactivo': 'Inactivo',
+      'mantenimiento': 'En Mantenimiento',
+      'taller': 'En Reparación'
+    };
+    return labels[estado] || estado.charAt(0).toUpperCase() + estado.slice(1);
   }
 
   handleRefresh(event: RefresherCustomEvent) {
