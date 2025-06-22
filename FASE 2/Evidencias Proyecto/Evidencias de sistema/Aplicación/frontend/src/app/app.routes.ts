@@ -151,15 +151,15 @@ export const routes: Routes = [
    {
     path: 'gestion-siniestros',
     loadComponent: () => import('./pages/gestion-siniestros/gestion-siniestros.page').then( m => m.GestionSiniestrosPage),
-    canActivate: [GestorGuard] // <-- Añade el guard aquí también
+    canActivate: [GestorGuard] 
   },
   {
-    // --- MODIFICAR ESTA RUTA ---
-    path: 'siniestro-detalle/:id', // Añadimos el parámetro :id
+
+    path: 'siniestro-detalle/:id', 
     loadComponent: () => import('./pages/siniestro-detalle/siniestro-detalle.page').then( m => m.SiniestroDetallePage),
-    canActivate: [GestorGuard] // La protegemos con el mismo guard
+    canActivate: [GestorGuard] 
   },{
-  path: 'historial-vehiculo/:id', // La ruta espera el ID del vehículo
+  path: 'historial-vehiculo/:id', 
   loadComponent: () => import('./pages/historial-vehiculo/historial-vehiculo.page').then( m => m.HistorialVehiculoPage),
   canActivate: [authGuard, GestorGuard]
 },
@@ -167,11 +167,18 @@ export const routes: Routes = [
   path: 'combustible-detalle/:id',
   loadComponent: () => import('./pages/combustible-detalle/combustible-detalle.page').then( m => m.CombustibleDetallePage)
 },
+ {
+    path: 'reporte-mantenimiento',
+    loadComponent: () => import('./pages/reporte-mantenimiento/reporte-mantenimiento.page').then( m => m.ReporteMantenimientoPage),
+    canActivate: [authGuard, GestorGuard] 
+  },
   {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'
   },
+  
+
   
 
   

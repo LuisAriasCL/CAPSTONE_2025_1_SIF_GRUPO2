@@ -1,7 +1,50 @@
 const db = require('../models');
 const sequelize = db.sequelize;
 const { OrdenTrabajo, DetalleOt, PlanificacionMantenimiento, Vehiculo, VehiculoPlanificacion, Usuario, TareaPlanificacion } = db;
+const { Op } = require('sequelize');
 
+exports.getMantenimientoReport = async (req, res) => {
+    try {
+        const { fechaDesde, fechaHasta, vehiculoId } = req.query;
+
+        let whereClause = {};
+        
+        // Aplicar filtro de fecha si se proporcionan ambas fechas
+        if (fechaDesde && fechaHasta) {
+            whereClause.fec_ini_ot = {
+                [Op.between]: [new Date(fechaDesde), new Date(fechaHasta)]
+            };
+        }
+        
+        // Aplicar filtro de vehículo si se proporciona
+        if (vehiculoId) {
+            whereClause.vehiculoIdVehi = vehiculoId;
+        }
+
+        const ordenes = await OrdenTrabajo.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Vehiculo,
+                    as: 'vehiculo',
+                    attributes: ['patente', 'marca', 'modelo']
+                },
+                {
+                    model: Usuario,
+                    as: 'encargado', // Usamos el 'encargado' como el técnico principal para el reporte
+                    attributes: ['pri_nom_usu', 'pri_ape_usu']
+                }
+            ],
+            order: [['fec_ini_ot', 'DESC']]
+        });
+        
+        res.status(200).json(ordenes);
+
+    } catch (error) {
+        console.error("Error al generar el reporte de mantenimientos:", error);
+        res.status(500).json({ message: "Error interno del servidor al generar el reporte" });
+    }
+};
 
 exports.generarOtDesdePlan = async (req, res) => {
      console.log('Usuario desde token:', req.usuario);

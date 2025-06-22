@@ -1,0 +1,79 @@
+// frontend/src/app/pages/reporte-mantenimiento/reporte-mantenimiento.page.scss
+
+.filtros-card {
+  margin-bottom: 16px;
+}
+
+.header-tabla {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--ion-card-background, #fff);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.responsive-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+  }
+
+  thead tr {
+    background-color: var(--ion-color-light);
+    border-bottom: 2px solid var(--ion-color-medium-tint);
+    
+    th {
+      font-weight: 600;
+      color: var(--ion-color-dark-shade);
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--ion-color-step-150, #f0f0f0);
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  ion-chip {
+    font-size: 0.8rem;
+    height: 24px;
+    padding: 0 10px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+
+  .status-completada {
+    --background: var(--ion-color-success-tint);
+    --color: var(--ion-color-success-shade);
+  }
+  .status-en_progreso {
+    --background: var(--ion-color-warning-tint);
+    --color: var(--ion-color-warning-shade);
+  }
+  .status-pendiente, .status-asignada {
+    --background: var(--ion-color-primary-tint);
+    --color: var(--ion-color-primary-shade);
+  }
+  .status-cancelada {
+    --background: var(--ion-color-danger-tint);
+    --color: var(--ion-color-danger-shade);
+  }
+}

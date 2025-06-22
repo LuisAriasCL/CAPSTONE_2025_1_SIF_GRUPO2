@@ -267,6 +267,14 @@ getDashboardKpis(): Observable<any> {
     catchError(this.handleError)
   );
 }
+getMantenimientoReport(filtros: any): Observable<any[]> {
+  let params = new HttpParams();
+  if (filtros.fechaDesde) params = params.append('fechaDesde', filtros.fechaDesde);
+  if (filtros.fechaHasta) params = params.append('fechaHasta', filtros.fechaHasta);
+  if (filtros.vehiculoId) params = params.append('vehiculoId', filtros.vehiculoId);
+
+  return this.http.get<any[]>(`${this.apiUrl}/ordenes-trabajo/reporte/mantenimientos`, { params });
+}
    getCombustibleById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/combustibles/${id}`)
       .pipe(catchError(this.handleError));
