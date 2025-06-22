@@ -1,11 +1,87 @@
-<ion-content>
+
+<ion-content [fullscreen]="true">
+
+
+  
   <ion-grid>
+   
     <ion-row>
-      <!-- Gráfico de Tipos de Vehículo (ya existente) -->
+   
+      <ion-col size="6" size-md="3">
+        <ion-card class="kpi-card">
+          <ion-card-content class="ion-text-center">
+            <div *ngIf="isKpisLoading">
+              <ion-skeleton-text animated style="width: 60%; height: 36px; margin: 0 auto;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 80%; height: 16px; margin: 4px auto 0;"></ion-skeleton-text>
+            </div>
+            <div *ngIf="!isKpisLoading && kpis">
+              <ion-icon name="car-sport-outline" color="primary" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-number">{{ kpis.totalVehiculos }}</ion-card-title>
+              <ion-card-subtitle>Vehículos Totales</ion-card-subtitle>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+
+      <ion-col size="6" size-md="3">
+        <ion-card class="kpi-card">
+          <ion-card-content class="ion-text-center">
+             <div *ngIf="isKpisLoading">
+              <ion-skeleton-text animated style="width: 60%; height: 36px; margin: 0 auto;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 80%; height: 16px; margin: 4px auto 0;"></ion-skeleton-text>
+            </div>
+            <div *ngIf="!isKpisLoading && kpis">
+              <ion-icon name="shield-checkmark-outline" color="success" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-number">{{ kpis.vehiculosOperativos }}</ion-card-title>
+              <ion-card-subtitle>Operativos</ion-card-subtitle>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Tarjeta Vehículos en Taller -->
+      <ion-col size="6" size-md="3">
+        <ion-card class="kpi-card">
+          <ion-card-content class="ion-text-center">
+             <div *ngIf="isKpisLoading">
+              <ion-skeleton-text animated style="width: 60%; height: 36px; margin: 0 auto;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 80%; height: 16px; margin: 4px auto 0;"></ion-skeleton-text>
+            </div>
+            <div *ngIf="!isKpisLoading && kpis">
+              <ion-icon name="build-outline" color="warning" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-number">{{ kpis.vehiculosEnTaller }}</ion-card-title>
+              <ion-card-subtitle>En Taller</ion-card-subtitle>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+      <!-- Tarjeta Siniestros del Mes -->
+      <ion-col size="6" size-md="3">
+        <ion-card class="kpi-card">
+          <ion-card-content class="ion-text-center">
+             <div *ngIf="isKpisLoading">
+              <ion-skeleton-text animated style="width: 60%; height: 36px; margin: 0 auto;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 80%; height: 16px; margin: 4px auto 0;"></ion-skeleton-text>
+            </div>
+            <div *ngIf="!isKpisLoading && kpis">
+              <ion-icon name="alert-circle-outline" color="danger" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-number">{{ kpis.siniestrosMes }}</ion-card-title>
+              <ion-card-subtitle>Siniestros (30d)</ion-card-subtitle>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+
+    <ion-row>
+      <!-- Gráfico de Tipos de Vehículo -->
       <ion-col size="12" size-md="6" size-lg="4">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Tipos de Vehículo</ion-card-title>
+            <ion-card-title>Distribución de Vehículos</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div *ngIf="isPieChartLoading" class="ion-text-center ion-padding">
@@ -25,11 +101,11 @@
         </ion-card>
       </ion-col>
 
-      <!-- Nuevo Gráfico de Estado de Mantenimientos -->
-      <ion-col size="12" size-md="6" size-lg="4">
+      <!-- Gráfico de Estado de Mantenimientos -->
+      <ion-col size="12" size-md="6" size-lg="8">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Estado Mantenimientos</ion-card-title>
+            <ion-card-title>Estado de Órdenes de Trabajo</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <div *ngIf="isBarChartLoading" class="ion-text-center ion-padding">
@@ -42,7 +118,7 @@
                 [options]="barChartOptions">
               </canvas>
             </div>
-             <div *ngIf="!isBarChartLoading && barChartData.datasets[0].data.length === 0" class="ion-text-center ion-padding">
+            <div *ngIf="!isBarChartLoading && barChartData.datasets[0].data.length === 0" class="ion-text-center ion-padding">
               <p>No hay datos de mantenimientos.</p>
             </div>
           </ion-card-content>

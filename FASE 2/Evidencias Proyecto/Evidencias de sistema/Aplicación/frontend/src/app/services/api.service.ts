@@ -261,7 +261,12 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-
+getDashboardKpis(): Observable<any> {
+  // Asegúrate de que la ruta coincida con la que definiste en tus rutas del backend
+  return this.http.get(`${this.apiUrl}/stats/dashboard-kpis`).pipe(
+    catchError(this.handleError)
+  );
+}
    getCombustibleById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/combustibles/${id}`)
       .pipe(catchError(this.handleError));
