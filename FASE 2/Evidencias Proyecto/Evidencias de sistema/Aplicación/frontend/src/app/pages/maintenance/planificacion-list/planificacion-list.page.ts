@@ -9,7 +9,7 @@ import {
   powerOutline, documentTextOutline, checkboxOutline, carOutline,
   calendarNumberOutline, settingsOutline
 } from 'ionicons/icons';
-
+import { AuthService } from '../../../services/auth.service';
 import { ApiService, PlanificacionMantenimientoResumen } from '../../../services/api.service';
 import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.page';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
@@ -39,7 +39,8 @@ export class PlanificacionListPage implements OnInit {
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     private loadingCtrl: LoadingController,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+      private authService: AuthService,
   ) {
     addIcons({
       eyeOutline, createOutline, trashOutline, addCircleOutline,
@@ -90,7 +91,13 @@ export class PlanificacionListPage implements OnInit {
     }
 
     const vehiculo = plan.vehiculosEnPlan[0];
-    const idUsuario = 1;
+  // --- ¡LÓGICA CORREGIDA! ---
+  const currentUser = this.authService.getCurrentUser();
+  if (!currentUser) {
+    this.mostrarToast('Error: No se pudo obtener la información del usuario actual.', 'danger');
+    return;
+  }
+  const idUsuario = currentUser.idUsu; // Ahora se obtiene el ID real
 
     // Mostrar confirmación de generación con modal personalizado
     const modal = await this.modalCtrl.create({
@@ -112,6 +119,12 @@ export class PlanificacionListPage implements OnInit {
     if (data === 'confirm') {
       const loading = await this.loadingCtrl.create({ message: 'Generando OT...' });
       await loading.present();
+        // --- LOG 1: VERIFICAR DATOS ANTES DE ENVIAR AL SERVICIO ---
+    console.log('[LOG 1 - Componente] Datos a enviar al ApiService:', {
+      planId: plan.idPlan,
+      vehiculoId: vehiculo.idVehi,
+      solicitanteId: idUsuario 
+    });
       this.apiService.generarOt(plan.idPlan, vehiculo.idVehi, idUsuario).subscribe({
         next: async (res) => {
           await loading.dismiss();

@@ -351,14 +351,20 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
     return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
   }
 
-  generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
-    const body = { 
-      id_plan: idPlan, 
-      id_vehi: idVehi,
-      id_usuario_solicitante: idUsuario 
-    };
-    return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
-  }
+generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
+  const body = { 
+    id_plan: idPlan, 
+    id_vehi: idVehi,
+    id_usuario_solicitante: idUsuario 
+  };
+
+  // --- LOG 2: VERIFICAR EL CUERPO DE LA PETICIÓN HTTP ---
+  console.log('[LOG 2 - ApiService] Cuerpo (body) de la petición POST:', body);
+  // ----------------------------------------------------
+
+  return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
+}
+
 
   getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
     return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
