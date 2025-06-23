@@ -236,7 +236,11 @@ export class OrdenTrabajoDetallePage implements OnInit {
         message: 'Iniciando orden de trabajo...',
       });
       await loading.present();
-
+  console.log('[PASO 1 - COMPONENTE] Datos que se enviarán al servicio:', {
+        id_ot: this.ordenTrabajo.id_ot,
+        estado: 'en_progreso',
+        encargadoId: currentUser.idUsu
+      });
       this.apiService
         .actualizarEstadoOt(
           this.ordenTrabajo.id_ot,
