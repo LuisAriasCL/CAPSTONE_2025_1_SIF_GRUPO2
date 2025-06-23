@@ -11,4 +11,6 @@ router.put('/:id', usuarioController.updateUsuario);
 
 router.delete('/:id', usuarioController.deleteUsuario);
 router.post('/', usuarioController.createUsuario);
+// PUT /api/usuarios/reactivate/:id
+router.put('/reactivate/:id', usuarioController.reactivateUsuario);
 module.exports = router;

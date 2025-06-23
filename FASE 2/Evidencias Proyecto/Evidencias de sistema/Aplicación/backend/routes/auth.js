@@ -78,54 +78,57 @@ router.post('/register', async (req, res) => {
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
-    const { email, clave } = req.body; 
+  const { email, clave } = req.body; 
 
-    if (!email || !clave) {
-        return res.status(400).json({ message: 'Email y clave son requeridos.' });
+  if (!email || !clave) {
+    return res.status(400).json({ message: 'Email y clave son requeridos.' });
+  }
+
+  try {
+    const user = await Usuario.findOne({ where: { email: email } });
+    if (!user) {
+      return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
 
-    try {
-        const user = await Usuario.findOne({ where: { email: email } });
-        if (!user) {
-            return res.status(401).json({ message: 'Credenciales inválidas.' });
-        }
-
-        const isMatch = await bcrypt.compare(clave, user.clave);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Credenciales inválidas.' });
-        }
-    console.log('Objeto de usuario recibido por Sequelize:', user.toJSON());
-        // --- CAMBIO 1: VERIFICAR SI EL USUARIO ESTÁ ACTIVO ---
-        if (user.estadoUsu !== 'activo') {
-            return res.status(403).json({ message: 'Su cuenta ha sido desactivada. Por favor, contacte al administrador.' });
-        }
-        // --- FIN DEL CAMBIO 1 ---
-
-        const payload = {
-            userId: user.id_usu, // Corregido para que coincida con el modelo
-            email: user.email,
-            rol: user.rol,
-            nombre: user.pri_nom_usu
-        };
-
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_jwt_por_defecto', { expiresIn: '24h' });
-
-        res.status(200).json({
-            message: 'Login exitoso!',
-            token: token,
-            user: {
-                id_usu: user.id_usu,
-                pri_nom_usu: user.pri_nom_usu,
-                pri_ape_usu: user.pri_ape_usu,
-                email: user.email,
-                rol: user.rol
-            }
-        });
-
-    } catch (error) {
-        console.error("Error en el login:", error);
-        res.status(500).json({ message: 'Error interno del servidor durante el login.' });
+    const isMatch = await bcrypt.compare(clave, user.clave);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Credenciales inválidas.' });
     }
+    
+    if (user.estadoUsu !== 'activo') {
+      return res.status(403).json({ message: 'Su cuenta ha sido desactivada. Por favor, contacte al administrador.' });
+    }
+
+    // --- CORRECCIÓN EN EL PAYLOAD DEL TOKEN ---
+    // Usamos los nombres camelCase del objeto 'user' de Sequelize
+    const payload = {
+      id_usu: user.idUsu, // <--- CAMBIO AQUÍ
+      email: user.email,
+      rol: user.rol,
+      nombre: user.priNomUsu // <--- CAMBIO AQUÍ
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_jwt_por_defecto', { expiresIn: '24h' });
+
+    // --- CORRECCIÓN EN LA RESPUESTA JSON ---
+    // Creamos el objeto 'user' para el frontend, usando los nombres que el frontend espera
+    // (en este caso, snake_case, porque tu 'mapUser' en el frontend los espera así)
+    res.status(200).json({
+      message: 'Login exitoso!',
+      token: token,
+      user: {
+        id_usu: user.idUsu,          // <--- CAMBIO AQUÍ
+        pri_nom_usu: user.priNomUsu, // <--- CAMBIO AQUÍ
+        pri_ape_usu: user.priApeUsu, // <--- CAMBIO AQUÍ
+        email: user.email,
+        rol: user.rol
+      }
+    });
+
+  } catch (error) {
+    console.error("Error en el login:", error);
+    res.status(500).json({ message: 'Error interno del servidor durante el login.' });
+  }
 });
 // GET /api/auth/users - Para listar usuarios (ej. para selectores de conductor)
 router.get('/users', async (req, res) => {

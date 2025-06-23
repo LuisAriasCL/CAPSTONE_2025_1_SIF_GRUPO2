@@ -208,7 +208,6 @@ export class OrdenTrabajoDetallePage implements OnInit {
     if (!this.ordenTrabajo) return;
 
     const currentUser = this.authService.getCurrentUser();
-
     if (!currentUser) {
       this.presentToast('No se pudo identificar al usuario actual.', 'danger');
       return;

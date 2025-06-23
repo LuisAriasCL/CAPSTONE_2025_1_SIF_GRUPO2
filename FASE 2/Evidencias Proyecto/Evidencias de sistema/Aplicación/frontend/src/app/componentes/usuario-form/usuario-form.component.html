@@ -12,7 +12,24 @@
 <ion-content class="ion-padding">
   <form [formGroup]="form" (ngSubmit)="confirm()" novalidate>
     <ion-list lines="none">
-      
+      <ion-item>
+        <ion-input
+          label="RUT"
+          labelPlacement="floating"
+          formControlName="rut_usu"
+          required
+          fill="outline"
+          shape="round"
+          [class.ion-invalid]="form.get('rut_usu')?.invalid && form.get('rut_usu')?.touched"
+        ></ion-input>
+      </ion-item>
+      <!-- Se añade el contenedor de error para el RUT -->
+      <div class="error-container" *ngIf="form.get('rut_usu')?.invalid && form.get('rut_usu')?.touched">
+        <ion-text color="danger" *ngIf="form.get('rut_usu')?.errors?.['required']">
+          El RUT es requerido.
+        </ion-text>
+      </div>
+
       <ion-item>
         <ion-input
           label="Nombre"

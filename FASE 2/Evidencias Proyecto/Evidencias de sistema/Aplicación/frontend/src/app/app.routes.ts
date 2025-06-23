@@ -231,12 +231,37 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard, GestorGuard],
   },
+
+  {
+    path: 'siniestro-detalle/:id',
+    loadComponent: () =>
+      import('./pages/siniestro-detalle/siniestro-detalle.page').then(
+        (m) => m.SiniestroDetallePage
+      ),
+    canActivate: [GestorGuard],
+  },
+  {
+    path: 'historial-vehiculo/:id',
+    loadComponent: () =>
+      import('./pages/historial-vehiculo/historial-vehiculo.page').then(
+        (m) => m.HistorialVehiculoPage
+      ),
+    canActivate: [authGuard, GestorGuard],
+  },
   {
     path: 'combustible-detalle/:id',
     loadComponent: () =>
       import('./pages/combustible-detalle/combustible-detalle.page').then(
         (m) => m.CombustibleDetallePage
       ),
+  },
+  {
+    path: 'reporte-mantenimiento',
+    loadComponent: () =>
+      import('./pages/reporte-mantenimiento/reporte-mantenimiento.page').then(
+        (m) => m.ReporteMantenimientoPage
+      ),
+    canActivate: [authGuard, GestorGuard],
   },
   {
     path: '',

@@ -4,29 +4,37 @@ const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize'); // <-- AÑADIR ESTA LÍNEA
 exports.getUsuarios = async (req, res) => {
     try {
-        const { rol } = req.query;
+        // --- CAMBIO 1: Leer el parámetro 'estado' además del 'rol' ---
+        const { rol, estado } = req.query;
         
-        // --- CAMBIO 1: Asegurar que solo se obtengan usuarios activos ---
-        let whereClause = { estado_usu: 'activo' }; 
-        if (rol) {
+        // --- CAMBIO 2: Hacer el filtro de estado dinámico ---
+        // Si no se envía un 'estado', por defecto busca 'activo'.
+        // Si se envía 'inactivo', buscará los inactivos.
+        let whereClause = { 
+            estado_usu: estado || 'activo' 
+        }; 
+        
+        // Se mantiene tu lógica para el filtro de rol
+        if (rol && rol !== 'todos') { // Se añade la condición para ignorar 'todos'
             whereClause.rol = rol;
         }
 
         const usuarios = await Usuario.findAll({
             where: whereClause,
-            // --- CAMBIO 2: Incluir el campo 'estado_usu' en los atributos ---
+            // Se mantienen los atributos que ya habías definido
             attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email', 'rol', 'estado_usu'],
             raw: true 
         });
 
-        
+        // Tu mapeo de datos se mantiene igual, lo cual es correcto
+        // ya que los nombres de columna coinciden.
         const usuariosMapeados = usuarios.map(u => ({
             id_usu: u.id_usu,
             pri_nom_usu: u.pri_nom_usu,
             pri_ape_usu: u.pri_ape_usu,
             email: u.email, 
             rol: u.rol,
-            estado_usu: u.estado_usu // Devolver también el estado
+            estado_usu: u.estado_usu
         }));
         
         res.status(200).json(usuariosMapeados);
@@ -36,7 +44,6 @@ exports.getUsuarios = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
-
 exports.deleteUsuario = async (req, res) => {
     try {
         const { id } = req.params;
@@ -46,13 +53,28 @@ exports.deleteUsuario = async (req, res) => {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        // Validación para ROL CONDUCTOR
+        // --- Verificación para cualquier rol involucrado en una OT activa ---
+        const otActiva = await OrdenTrabajo.findOne({
+            where: {
+                [Op.or]: [
+                    { usuarioIdUsuEncargado: id },
+                    { usuarioIdUsuSolicitante: id }
+                ],
+                estado_ot: { [Op.notIn]: ['completada', 'cancelada'] }
+            }
+        });
+
+        if (otActiva) {
+            return res.status(409).json({ message: 'No se puede desactivar: El usuario está involucrado en una Orden de Trabajo activa (como solicitante o encargado).' });
+        }
+
+
+        // --- Verificaciones específicas por rol que ya tenías ---
+
+        // Validación para ROL CONDUCTOR en recorridos activos
         if (usuario.rol === 'conductor') {
             const asignacionActiva = await AsignacionRecorrido.findOne({
                 where: {
-                    // --- CORRECCIÓN ---
-                    // El modelo AsignacionRecorrido.js usa 'usuarioIdUsuConductor' como propiedad.
-                    // En este caso, tu código original era correcto para este modelo específico.
                     usuarioIdUsuConductor: id,
                     estadoAsig: { [Op.notIn]: ['completado', 'cancelado'] }
                 }
@@ -62,59 +84,58 @@ exports.deleteUsuario = async (req, res) => {
             }
         }
 
-        // Validación para ROL TECNICO
+        // Validación para ROL TECNICO en tareas de OT activas
         if (usuario.rol === 'tecnico') {
             const detalleOtActivo = await DetalleOt.findOne({
-                where: {
-                    // --- CORRECCIÓN ---
-                    // El modelo DetalleOt.js define la clave foránea como 'usuarioIdUsuTecnico'.
-                    // Tu código original era correcto aquí también.
-                    usuarioIdUsuTecnico: id 
-                },
+                where: { usuarioIdUsuTecnico: id },
                 include: [{
                     model: OrdenTrabajo,
                     required: true, 
                     where: {
-                        // --- CORRECCIÓN DE TIPO ---
-                        // El estado en la BD es 'completada' (femenino).
-                        estado_ot: { [Op.notIn]: ['completado', 'cancelado'] }
+                        estado_ot: { [Op.notIn]: ['completada', 'cancelada'] }
                     }
                 }]
             });
             if (detalleOtActivo) {
-                return res.status(409).json({ message: 'No se puede desactivar: El técnico tiene una OT activa.' });
+                return res.status(409).json({ message: 'No se puede desactivar: El técnico está asignado a una OT activa.' });
             }
         }
         
-        // Validación para ROL ENCARGADO
-        const otEncargadoActiva = await OrdenTrabajo.findOne({
-            where: {
-                // --- CORRECCIÓN ---
-                // El modelo OrdenTrabajo.js define la propiedad como 'usuarioIdUsuEncargado'.
-                // Tu código original estaba correcto. La corrección de estado era la clave.
-                usuarioIdUsuEncargado: id,
-                estado_ot: { [Op.notIn]: ['completado', 'cancelado'] }
-            }
-        });
-        if(otEncargadoActiva) {
-            return res.status(409).json({ message: 'No se puede desactivar: El usuario es encargado de una OT activa.' });
-        }
-
         // --- ACCIÓN FINAL: SOFT DELETE ---
-        // Ahora que todas las validaciones se ejecutan correctamente, procedemos a desactivar.
         await usuario.update({ estadoUsu: 'inactivo' });
 
         res.status(200).json({ message: 'Usuario desactivado exitosamente' });
 
     } catch (error) {
         console.error('Error al desactivar usuario:', error);
-        // Este error de FK ya no debería ocurrir, pero lo dejamos por si acaso.
-        if (error.name === 'SequelizeForeignKeyConstraintError') {
-            return res.status(409).json({ message: 'No se puede desactivar. El usuario tiene registros históricos asociados.' });
-        }
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
+exports.reactivateUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuario = await Usuario.findByPk(id);
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        
+        // Verifica si el usuario ya está activo para no hacer un update innecesario
+        if (usuario.estadoUsu === 'activo') {
+            return res.status(400).json({ message: 'El usuario ya se encuentra activo.' });
+        }
+        
+        // Actualiza el estado a 'activo'
+        await usuario.update({ estadoUsu: 'activo' });
+        
+        res.status(200).json({ message: 'Usuario reactivado exitosamente' });
+
+    } catch (error) {
+        console.error('Error al reactivar usuario:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
 exports.updateUsuario = async (req, res) => {
     try {
         const { id } = req.params;
@@ -158,23 +179,25 @@ exports.updateUsuario = async (req, res) => {
 
 exports.createUsuario = async (req, res) => {
     try {
-    
-        const { pri_nom_usu, pri_ape_usu, email, rol, clave } = req.body;
+        // --- CAMBIO 1: Añadir 'rut_usu' a la desestructuración ---
+        const { pri_nom_usu, pri_ape_usu, email, rol, clave, rut_usu } = req.body;
 
-        if (!pri_nom_usu || !pri_ape_usu || !email || !rol || !clave) {
-            return res.status(400).json({ message: 'Todos los campos son requeridos.' });
+        // --- CAMBIO 2: Añadir 'rut_usu' a la validación ---
+        if (!pri_nom_usu || !pri_ape_usu || !email || !rol || !clave || !rut_usu) {
+            return res.status(400).json({ message: 'Todos los campos son requeridos, incluyendo el RUT.' });
         }
 
         const hashedPassword = await bcrypt.hash(clave, 10);
-
-       
+        
         const nuevoUsuario = await Usuario.create({
-            priNomUsu: pri_nom_usu,   
+            priNomUsu: pri_nom_usu,  
             priApeUsu: pri_ape_usu, 
+            // --- CAMBIO 3: Añadir 'rutUsu' al objeto de creación ---
+            rutUsu: rut_usu,
             email: email,
             rol: rol,
             clave: hashedPassword
-          
+            // No es necesario añadir 'estado_usu', se establece por defecto.
         });
 
         const usuarioParaDevolver = { ...nuevoUsuario.toJSON() };
@@ -185,9 +208,11 @@ exports.createUsuario = async (req, res) => {
     } catch (error) {
         console.error('Error al crear usuario:', error);
         if (error.name === 'SequelizeUniqueConstraintError') {
-            return res.status(409).json({ message: 'El email proporcionado ya está registrado.' });
+            // Mensaje de error más específico
+            const field = error.errors[0]?.path || 'desconocido';
+            return res.status(409).json({ message: `El ${field} proporcionado ya está registrado.` });
         }
-       
+        
         if (error.name === 'SequelizeValidationError') {
             const messages = error.errors.map(e => e.message).join(', ');
             return res.status(400).json({ message: `Datos inválidos: ${messages}` });

@@ -311,6 +311,20 @@ export class ApiService {
       .get(`${this.apiUrl}/stats/dashboard-kpis`)
       .pipe(catchError(this.handleError));
   }
+  getMantenimientoReport(filtros: any): Observable<any[]> {
+    let params = new HttpParams();
+    if (filtros.fechaDesde)
+      params = params.append('fechaDesde', filtros.fechaDesde);
+    if (filtros.fechaHasta)
+      params = params.append('fechaHasta', filtros.fechaHasta);
+    if (filtros.vehiculoId)
+      params = params.append('vehiculoId', filtros.vehiculoId);
+
+    return this.http.get<any[]>(
+      `${this.apiUrl}/ordenes-trabajo/reporte/mantenimientos`,
+      { params }
+    );
+  }
   getCombustibleById(id: number): Observable<any> {
     return this.http
       .get<any>(`${this.apiUrl}/combustibles/${id}`)
@@ -323,16 +337,20 @@ export class ApiService {
       )
       .pipe(catchError(this.handleError));
   }
-  getAllUsers(rol?: string): Observable<Usuario[]> {
+  getAllUsers(rol?: string, estado: string = 'activo'): Observable<Usuario[]> {
     let params = new HttpParams();
     if (rol) {
-      params = params.set('rol', rol);
+      params = params.append('rol', rol);
     }
+    // Siempre se enviará el estado, por defecto 'activo'
+    params = params.append('estado', estado);
 
-    return this.http
-      .get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
-      .pipe(catchError(this.handleError));
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params });
   }
+  reactivateUser(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/usuarios/reactivate/${id}`, {});
+  }
+
   getVehiculos(): Observable<Vehiculo[]> {
     return this.http.get<Vehiculo[]>(this.apiUrl);
   }
@@ -411,6 +429,14 @@ export class ApiService {
       id_vehi: idVehi,
       id_usuario_solicitante: idUsuario,
     };
+
+    // --- LOG 2: VERIFICAR EL CUERPO DE LA PETICIÓN HTTP ---
+    console.log(
+      '[LOG 2 - ApiService] Cuerpo (body) de la petición POST:',
+      body
+    );
+    // ----------------------------------------------------
+
     return this.http.post<{ message: string; id_ot: number }>(
       `${this.apiUrl}/ordenes-trabajo/generar`,
       body

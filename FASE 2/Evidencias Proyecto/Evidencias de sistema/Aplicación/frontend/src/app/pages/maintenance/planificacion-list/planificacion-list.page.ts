@@ -38,6 +38,7 @@ import {
   FilterConfig,
 } from '../../../services/base-list.service';
 import { TitleService } from '../../../services/title.service';
+import { AuthService } from '../../../services/auth.service';
 import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.page';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
@@ -60,7 +61,8 @@ export class PlanificacionListPage
     titleService: TitleService,
     private apiService: ApiService,
     private navCtrl: NavController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private authService: AuthService
   ) {
     super(baseListService, toastCtrl, loadingCtrl, modalCtrl, titleService);
     addIcons({
@@ -155,7 +157,16 @@ export class PlanificacionListPage
     }
 
     const vehiculo = plan.vehiculosEnPlan[0];
-    const idUsuario = 1;
+    // --- ¡LÓGICA CORREGIDA! ---
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      this.mostrarToast(
+        'Error: No se pudo obtener la información del usuario actual.',
+        'danger'
+      );
+      return;
+    }
+    const idUsuario = currentUser.idUsu; // Ahora se obtiene el ID real
 
     // Mostrar confirmación de generación con modal personalizado
     const modal = await this.modalCtrl.create({

@@ -1,17 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController } from '@ionic/angular'; // Importar AlertController
+import { IonicModule, ToastController, AlertController, ModalController } from '@ionic/angular';
+import { FormsModule } from '@angular/forms';
 import { ApiService, Usuario } from '../../services/api.service';
 import { HeaderComponent } from 'src/app/componentes/header/header.component';
 import { UsuarioFormComponent } from 'src/app/componentes/usuario-form/usuario-form.component';
-import { ModalController } from '@ionic/angular';
-import { FormsModule } from '@angular/forms';
+import { addIcons } from 'ionicons';
+import { 
+  createOutline, trashOutline, add, refreshOutline, happyOutline, 
+  shieldCheckmarkOutline, briefcaseOutline, carSportOutline, buildOutline, constructOutline, personOutline, peopleCircleOutline
+} from 'ionicons/icons';
+
 @Component({
   selector: 'app-gestion-usuarios',
   templateUrl: './gestion-usuarios.page.html',
   styleUrls: ['./gestion-usuarios.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, HeaderComponent, UsuarioFormComponent, FormsModule]
+  imports: [IonicModule, CommonModule, HeaderComponent, FormsModule]
 })
 export class GestionUsuariosPage implements OnInit {
 
@@ -19,42 +24,43 @@ export class GestionUsuariosPage implements OnInit {
   public resultadosFiltrados: Usuario[] = []; 
   public cargando = true;
   public error = false;
-   public skeletonItems = Array(5);
-    public rolesParaFiltrar = ['conductor', 'tecnico', 'gestor', 'admin'];
+  public skeletonItems = Array(5);
+  public rolesParaFiltrar = ['conductor', 'tecnico', 'gestor', 'admin', 'mantenimiento'];
   public selectedRole: string = 'todos'; 
+  public selectedStatus: 'activo' | 'inactivo' = 'activo';
 
   constructor(
     private apiService: ApiService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
-    ,  private modalCtrl: ModalController 
-  ) { }
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController 
+  ) {
+    addIcons({ 
+      createOutline, trashOutline, add, refreshOutline, happyOutline, shieldCheckmarkOutline, 
+      briefcaseOutline, carSportOutline, buildOutline, constructOutline, personOutline, peopleCircleOutline
+    });
+  }
 
   ngOnInit() { }
 
   ionViewWillEnter() {
-    this.cargarUsuarios(this.selectedRole);
+    this.cargarUsuarios();
   }
-filterByRole(event: any) {
-    const rolSeleccionado = event.detail.value;
-    this.cargarUsuarios(rolSeleccionado);
-  }
-    cargarUsuarios(rol: string = 'todos') {
+
+  cargarUsuarios() {
     this.cargando = true;
     this.error = false;
-    this.resultadosFiltrados = []; 
+    
+    const rolToFetch = this.selectedRole === 'todos' ? undefined : this.selectedRole;
 
-   
-    const rolToFetch = rol === 'todos' ? undefined : rol;
-
-    this.apiService.getAllUsers(rolToFetch).subscribe({
+    this.apiService.getAllUsers(rolToFetch, this.selectedStatus).subscribe({
       next: (data) => {
         this.usuarios = data;
         this.resultadosFiltrados = [...data];
         this.cargando = false;
       },
       error: (err) => {
-        console.error(`Error al cargar usuarios para el rol: ${rol}`, err);
+        console.error('Error al cargar usuarios:', err);
         this.cargando = false;
         this.error = true;
         this.mostrarToast('Error al cargar la lista de usuarios.', 'danger');
@@ -62,7 +68,15 @@ filterByRole(event: any) {
     });
   }
 
+  filterByStatus(event: any) {
+    this.selectedStatus = event.detail.value;
+    this.cargarUsuarios();
+  }
 
+  filterByRole(event: any) {
+    this.selectedRole = event.detail.value;
+    this.cargarUsuarios();
+  }
 
   handleSearch(event: any) {
     const searchTerm = event.target.value.toLowerCase();
@@ -70,7 +84,6 @@ filterByRole(event: any) {
       this.resultadosFiltrados = [...this.usuarios];
       return;
     }
-
     this.resultadosFiltrados = this.usuarios.filter(usuario => {
       const nombreCompleto = `${usuario.pri_nom_usu} ${usuario.pri_ape_usu}`.toLowerCase();
       const email = usuario.email.toLowerCase();
@@ -78,124 +91,97 @@ filterByRole(event: any) {
     });
   }
 
-
-async onCreate() {
-  const modal = await this.modalCtrl.create({
-    component: UsuarioFormComponent,
-    
-    componentProps: {
-      usuario: null 
-    }
-  });
-
-  await modal.present();
-
-  const { data, role } = await modal.onWillDismiss();
-
-  if (role === 'confirm') {
-   
-    this.apiService.createUser(data).subscribe({
-      next: (nuevoUsuario) => {
-        this.mostrarToast('Usuario creado con éxito', 'success');
-     
-        this.usuarios.unshift(nuevoUsuario);
-        this.resultadosFiltrados = [...this.usuarios];
-      },
-      error: (err) => {
-        this.mostrarToast(err.message || 'Error al crear el usuario', 'danger');
-      }
+  async openUserForm(usuario: Usuario | null) {
+    const modal = await this.modalCtrl.create({
+      component: UsuarioFormComponent,
+      componentProps: { usuario: usuario ? { ...usuario } : null }
     });
-  }
-}
 
- async onEdit(usuario: Usuario) {
-  const modal = await this.modalCtrl.create({
-    component: UsuarioFormComponent,
-    componentProps: {
-      usuario: { ...usuario } 
-    }
-  });
-  
-  await modal.present();
+    await modal.present();
 
- 
-  const { data, role } = await modal.onWillDismiss();
+    const { data, role } = await modal.onWillDismiss();
 
-  if (role === 'confirm') {
-    
-    this.apiService.updateUser(usuario.id_usu, data).subscribe({
-      next: (response) => {
-        this.mostrarToast('Usuario actualizado con éxito', 'success');
-        this.cargarUsuarios();
-      },
-      error: (err) => {
-        this.mostrarToast(err.message || 'Error al actualizar el usuario', 'danger');
+    if (role === 'confirm') {
+      if (usuario) { // Modo Edición
+        this.apiService.updateUser(usuario.id_usu, data).subscribe({
+          next: () => {
+            this.mostrarToast('Usuario actualizado con éxito', 'success');
+            this.cargarUsuarios();
+          },
+          error: (err) => this.mostrarToast(err.error?.message || 'Error al actualizar', 'danger')
+        });
+      } else { // Modo Creación
+        this.apiService.createUser(data).subscribe({
+          next: () => {
+            this.mostrarToast('Usuario creado con éxito', 'success');
+            this.selectedRole = data.rol; // Opcional: filtra por el rol recién creado
+            this.cargarUsuarios();
+          },
+          error: (err) => this.mostrarToast(err.error?.message || 'Error al crear', 'danger')
+        });
       }
-    });
+    }
   }
-}
 
- async onDelete(usuario: Usuario) {
-    const alert = await this.alertCtrl.create({
-      header: 'Confirmar Desactivación',
-      message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}? El usuario no podrá acceder al sistema pero su historial se conservará.`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Desactivar',
-          role: 'confirm',
-          cssClass: 'ion-color-danger',
-          handler: () => {
-            this.apiService.deleteUser(usuario.id_usu).subscribe({
-              next: (response) => {
-                this.mostrarToast(response.message, 'success');
-                this.cargarUsuarios(this.selectedRole);
-              },
-              error: (err) => {
-                console.error('Error al desactivar usuario:', err);
-                  
-                  // --- CORRECCIÓN FINAL AQUÍ ---
-                  // Leemos el mensaje directamente de err.message en lugar de err.error.message
-                this.mostrarToast(err.message || 'Error al desactivar el usuario.', 'danger');
-              }
-            });
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-  
+  async onDeactivate(usuario: Usuario) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar Desactivación',
+      message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Desactivar',
+          role: 'confirm',
+          cssClass: 'ion-color-danger',
+          handler: () => {
+            this.apiService.deleteUser(usuario.id_usu).subscribe({
+              next: (res) => { this.mostrarToast(res.message, 'success'); this.cargarUsuarios(); },
+              error: (err) => this.mostrarToast(err.error?.message || 'Error al desactivar', 'danger')
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async onReactivate(usuario: Usuario) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar Reactivación',
+      message: `¿Estás seguro de que quieres reactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Reactivar',
+          role: 'confirm',
+          handler: () => {
+            this.apiService.reactivateUser(usuario.id_usu).subscribe({
+              next: (res) => { this.mostrarToast(res.message, 'success'); this.cargarUsuarios(); },
+              error: (err) => this.mostrarToast(err.error?.message || 'Error al reactivar', 'danger')
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
 
   getIconForRole(rol: string): string {
-    switch (rol) {
-      case 'admin': return 'shield-checkmark';
-      case 'gestor': return 'briefcase';
-      case 'conductor': return 'car-sport';
-      case 'mantenimiento': return 'build';
-      case 'tecnico': return 'construct';
-      default: return 'person';
-    }
-  }
-
-  getColorForRole(rol: string): string {
-    switch (rol) {
-      case 'admin': return 'danger';
-      case 'gestor': return 'primary';
-      case 'conductor': return 'secondary';
-      case 'mantenimiento': return 'tertiary';
-      case 'tecnico': return 'warning';
-      default: return 'medium';
-    }
+    const iconMap: { [key: string]: string } = {
+      admin: 'shield-checkmark-outline',
+      gestor: 'briefcase-outline',
+      conductor: 'car-sport-outline',
+      mantenimiento: 'build-outline',
+      tecnico: 'construct-outline'
+    };
+    return iconMap[rol] || 'person-outline';
   }
 
   async mostrarToast(mensaje: string, color: string) {
     const toast = await this.toastCtrl.create({
       message: mensaje,
       duration: 3000,
+      position: 'top',
       color: color
     });
     toast.present();

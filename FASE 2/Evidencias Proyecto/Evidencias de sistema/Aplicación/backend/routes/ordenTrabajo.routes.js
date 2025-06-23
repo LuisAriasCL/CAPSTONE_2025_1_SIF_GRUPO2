@@ -9,6 +9,7 @@ router.post('/generar', ordenTrabajoController.generarOtDesdePlan);
 
 
 router.get('/', ordenTrabajoController.listarOrdenesTrabajo);
+router.get('/reporte/mantenimientos', ordenTrabajoController.getMantenimientoReport);
 
 
 router.get('/:id', ordenTrabajoController.getOrdenTrabajoPorId);

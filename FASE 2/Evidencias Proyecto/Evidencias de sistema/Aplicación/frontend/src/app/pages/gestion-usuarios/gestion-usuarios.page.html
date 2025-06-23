@@ -4,8 +4,22 @@
       animated="true"
       placeholder="Buscar por nombre o email..."
       (ionInput)="handleSearch($event)"
+      [debounce]="300"
     ></ion-searchbar>
   </ion-toolbar>
+
+  <ion-segment
+    (ionChange)="filterByStatus($event)"
+    [(ngModel)]="selectedStatus"
+    color="primary"
+  >
+    <ion-segment-button value="activo">
+      <ion-label>Activos</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="inactivo">
+      <ion-label>Inactivos</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
   <ion-segment
     (ionChange)="filterByRole($event)"
@@ -13,7 +27,7 @@
     scrollable="true"
   >
     <ion-segment-button value="todos">
-      <ion-label>Todos</ion-label>
+      <ion-label>Todos los Roles</ion-label>
     </ion-segment-button>
     <ion-segment-button *ngFor="let rol of rolesParaFiltrar" [value]="rol">
       <ion-label>{{ rol | titlecase }}</ion-label>
@@ -22,64 +36,91 @@
 
   <div *ngIf="cargando">
     <ion-list>
-      <ion-card *ngFor="let item of skeletonItems" class="skeleton-card">
-        <ion-card-header>
-          <ion-skeleton-text
-            animated="true"
-            style="width: 60%"
-          ></ion-skeleton-text>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-skeleton-text
-            animated="true"
-            style="width: 80%"
-          ></ion-skeleton-text>
-          <ion-skeleton-text
-            animated="true"
-            style="width: 40%"
-          ></ion-skeleton-text>
-        </ion-card-content>
+      <ion-card *ngFor="let i of [1,2,3,4,5]">
+        <ion-item lines="none">
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text animated></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text
+                animated
+                style="width: 50%"
+              ></ion-skeleton-text>
+            </h3>
+            <p>
+              <ion-skeleton-text
+                animated
+                style="width: 80%"
+              ></ion-skeleton-text>
+            </p>
+            <p>
+              <ion-skeleton-text
+                animated
+                style="width: 30%"
+              ></ion-skeleton-text>
+            </p>
+          </ion-label>
+        </ion-item>
       </ion-card>
     </ion-list>
   </div>
 
-  <div *ngIf="error" class="ion-padding ion-text-center">
-    <ion-text color="danger"><p>No se pudo cargar la información.</p></ion-text>
-    <ion-button (click)="cargarUsuarios()"
-      ><ion-icon name="refresh-outline" slot="start"></ion-icon
-      >Reintentar</ion-button
-    >
+  <div *ngIf="error && !cargando" class="ion-padding ion-text-center">
+    <ion-icon
+      name="cloud-offline-outline"
+      size="large"
+      color="medium"
+    ></ion-icon>
+    <p>No se pudo cargar la información.</p>
+    <ion-button (click)="cargarUsuarios()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Reintentar
+    </ion-button>
   </div>
 
   <ion-list *ngIf="!cargando && !error">
     <ion-card *ngFor="let usuario of resultadosFiltrados" class="usuario-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon
-            [name]="getIconForRole(usuario.rol)"
-            color="primary"
-          ></ion-icon>
-          {{ usuario.pri_nom_usu }} {{ usuario.pri_ape_usu }}
-        </ion-card-title>
-        <ion-card-subtitle>{{ usuario.email }}</ion-card-subtitle>
-      </ion-card-header>
+      <ion-item lines="none">
+        <ion-icon
+          [name]="getIconForRole(usuario.rol)"
+          slot="start"
+          size="large"
+          color="primary"
+        ></ion-icon>
+        <ion-label>
+          <h2>{{ usuario.pri_nom_usu }} {{ usuario.pri_ape_usu }}</h2>
+          <p>{{ usuario.email }}</p>
+          <ion-chip
+            outline="true"
+            [color]="usuario.rol === 'admin' ? 'danger' : 'medium'"
+          >
+            <ion-label>{{ usuario.rol | titlecase }}</ion-label>
+          </ion-chip>
+        </ion-label>
+        <div class="card-buttons" slot="end">
+          <ion-button fill="clear" (click)="openUserForm(usuario)">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
 
-      <ion-card-content>
-        <ion-chip [color]="getColorForRole(usuario.rol)" outline="true">
-          <ion-label>{{ usuario.rol | titlecase }}</ion-label>
-        </ion-chip>
-      </ion-card-content>
-
-      <div class="card-buttons">
-        <ion-button fill="clear" color="primary" (click)="onEdit(usuario)">
-          <ion-icon slot="start" name="create-outline"></ion-icon>
-          Editar
-        </ion-button>
-        <ion-button fill="clear" color="danger" (click)="onDelete(usuario)">
-          <ion-icon slot="start" name="trash-outline"></ion-icon>
-          Borrar
-        </ion-button>
-      </div>
+          <ion-button
+            *ngIf="selectedStatus === 'activo'"
+            fill="clear"
+            color="danger"
+            (click)="onDeactivate(usuario)"
+          >
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+            *ngIf="selectedStatus === 'inactivo'"
+            fill="clear"
+            color="success"
+            (click)="onReactivate(usuario)"
+          >
+            <ion-icon slot="icon-only" name="happy-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
     </ion-card>
   </ion-list>
 
@@ -87,16 +128,11 @@
     *ngIf="!cargando && resultadosFiltrados.length === 0"
     class="ion-text-center ion-padding"
   >
-    <p>No se encontraron usuarios.</p>
+    <p>No se encontraron usuarios con los filtros seleccionados.</p>
   </div>
-  <!-- Botón flotante para crear usuario -->
-  <ion-fab
-    vertical="top"
-    horizontal="start"
-    slot="fixed"
-    style="top: 80px; left: 16px"
-  >
-    <ion-fab-button (click)="onCreate()" class="custom-fab-green">
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openUserForm(null)">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
