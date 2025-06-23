@@ -123,7 +123,7 @@ export class GestionUsuariosPage implements OnInit {
     }
   }
 
-  async onDeactivate(usuario: Usuario) {
+   async onDeactivate(usuario: Usuario) {
     const alert = await this.alertCtrl.create({
       header: 'Confirmar Desactivación',
       message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
@@ -135,8 +135,14 @@ export class GestionUsuariosPage implements OnInit {
           cssClass: 'ion-color-danger',
           handler: () => {
             this.apiService.deleteUser(usuario.id_usu).subscribe({
-              next: (res) => { this.mostrarToast(res.message, 'success'); this.cargarUsuarios(); },
-              error: (err) => this.mostrarToast(err.error?.message || 'Error al desactivar', 'danger')
+              next: (res) => { 
+                this.mostrarToast(res.message, 'success'); 
+                this.cargarUsuarios(); 
+              },
+              error: (err) => {
+                const mensaje = err?.message || 'Error al desactivar';
+                this.mostrarToast(mensaje, 'danger');
+              }
             });
           }
         }
@@ -156,8 +162,14 @@ export class GestionUsuariosPage implements OnInit {
           role: 'confirm',
           handler: () => {
             this.apiService.reactivateUser(usuario.id_usu).subscribe({
-              next: (res) => { this.mostrarToast(res.message, 'success'); this.cargarUsuarios(); },
-              error: (err) => this.mostrarToast(err.error?.message || 'Error al reactivar', 'danger')
+              next: (res) => {
+                this.mostrarToast(res.message, 'success');
+                this.cargarUsuarios();
+              },
+              error: (err) => {
+                const mensaje = err?.message || 'Error al reactivar';
+                this.mostrarToast(mensaje, 'danger');
+              }
             });
           }
         }
