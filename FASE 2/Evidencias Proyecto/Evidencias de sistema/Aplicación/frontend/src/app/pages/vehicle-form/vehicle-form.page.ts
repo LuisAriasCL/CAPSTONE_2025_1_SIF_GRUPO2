@@ -1,19 +1,44 @@
 import { Component, OnInit, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonicModule, LoadingController, AlertController, ToastController, NavController, ModalController } from '@ionic/angular';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  IonicModule,
+  LoadingController,
+  AlertController,
+  ToastController,
+  NavController,
+  ModalController,
+} from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 // Importamos los iconos necesarios para el modal
-import { save, arrowBackOutline as ionArrowBackOutline, closeOutline } from 'ionicons/icons';
+import {
+  save,
+  arrowBackOutline as ionArrowBackOutline,
+  closeOutline,
+} from 'ionicons/icons';
 
 // Asegúrate de que ApiService ahora exporta Vehiculo y los tipos relacionados,
 // o créalos en un archivo .interface.ts e impórtalos desde allí.
-import { ApiService, Vehiculo, EstadoVehiculo, TipoCombustibleVehiculo } from '../../services/api.service';
+import {
+  ApiService,
+  Vehiculo,
+  EstadoVehiculo,
+  TipoCombustibleVehiculo,
+} from '../../services/api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 // Importamos el componente DataTable y sus interfaces
-import { DataTableComponent, Column, PageEvent } from '../../componentes/data-table/data-table.component';
+import {
+  DataTableComponent,
+  Column,
+  PageEvent,
+} from '../../componentes/data-table/data-table.component';
 
 // Importamos el componente de alerta personalizada
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
@@ -23,7 +48,13 @@ import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personali
   templateUrl: './vehicle-form.page.html',
   styleUrls: ['./vehicle-form.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, DataTableComponent, AlertaPersonalizadaComponent]
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    DataTableComponent,
+    AlertaPersonalizadaComponent,
+  ],
 })
 export class VehicleFormPage implements OnInit {
   @Input() vehicleId?: number;
@@ -43,14 +74,22 @@ export class VehicleFormPage implements OnInit {
   vehicleForm!: FormGroup;
   pageTitle = 'Nuevo Vehículo';
   // isLoading e isSubmitted se manejaban en tu código, los mantengo si son útiles para tu lógica de UI
-  isLoading = false; 
+  isLoading = false;
   isSubmitted = false; // Para controlar el envío del formulario
   // Opciones para los selectores
   estadosVehiculoOptions: Array<EstadoVehiculo> = [
-    'activo', 'inactivo', 'mantenimiento', 'taller'
+    'activo',
+    'inactivo',
+    'mantenimiento',
+    'taller',
   ];
   tiposCombustibleOptions: Array<TipoCombustibleVehiculo | null> = [
-    null, 'gasolina_93', 'gasolina_95', 'gasolina_97', 'diesel', 'electrico'
+    null,
+    'gasolina_93',
+    'gasolina_95',
+    'gasolina_97',
+    'diesel',
+    'electrico',
   ];
   // Variable para controlar las pestañas
   selectedTab = 'infoBasica';
@@ -61,7 +100,7 @@ export class VehicleFormPage implements OnInit {
     { header: 'Tipo', field: 'tipo', sortable: true },
     { header: 'Descripción', field: 'descripcion', sortable: false },
     { header: 'Kilometraje', field: 'kilometraje', sortable: true },
-    { header: 'Costo', field: 'costo', sortable: true }
+    { header: 'Costo', field: 'costo', sortable: true },
   ];
   // Variables para el DataTable de recorridos
   recorridos: any[] = [];
@@ -70,7 +109,7 @@ export class VehicleFormPage implements OnInit {
     { header: 'Fecha y Hora', field: 'fechaHora', sortable: true },
     { header: 'Distancia', field: 'distancia', sortable: true },
     { header: 'Estado', field: 'estado', sortable: true },
-    { header: 'Acciones', field: 'acciones', sortable: false }
+    { header: 'Acciones', field: 'acciones', sortable: false },
   ];
 
   // Variables para el DataTable de combustible
@@ -81,18 +120,34 @@ export class VehicleFormPage implements OnInit {
     { header: 'Tipo de Combustible', field: 'tipoCombustible', sortable: true },
     { header: 'Litros Cargados', field: 'litrosCargados', sortable: true },
     { header: 'Conductor', field: 'conductor', sortable: true },
-    { header: 'Acciones', field: 'acciones', sortable: false }
+    { header: 'Acciones', field: 'acciones', sortable: false },
   ];
 
   // Variables para el DataTable de mantenimiento completo
   mantenimientoCompleto: any[] = [];
   mantenimientoColumns: Column[] = [
-    { header: 'Nombre de Mantenimiento', field: 'nombreMantenimiento', sortable: true },
+    {
+      header: 'Nombre de Mantenimiento',
+      field: 'nombreMantenimiento',
+      sortable: true,
+    },
     { header: 'Fecha y Hora', field: 'fechaHora', sortable: true },
-    { header: 'Tiempo de Inactividad', field: 'tiempoInactividad', sortable: true },
-    { header: 'Estado del Mantenimiento', field: 'estadoMantenimiento', sortable: true },
-    { header: 'Tipo de Mantenimiento', field: 'tipoMantenimiento', sortable: true },
-    { header: 'Acciones', field: 'acciones', sortable: false }
+    {
+      header: 'Tiempo de Inactividad',
+      field: 'tiempoInactividad',
+      sortable: true,
+    },
+    {
+      header: 'Estado del Mantenimiento',
+      field: 'estadoMantenimiento',
+      sortable: true,
+    },
+    {
+      header: 'Tipo de Mantenimiento',
+      field: 'tipoMantenimiento',
+      sortable: true,
+    },
+    { header: 'Acciones', field: 'acciones', sortable: false },
   ];
 
   // Variables para el DataTable de incidentes
@@ -101,12 +156,12 @@ export class VehicleFormPage implements OnInit {
     { header: 'Tipo de Incidente', field: 'tipoIncidente', sortable: true },
     { header: 'Conductor', field: 'conductor', sortable: true },
     { header: 'Fecha de Incidente', field: 'fechaIncidente', sortable: true },
-    { header: 'Acciones', field: 'acciones', sortable: false }
+    { header: 'Acciones', field: 'acciones', sortable: false },
   ];
 
   // Variables para la lista de documentos
   documentos: any[] = [];
-  
+
   constructor() {
     // Registramos los iconos para que Ionic los reconozca por nombre
     addIcons({ save, 'arrow-back-outline': ionArrowBackOutline, closeOutline });
@@ -124,7 +179,7 @@ export class VehicleFormPage implements OnInit {
 
     this.updatePageTitle();
     this.initForm();
-    
+
     // Si tenemos un ID de vehículo (ya sea del modal o de la ruta), cargar los datos
     if (this.vehicleId && (this.isEditMode || this.isViewMode)) {
       this.loadVehicleData();
@@ -143,32 +198,49 @@ export class VehicleFormPage implements OnInit {
       this.pageTitle = 'Nuevo Vehículo';
     }
   }
-  
+
   initForm() {
     // Obtener la fecha actual en formato YYYY-MM-DD para valor por defecto
     const today = new Date().toISOString().split('T')[0];
-    
+
     this.vehicleForm = this.fb.group({
       // Campos basados en la nueva interfaz Vehiculo (camelCase español)
       // Campos eliminados: name, proyecto
       // Campos renombrados: plate -> patente, status -> estadoVehi, kilometraje -> kmVehi, tipoVehiculo -> tipoVehi
       // Campos nuevos: fecAdqui, tipoCombVehi, kmVidaUtil, efiComb
 
-      patente: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{4}-[0-9]{2}$/)]], // Formato XXXX-XX con los 2 últimos numéricos
-      chasis: ['', [Validators.required, Validators.minLength(17), Validators.maxLength(17)]], // Ya existía, se mantiene
+      patente: ['', Validators.pattern(/^[A-Za-z]{2}[A-Za-z0-9]{2}[0-9]{2}$/)], // Formato XXXX-XX con los 2 últimos numéricos
+      chasis: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(17),
+          Validators.maxLength(17),
+        ],
+      ], // Ya existía, se mantiene
       marca: ['', Validators.required], // Ya existía, se mantiene (agregamos required)
       modelo: ['', Validators.required], // Ya existía, se mantiene (agregamos required)
-      anio: [null, [Validators.required, Validators.min(1970), Validators.max(new Date().getFullYear())]], // Actualizado: mínimo 1970, máximo año actual
-      kmVehi: [0, [Validators.required, Validators.min(0), Validators.max(1000000)]], // Máximo 1.000.000 km
+      anio: [
+        null,
+        [
+          Validators.required,
+          Validators.min(1970),
+          Validators.max(new Date().getFullYear()),
+        ],
+      ], // Actualizado: mínimo 1970, máximo año actual
+      kmVehi: [
+        null,
+        [Validators.required, Validators.min(0), Validators.max(1000000)],
+      ], // Máximo 1.000.000 km
       fecAdqui: [today, Validators.required], // Valor por defecto: fecha actual
       estadoVehi: ['activo', Validators.required], // Antes: status
 
       tipoVehi: ['Camioneta'], // Valor por defecto: 'Camioneta', opciones fijas en el HTML
       tipoCombVehi: [null], // NUEVO OPCIONAL
       kmVidaUtil: [null, [Validators.min(1000), Validators.max(5000000)]], // Entre 1.000 y 5.000.000 km
-      efiComb: [null, [Validators.min(2), Validators.max(30)]],    // Entre 2 y 30 km/L
-      latitud: [null, [Validators.min(-90), Validators.max(90)]],   // Ya existía, pero ahora es opcional
-      longitud: [null, [Validators.min(-180), Validators.max(180)]] // Ya existía, pero ahora es opcional
+      efiComb: [null, [Validators.min(2), Validators.max(30)]], // Entre 2 y 30 km/L
+      latitud: [null, [Validators.min(-90), Validators.max(90)]], // Ya existía, pero ahora es opcional
+      longitud: [null, [Validators.min(-180), Validators.max(180)]], // Ya existía, pero ahora es opcional
     });
 
     // Deshabilitar formulario en modo solo lectura
@@ -176,24 +248,35 @@ export class VehicleFormPage implements OnInit {
       this.vehicleForm.disable();
     }
   }
-  
+
   async loadVehicleData() {
     if (!this.vehicleId) return;
 
     this.isLoading = true;
-    const loading = await this.loadingCtrl.create({ message: 'Cargando datos...' });
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando datos...',
+    });
     await loading.present();
 
     this.apiService.getVehicle(this.vehicleId).subscribe({
-      next: (data: Vehiculo) => { // Tipar data como Vehiculo
+      next: (data: Vehiculo) => {
+        // Tipar data como Vehiculo
         this.isLoading = false;
         loading.dismiss();
 
         let fecAdquiParaForm = data.fecAdqui;
-        if (fecAdquiParaForm && !(typeof fecAdquiParaForm === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecAdquiParaForm))) {
-          fecAdquiParaForm = new Date(fecAdquiParaForm).toISOString().split('T')[0];
+        if (
+          fecAdquiParaForm &&
+          !(
+            typeof fecAdquiParaForm === 'string' &&
+            /^\d{4}-\d{2}-\d{2}$/.test(fecAdquiParaForm)
+          )
+        ) {
+          fecAdquiParaForm = new Date(fecAdquiParaForm)
+            .toISOString()
+            .split('T')[0];
         }
-        
+
         // Mapear los datos recibidos (con nombres en español) a los formControls (con nombres en español)
         this.vehicleForm.patchValue({
           patente: data.patente,
@@ -209,17 +292,21 @@ export class VehicleFormPage implements OnInit {
           kmVidaUtil: data.kmVidaUtil,
           efiComb: data.efiComb,
           latitud: data.latitud,
-          longitud: data.longitud
+          longitud: data.longitud,
         });
         console.log('Datos cargados para edición:', this.vehicleForm.value);
         this.cargarHistorialMantenimiento(this.vehicleId); // Cargar historial al editar
       },
-      error: async (err: HttpErrorResponse | Error) => { // Tipar err
+      error: async (err: HttpErrorResponse | Error) => {
+        // Tipar err
         this.isLoading = false;
         loading.dismiss();
-        console.error("Error cargando datos del vehículo:", err);
-        const message = (err instanceof HttpErrorResponse) ? (err.error?.message || err.message) : err.message;
-        
+        console.error('Error cargando datos del vehículo:', err);
+        const message =
+          err instanceof HttpErrorResponse
+            ? err.error?.message || err.message
+            : err.message;
+
         // Reemplazar alert por modal personalizado
         const modal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
@@ -227,112 +314,116 @@ export class VehicleFormPage implements OnInit {
             title: 'Error',
             message: `No se pudieron cargar los datos del vehículo. ${message}`,
             icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            buttons: [{ text: 'Aceptar', role: 'confirm' }],
           },
-          cssClass: 'custom-alert-modal'
+          cssClass: 'custom-alert-modal',
         });
         await modal.present();
         this.closeModal(); // Cerrar modal en caso de error
-      }
+      },
     });
   }
-  
+
   // Datos de ejemplo para el historial (en un caso real vendrían de la API)
   cargarHistorialMantenimiento(idVehiculo?: number | null) {
     // Datos de ejemplo - en una aplicación real estos datos vendrían de una API
     if (idVehiculo) {
       this.mantenimientos = [
-        { 
-          id: 1, 
-          fecha: '2025-05-15', 
-          tipo: 'Preventivo', 
-          descripcion: 'Cambio de aceite y filtros', 
-          kilometraje: 15000, 
-          costo: 45000 
+        {
+          id: 1,
+          fecha: '2025-05-15',
+          tipo: 'Preventivo',
+          descripcion: 'Cambio de aceite y filtros',
+          kilometraje: 15000,
+          costo: 45000,
         },
-        { 
-          id: 2, 
-          fecha: '2025-04-10', 
-          tipo: 'Correctivo', 
-          descripcion: 'Reparación de frenos', 
-          kilometraje: 14500, 
-          costo: 85000 
+        {
+          id: 2,
+          fecha: '2025-04-10',
+          tipo: 'Correctivo',
+          descripcion: 'Reparación de frenos',
+          kilometraje: 14500,
+          costo: 85000,
         },
-        { 
-          id: 3, 
-          fecha: '2025-03-05', 
-          tipo: 'Preventivo', 
-          descripcion: 'Rotación de neumáticos', 
-          kilometraje: 13000, 
-          costo: 20000 
-        }
+        {
+          id: 3,
+          fecha: '2025-03-05',
+          tipo: 'Preventivo',
+          descripcion: 'Rotación de neumáticos',
+          kilometraje: 13000,
+          costo: 20000,
+        },
       ];
     } else {
       this.mantenimientos = []; // Sin historial para vehículos nuevos
     }
   }
-  
+
   // Métodos para cargar datos de las nuevas pestañas
   cargarRecorridos(idVehiculo: number) {
     // En una aplicación real, estos datos vendrían de la API usando ApiService.getAsignacionesRecorrido
     // con un filtro por vehiculoIdVehi igual a idVehiculo
-    this.apiService.getAsignacionesRecorrido({ vehiculoIdVehi: idVehiculo }).subscribe({
-      next: (data) => {
-        if (data && data.length > 0) {
-          // Transformar los datos de la API al formato requerido para la tabla
-          this.recorridos = data.map(recorrido => {
-            return {
-              id: recorrido.idAsig,
-              nombreRuta: recorrido.rutaPlantilla?.nombreRuta || 'Sin nombre',
-              fechaHora: recorrido.fecIniRecor,
-              distancia: recorrido.rutaPlantilla?.kilometrosRuta ? `${recorrido.rutaPlantilla.kilometrosRuta} km` : 'No disponible',
-              estado: recorrido.estadoAsig,
-              acciones: ''
-            };
-          });
-        } else {
-          // Si no hay datos, mostrar la tabla vacía
-          this.recorridos = [];
-        }
-      },
-      error: (err) => {
-        console.error('Error al cargar recorridos:', err);
-        // En caso de error, usar datos de ejemplo
-        this.recorridos = [
-          {
-            id: 1,
-            nombreRuta: 'Ruta Santiago-Valparaíso',
-            fechaHora: '2025-06-10 08:30',
-            distancia: '120 km',
-            estado: 'Completado',
-            acciones: ''
-          },
-          {
-            id: 2,
-            nombreRuta: 'Ruta Centro de Distribución',
-            fechaHora: '2025-06-08 14:15',
-            distancia: '45 km',
-            estado: 'Completado',
-            acciones: ''
-          },
-          {
-            id: 3,
-            nombreRuta: 'Ruta Norte Grande',
-            fechaHora: '2025-06-05 09:00',
-            distancia: '320 km',
-            estado: 'Cancelado',
-            acciones: ''
+    this.apiService
+      .getAsignacionesRecorrido({ vehiculoIdVehi: idVehiculo })
+      .subscribe({
+        next: (data) => {
+          if (data && data.length > 0) {
+            // Transformar los datos de la API al formato requerido para la tabla
+            this.recorridos = data.map((recorrido) => {
+              return {
+                id: recorrido.idAsig,
+                nombreRuta: recorrido.rutaPlantilla?.nombreRuta || 'Sin nombre',
+                fechaHora: recorrido.fecIniRecor,
+                distancia: recorrido.rutaPlantilla?.kilometrosRuta
+                  ? `${recorrido.rutaPlantilla.kilometrosRuta} km`
+                  : 'No disponible',
+                estado: recorrido.estadoAsig,
+                acciones: '',
+              };
+            });
+          } else {
+            // Si no hay datos, mostrar la tabla vacía
+            this.recorridos = [];
           }
-        ];
-      }
-    });
+        },
+        error: (err) => {
+          console.error('Error al cargar recorridos:', err);
+          // En caso de error, usar datos de ejemplo
+          this.recorridos = [
+            {
+              id: 1,
+              nombreRuta: 'Ruta Santiago-Valparaíso',
+              fechaHora: '2025-06-10 08:30',
+              distancia: '120 km',
+              estado: 'Completado',
+              acciones: '',
+            },
+            {
+              id: 2,
+              nombreRuta: 'Ruta Centro de Distribución',
+              fechaHora: '2025-06-08 14:15',
+              distancia: '45 km',
+              estado: 'Completado',
+              acciones: '',
+            },
+            {
+              id: 3,
+              nombreRuta: 'Ruta Norte Grande',
+              fechaHora: '2025-06-05 09:00',
+              distancia: '320 km',
+              estado: 'Cancelado',
+              acciones: '',
+            },
+          ];
+        },
+      });
   }
 
   cargarCombustible(idVehiculo: number) {
     // En una implementación real, se llamaría a un endpoint específico para obtener registros de combustible
     // Como no se ve un endpoint específico en api.service.ts, usamos datos de ejemplo
     // Por ejemplo: this.apiService.getHistorialCombustible(idVehiculo)
-    
+
     // Datos de ejemplo
     this.combustible = [
       {
@@ -342,7 +433,7 @@ export class VehicleFormPage implements OnInit {
         tipoCombustible: 'Diesel',
         litrosCargados: '45 L',
         conductor: 'Juan Pérez',
-        acciones: ''
+        acciones: '',
       },
       {
         id: 2,
@@ -351,7 +442,7 @@ export class VehicleFormPage implements OnInit {
         tipoCombustible: 'Diesel',
         litrosCargados: '40 L',
         conductor: 'Carlos Rodríguez',
-        acciones: ''
+        acciones: '',
       },
       {
         id: 3,
@@ -360,32 +451,41 @@ export class VehicleFormPage implements OnInit {
         tipoCombustible: 'Diesel',
         litrosCargados: '50 L',
         conductor: 'Juan Pérez',
-        acciones: ''
-      }
+        acciones: '',
+      },
     ];
   }
 
   cargarMantenimientoCompleto(idVehiculo: number) {
     // En una implementación real, se llamaría a un endpoint específico para obtener órdenes de trabajo
     // Por ejemplo, usando this.apiService.getOrdenesTrabajo() con un filtro por vehículo
-    
+
     // Intentar cargar órdenes de trabajo para este vehículo
     this.apiService.getOrdenesTrabajo().subscribe({
       next: (ordenes) => {
         // Filtrar órdenes para este vehículo - esto tendría que hacerse en el backend idealmente
-        const ordenesVehiculo = ordenes.filter(ot => ot.vehiculo?.patente === this.vehicleForm.get('patente')?.value);
-        
+        const ordenesVehiculo = ordenes.filter(
+          (ot) =>
+            ot.vehiculo?.patente === this.vehicleForm.get('patente')?.value
+        );
+
         if (ordenesVehiculo && ordenesVehiculo.length > 0) {
           // Transformar los datos de la API al formato requerido para la tabla
-          this.mantenimientoCompleto = ordenesVehiculo.map(orden => {
+          this.mantenimientoCompleto = ordenesVehiculo.map((orden) => {
             return {
               id: orden.id_ot,
               nombreMantenimiento: orden.descripcion_ot || 'Mantenimiento',
               fechaHora: orden.fec_ini_ot,
-              tiempoInactividad: orden.fec_fin_ot ? this.calcularTiempoInactividad(orden.fec_ini_ot, orden.fec_fin_ot) : 'En curso',
+              tiempoInactividad: orden.fec_fin_ot
+                ? this.calcularTiempoInactividad(
+                    orden.fec_ini_ot,
+                    orden.fec_fin_ot
+                  )
+                : 'En curso',
               estadoMantenimiento: orden.estado_ot,
-              tipoMantenimiento: orden.prioridad === 'alta' ? 'Correctivo' : 'Preventivo',
-              acciones: ''
+              tipoMantenimiento:
+                orden.prioridad === 'alta' ? 'Correctivo' : 'Preventivo',
+              acciones: '',
             };
           });
         } else {
@@ -397,7 +497,7 @@ export class VehicleFormPage implements OnInit {
         console.error('Error al cargar mantenimientos:', err);
         // En caso de error, usar datos de ejemplo
         this.cargarMantenimientoEjemplo();
-      }
+      },
     });
   }
 
@@ -410,7 +510,7 @@ export class VehicleFormPage implements OnInit {
         tiempoInactividad: '2 días',
         estadoMantenimiento: 'Completado',
         tipoMantenimiento: 'Preventivo',
-        acciones: ''
+        acciones: '',
       },
       {
         id: 2,
@@ -419,7 +519,7 @@ export class VehicleFormPage implements OnInit {
         tiempoInactividad: '1 día',
         estadoMantenimiento: 'Completado',
         tipoMantenimiento: 'Correctivo',
-        acciones: ''
+        acciones: '',
       },
       {
         id: 3,
@@ -428,26 +528,31 @@ export class VehicleFormPage implements OnInit {
         tiempoInactividad: '3 horas',
         estadoMantenimiento: 'Completado',
         tipoMantenimiento: 'Preventivo',
-        acciones: ''
-      }
+        acciones: '',
+      },
     ];
   }
 
-  private calcularTiempoInactividad(fechaInicio: string, fechaFin: string): string {
+  private calcularTiempoInactividad(
+    fechaInicio: string,
+    fechaFin: string
+  ): string {
     const inicio = new Date(fechaInicio);
     const fin = new Date(fechaFin);
     const difMs = fin.getTime() - inicio.getTime();
     const difDias = Math.floor(difMs / (1000 * 60 * 60 * 24));
-    
+
     if (difDias > 0) {
       return `${difDias} día${difDias > 1 ? 's' : ''}`;
     }
-    
-    const difHoras = Math.floor((difMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    const difHoras = Math.floor(
+      (difMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
     if (difHoras > 0) {
       return `${difHoras} hora${difHoras > 1 ? 's' : ''}`;
     }
-    
+
     const difMinutos = Math.floor((difMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${difMinutos} minuto${difMinutos > 1 ? 's' : ''}`;
   }
@@ -455,7 +560,7 @@ export class VehicleFormPage implements OnInit {
   cargarIncidentes(idVehiculo: number) {
     // No hay un endpoint específico para incidentes en api.service.ts
     // Podríamos intentar usar registrarIncidente pero es solo para crear
-    
+
     // Datos de ejemplo
     this.incidentes = [
       {
@@ -463,22 +568,22 @@ export class VehicleFormPage implements OnInit {
         tipoIncidente: 'Colisión Menor',
         conductor: 'Juan Pérez',
         fechaIncidente: '2025-04-18',
-        acciones: ''
+        acciones: '',
       },
       {
         id: 2,
         tipoIncidente: 'Pinchazo de Neumático',
         conductor: 'Carlos Rodríguez',
         fechaIncidente: '2025-03-22',
-        acciones: ''
-      }
+        acciones: '',
+      },
     ];
   }
-  
+
   cargarDocumentos(idVehiculo: number) {
     // No hay un endpoint específico para documentos en api.service.ts
     // En una implementación real, se llamaría a un endpoint específico
-    
+
     // Datos de ejemplo
     this.documentos = [
       {
@@ -486,38 +591,38 @@ export class VehicleFormPage implements OnInit {
         nombre: 'Permiso de Circulación',
         descripcion: 'Permiso de circulación vigente',
         fecha: '2025-03-15',
-        url: 'permiso.pdf'
+        url: 'permiso.pdf',
       },
       {
         id: 2,
         nombre: 'Seguro Obligatorio',
         descripcion: 'Póliza de seguro obligatorio',
         fecha: '2025-01-10',
-        url: 'seguro.pdf'
+        url: 'seguro.pdf',
       },
       {
         id: 3,
         nombre: 'Revisión Técnica',
         descripcion: 'Certificado de revisión técnica',
         fecha: '2024-12-05',
-        url: 'revision.pdf'
-      }
+        url: 'revision.pdf',
+      },
     ];
   }
-  
+
   // Métodos para el DataTable de historial
   onHistorialPageChange(event: PageEvent) {
     console.log('Cambio de página en historial:', event);
   }
-  
+
   onHistorialRowClick(row: any) {
     console.log('Fila de historial seleccionada:', row);
   }
-  
-  onHistorialSortColumn(event: {column: string, direction: 'asc' | 'desc'}) {
+
+  onHistorialSortColumn(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar historial por:', event);
   }
-  
+
   onHistorialExport(format: string) {
     console.log('Exportar historial en formato:', format);
   }
@@ -526,15 +631,15 @@ export class VehicleFormPage implements OnInit {
   onRecorridosPageChange(event: PageEvent) {
     console.log('Cambio de página en recorridos:', event);
   }
-  
+
   onRecorridosRowClick(row: any) {
     console.log('Fila de recorridos seleccionada:', row);
   }
-  
-  onRecorridosSort(event: {column: string, direction: 'asc' | 'desc'}) {
+
+  onRecorridosSort(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar recorridos por:', event);
   }
-  
+
   onRecorridosExport(format: string) {
     console.log('Exportar recorridos en formato:', format);
   }
@@ -543,15 +648,15 @@ export class VehicleFormPage implements OnInit {
   onCombustiblePageChange(event: PageEvent) {
     console.log('Cambio de página en combustible:', event);
   }
-  
+
   onCombustibleRowClick(row: any) {
     console.log('Fila de combustible seleccionada:', row);
   }
-  
-  onCombustibleSort(event: {column: string, direction: 'asc' | 'desc'}) {
+
+  onCombustibleSort(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar combustible por:', event);
   }
-  
+
   onCombustibleExport(format: string) {
     console.log('Exportar combustible en formato:', format);
   }
@@ -560,15 +665,15 @@ export class VehicleFormPage implements OnInit {
   onMantenimientoPageChange(event: PageEvent) {
     console.log('Cambio de página en mantenimiento:', event);
   }
-  
+
   onMantenimientoRowClick(row: any) {
     console.log('Fila de mantenimiento seleccionada:', row);
   }
-  
-  onMantenimientoSort(event: {column: string, direction: 'asc' | 'desc'}) {
+
+  onMantenimientoSort(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar mantenimiento por:', event);
   }
-  
+
   onMantenimientoExport(format: string) {
     console.log('Exportar mantenimiento en formato:', format);
   }
@@ -577,27 +682,29 @@ export class VehicleFormPage implements OnInit {
   onIncidentesPageChange(event: PageEvent) {
     console.log('Cambio de página en incidentes:', event);
   }
-  
+
   onIncidentesRowClick(row: any) {
     console.log('Fila de incidentes seleccionada:', row);
   }
-  
-  onIncidentesSort(event: {column: string, direction: 'asc' | 'desc'}) {
+
+  onIncidentesSort(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar incidentes por:', event);
   }
-  
+
   onIncidentesExport(format: string) {
     console.log('Exportar incidentes en formato:', format);
   }
-
   async saveVehicle() {
     this.isSubmitted = true;
+    this.vehicleForm.markAllAsTouched();
+
+    // Si el formulario es inválido, mostramos solo el mensaje de error y no continuamos
     if (this.vehicleForm.invalid) {
-      Object.values(this.vehicleForm.controls).forEach(control => {
-        control.markAsTouched(); // Marcar todos para mostrar errores de validación
-      });
-      this.presentToast('Por favor, completa los campos requeridos correctamente.', 'warning');
-      return;
+      this.presentToast(
+        'Hay campos incompletos o con errores. Por favor, revisa el formulario.',
+        'warning'
+      );
+      return; // Salimos del método sin mostrar modal de confirmación
     }
 
     // Si es edición, mostrar confirmación personalizada
@@ -610,11 +717,11 @@ export class VehicleFormPage implements OnInit {
           icon: 'help',
           buttons: [
             { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Actualizar', role: 'confirm', cssClass: 'confirm-button' }
-          ]
+            { text: 'Actualizar', role: 'confirm', cssClass: 'confirm-button' },
+          ],
         },
         backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
+        cssClass: 'custom-alert-modal',
       });
       await confirmModal.present();
       const { data } = await confirmModal.onDidDismiss();
@@ -630,11 +737,11 @@ export class VehicleFormPage implements OnInit {
           icon: 'info',
           buttons: [
             { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' }
-          ]
+            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' },
+          ],
         },
         backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
+        cssClass: 'custom-alert-modal',
       });
       await confirmModal.present();
       const { data } = await confirmModal.onDidDismiss();
@@ -642,15 +749,18 @@ export class VehicleFormPage implements OnInit {
     }
 
     const loading = await this.loadingCtrl.create({
-      message: this.isEditMode ? 'Actualizando Vehículo...' : 'Creando Vehículo...'
+      message: this.isEditMode
+        ? 'Actualizando Vehículo...'
+        : 'Creando Vehículo...',
     });
     await loading.present();
 
     // this.vehicleForm.value ya tiene las claves en camelCase español
     const vehicleDataFromForm = this.vehicleForm.value;
-    
+
     // Construir el objeto Vehiculo para enviar, asegurando tipos correctos
-    const vehicleDataToSend: any = { // Empezamos con any para flexibilidad y luego asignamos a Vehiculo
+    const vehicleDataToSend: any = {
+      // Empezamos con any para flexibilidad y luego asignamos a Vehiculo
       patente: vehicleDataFromForm.patente,
       chasis: vehicleDataFromForm.chasis,
       marca: vehicleDataFromForm.marca,
@@ -661,30 +771,58 @@ export class VehicleFormPage implements OnInit {
       estadoVehi: vehicleDataFromForm.estadoVehi,
       tipoVehi: vehicleDataFromForm.tipoVehi || null, // Enviar null si está vacío
       tipoCombVehi: vehicleDataFromForm.tipoCombVehi, // Puede ser null desde el select
-      kmVidaUtil: vehicleDataFromForm.kmVidaUtil !== null && vehicleDataFromForm.kmVidaUtil !== '' ? Number(vehicleDataFromForm.kmVidaUtil) : null,
-      efiComb: vehicleDataFromForm.efiComb !== null && vehicleDataFromForm.efiComb !== '' ? Number(vehicleDataFromForm.efiComb) : null,
-      latitud: vehicleDataFromForm.latitud !== null && vehicleDataFromForm.latitud !== '' ? Number(vehicleDataFromForm.latitud) : null,
-      longitud: vehicleDataFromForm.longitud !== null && vehicleDataFromForm.longitud !== '' ? Number(vehicleDataFromForm.longitud) : null,
+      kmVidaUtil:
+        vehicleDataFromForm.kmVidaUtil !== null &&
+        vehicleDataFromForm.kmVidaUtil !== ''
+          ? Number(vehicleDataFromForm.kmVidaUtil)
+          : null,
+      efiComb:
+        vehicleDataFromForm.efiComb !== null &&
+        vehicleDataFromForm.efiComb !== ''
+          ? Number(vehicleDataFromForm.efiComb)
+          : null,
+      latitud:
+        vehicleDataFromForm.latitud !== null &&
+        vehicleDataFromForm.latitud !== ''
+          ? Number(vehicleDataFromForm.latitud)
+          : null,
+      longitud:
+        vehicleDataFromForm.longitud !== null &&
+        vehicleDataFromForm.longitud !== ''
+          ? Number(vehicleDataFromForm.longitud)
+          : null,
     };
-      // Si es edición, incluimos el idVehi (aunque no esté en el form directamente)
+    // Si es edición, incluimos el idVehi (aunque no esté en el form directamente)
     // El ApiService espera el ID como parámetro separado para updateVehicle,
     // y no necesita idVehi en el payload para createVehicle.
 
-    const saveObservable = this.isEditMode && this.vehicleId !== undefined
-      ? this.apiService.updateVehicle(this.vehicleId, vehicleDataToSend as Partial<Vehiculo>)
-      : this.apiService.createVehicle(vehicleDataToSend as Vehiculo);
+    const saveObservable =
+      this.isEditMode && this.vehicleId !== undefined
+        ? this.apiService.updateVehicle(
+            this.vehicleId,
+            vehicleDataToSend as Partial<Vehiculo>
+          )
+        : this.apiService.createVehicle(vehicleDataToSend as Vehiculo);
 
     saveObservable.subscribe({
       next: async (savedVehicle: Vehiculo) => {
         await loading.dismiss();
-        await this.presentToast(`Vehículo ${this.isEditMode ? 'actualizado' : 'creado'} exitosamente.`, 'success');
+        await this.presentToast(
+          `Vehículo ${
+            this.isEditMode ? 'actualizado' : 'creado'
+          } exitosamente.`,
+          'success'
+        );
         this.closeModal(savedVehicle);
       },
       error: async (error: HttpErrorResponse | Error) => {
         await loading.dismiss();
-        console.error("Error guardando vehículo:", error);
-        const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
-        
+        console.error('Error guardando vehículo:', error);
+        const message =
+          error instanceof HttpErrorResponse
+            ? error.error?.message || error.message
+            : error.message;
+
         // Reemplazar alert por modal personalizado
         const modal = await this.modalCtrl.create({
           component: AlertaPersonalizadaComponent,
@@ -692,12 +830,12 @@ export class VehicleFormPage implements OnInit {
             title: 'Error al Guardar',
             message: `No se pudo guardar el vehículo. ${message}`,
             icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            buttons: [{ text: 'Aceptar', role: 'confirm' }],
           },
-          cssClass: 'custom-alert-modal'
+          cssClass: 'custom-alert-modal',
         });
         await modal.present();
-      }
+      },
     });
   }
 
@@ -709,22 +847,30 @@ export class VehicleFormPage implements OnInit {
         title: header,
         message: message,
         icon: 'info',
-        buttons: [{ text: 'Aceptar', role: 'confirm' }]
+        buttons: [{ text: 'Aceptar', role: 'confirm' }],
       },
-      cssClass: 'custom-alert-modal'
+      cssClass: 'custom-alert-modal',
     });
     await modal.present();
   }
 
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
-    const toast = await this.toastCtrl.create({ message, duration: 2500, position: 'bottom', color });
+  async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' | 'medium' = 'medium'
+  ) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      position: 'bottom',
+      color,
+    });
     toast.present();
   }
 
   async closeModal(data?: any) {
     await this.modalCtrl.dismiss(data);
   }
-  
+
   // Helper para acceder a los controles del formulario en la plantilla para mostrar errores
   get f() {
     return this.vehicleForm.controls;
@@ -734,11 +880,11 @@ export class VehicleFormPage implements OnInit {
   get maxValidYear() {
     return new Date().getFullYear() + 5;
   }
-  
+
   // Método para cambiar entre pestañas
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
-    
+
     // Cargar datos según la pestaña seleccionada
     if (this.vehicleId) {
       switch (this.selectedTab) {

@@ -1,46 +1,73 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; 
-import { IonicModule } from '@ionic/angular';   
-import { NavController, ToastController, LoadingController, AlertController, ModalController } from '@ionic/angular';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormArray,
+  AbstractControl,
+  ReactiveFormsModule,
+  FormsModule,
+  ValidationErrors,
+} from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
+import {
+  NavController,
+  ToastController,
+  LoadingController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { 
-  closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
-  closeCircleOutline 
+import {
+  closeOutline,
+  saveOutline,
+  addCircleOutline,
+  removeCircleOutline,
+  closeCircleOutline,
 } from 'ionicons/icons';
-import { ApiService, VehiculoAsignacionInfo, PlanificacionMantenimientoData, PlanificacionMantenimientoResumen } from '../../../services/api.service'; // Ajusta la ruta
+import {
+  ApiService,
+  VehiculoAsignacionInfo,
+  PlanificacionMantenimientoData,
+  PlanificacionMantenimientoResumen,
+} from '../../../services/api.service'; // Ajusta la ruta
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-planificacion-form',
   templateUrl: './planificacion-form.page.html',
   styleUrls: ['./planificacion-form.page.scss'],
-  standalone: true,  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    IonicModule,
-    FormsModule
-  ]
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, FormsModule],
 })
 export class PlanificacionFormPage implements OnInit {
   @Input() planId?: number;
   @Input() isEditMode: boolean = false;
   @Input() isViewMode: boolean = false;
-  
+
   planForm!: FormGroup;
   vehiculosDisponibles: VehiculoAsignacionInfo[] = [];
   isSubmitted = false;
   pageTitle = 'Crear Planificación';
-  
-  
+
   loadedTareas: any[] = [];
-  loadedVehiculosIds: number[] = [];tareasDisponibles: any;
+  loadedVehiculosIds: number[] = [];
+  tareasDisponibles: any;
   tipoFrecuenciaSeleccionado: string | null = null;
   selectedTab = 'infoGeneral';
 
- 
   esPreventivo: boolean = true;
+
+  // Propiedad para la fecha mínima (hoy)
+  minDate: string = new Date().toISOString().split('T')[0];
+
+  // Nueva propiedad para la fecha original
+  fechaOriginal?: string;
+
+  // En tu archivo .ts
+  fechaModificada: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -53,11 +80,14 @@ export class PlanificacionFormPage implements OnInit {
     private route: ActivatedRoute
   ) {
     addIcons({
-      closeOutline, saveOutline, addCircleOutline, removeCircleOutline,
-      closeCircleOutline
+      closeOutline,
+      saveOutline,
+      addCircleOutline,
+      removeCircleOutline,
+      closeCircleOutline,
     });
-  }  
-  
+  }
+
   setPreventivo(value: boolean) {
     if (this.isViewMode) return;
     this.esPreventivo = value;
@@ -65,9 +95,8 @@ export class PlanificacionFormPage implements OnInit {
   }
 
   ngOnInit() {
-   
     if (!this.planId) {
-      this.route.paramMap.subscribe(params => {
+      this.route.paramMap.subscribe((params) => {
         const id = params.get('id');
         if (id) {
           this.planId = parseInt(id);
@@ -79,20 +108,24 @@ export class PlanificacionFormPage implements OnInit {
     this.updatePageTitle();
     this.initForm();
     this.cargarVehiculos();
-    
-    
+
     if (this.planId && (this.isEditMode || this.isViewMode)) {
       this.loadPlanificacionData();
     } else {
-    
       this.agregarTarea();
     }
 
-    this.tipoFrecuenciaSeleccionado = this.planForm.get('tipoFrecuencia')?.value || null;
+    this.tipoFrecuenciaSeleccionado =
+      this.planForm.get('tipoFrecuencia')?.value || null;
 
-   
-    this.planForm.get('esPreventivo')?.valueChanges.subscribe(value => {
+    this.planForm.get('esPreventivo')?.valueChanges.subscribe((value) => {
       this.esPreventivo = value;
+    });
+
+    this.planForm.get('fechaActivacion')?.valueChanges.subscribe((newValue) => {
+      if (this.isEditMode && this.fechaOriginal) {
+        this.fechaModificada = newValue !== this.fechaOriginal;
+      }
     });
   }
 
@@ -105,25 +138,37 @@ export class PlanificacionFormPage implements OnInit {
       this.pageTitle = 'Crear Planificación';
     }
   }
-
   initForm() {
     this.planForm = this.fb.group({
-      descPlan: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(255)]],
+      descPlan: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(5),
+          Validators.maxLength(255),
+        ],
+      ],
       frecuencia: [null, [Validators.required, Validators.min(1)]],
       tipoFrecuencia: ['', Validators.required],
-       fechaActivacion: [null],
+      fechaActivacion: [
+        new Date().toISOString().split('T')[0],
+        [Validators.required, this.noFechasAntiguas.bind(this)],
+      ],
+      tipoMantenimiento: ['preventivo', Validators.required],
       esPreventivo: [true, Validators.required],
       esActivoPlan: [true, Validators.required],
       vehiculosIds: [[], [Validators.required, Validators.minLength(1)]],
-      tareas: this.fb.array([], [Validators.required, Validators.minLength(1)])
+      tareas: this.fb.array([], [Validators.required, Validators.minLength(1)]),
     });
     if (this.tareas.length === 0) {
-        this.agregarTarea(); 
+      this.agregarTarea();
     }
   }
 
- 
-  get f() { return this.planForm.controls; }
+  // Getter para acceder fácilmente a los controles del formulario
+  get f() {
+    return this.planForm.controls;
+  }
 
   get tareas(): FormArray {
     return this.planForm.get('tareas') as FormArray;
@@ -131,8 +176,8 @@ export class PlanificacionFormPage implements OnInit {
 
   crearTareaFormGroup(): FormGroup {
     return this.fb.group({
-      nomTareaPlan: ['', [Validators.required, Validators.maxLength(150)]], 
-      descTareaPlan: ['', Validators.maxLength(500)]  
+      nomTareaPlan: ['', [Validators.required, Validators.maxLength(150)]],
+      descTareaPlan: ['', Validators.maxLength(500)],
     });
   }
 
@@ -144,7 +189,10 @@ export class PlanificacionFormPage implements OnInit {
     if (this.tareas.length > 1) {
       this.tareas.removeAt(index);
     } else {
-      this.mostrarToast('Una planificación debe tener al menos una tarea.', 'warning');
+      this.mostrarToast(
+        'Una planificación debe tener al menos una tarea.',
+        'warning'
+      );
     }
   }
 
@@ -155,7 +203,10 @@ export class PlanificacionFormPage implements OnInit {
       },
       (error) => {
         console.error('Error cargando vehículos:', error);
-        this.mostrarToast(error.message || 'Error al cargar la lista de vehículos.', 'danger');
+        this.mostrarToast(
+          error.message || 'Error al cargar la lista de vehículos.',
+          'danger'
+        );
       }
     );
   }
@@ -170,19 +221,20 @@ export class PlanificacionFormPage implements OnInit {
           icon: 'warning',
           buttons: [
             { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Editar', role: 'confirm', cssClass: 'confirm-button' }
-          ]
+            { text: 'Editar', role: 'confirm', cssClass: 'confirm-button' },
+          ],
         },
         backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
+        cssClass: 'custom-alert-modal',
       });
       await confirmModal.present();
       const { data } = await confirmModal.onDidDismiss();
       if (data !== 'confirm') return;
     }
-
     this.isSubmitted = true;
-    this.planForm.markAllAsTouched();    if (this.planForm.invalid) {
+    this.planForm.markAllAsTouched();
+
+    if (this.planForm.invalid) {
       const firstError = this.getFirstError();
       if (firstError) {
         try {
@@ -199,7 +251,10 @@ export class PlanificacionFormPage implements OnInit {
         } catch (error) {
           console.error('Error al cambiar de tab:', error);
           // Si falla el cambio de tab, al menos mostrar el mensaje de error
-          this.mostrarToast('Por favor, revise todos los campos del formulario.', 'warning');
+          this.mostrarToast(
+            'Por favor, revise todos los campos del formulario.',
+            'warning'
+          );
         }
         return;
       }
@@ -215,57 +270,65 @@ export class PlanificacionFormPage implements OnInit {
           icon: 'info',
           buttons: [
             { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' }
-          ]
+            { text: 'Crear', role: 'confirm', cssClass: 'confirm-button' },
+          ],
         },
         backdropDismiss: false,
-        cssClass: 'custom-alert-modal'
+        cssClass: 'custom-alert-modal',
       });
       await confirmModal.present();
       const { data } = await confirmModal.onDidDismiss();
       if (data !== 'confirm') {
-        return; 
+        return;
       }
     }
 
     const isEditMode = this.isEditMode && this.planId;
-    const loading = await this.loadingCtrl.create({ 
-      message: isEditMode ? 'Actualizando planificación...' : 'Guardando planificación...' 
+    const loading = await this.loadingCtrl.create({
+      message: isEditMode
+        ? 'Actualizando planificación...'
+        : 'Guardando planificación...',
     });
     await loading.present();
 
     // Construcción manual del objeto (estilo RouteFormPage)
-      const planData: Partial<PlanificacionMantenimientoData> = {
+    const planData: Partial<PlanificacionMantenimientoData> = {
       descPlan: this.planForm.value.descPlan,
       frecuencia: this.planForm.value.frecuencia,
       tipoFrecuencia: this.planForm.value.tipoFrecuencia,
-      fechaActivacion: this.planForm.value.fechaActivacion, 
+      fechaActivacion: this.planForm.value.fechaActivacion,
       esPreventivo: this.planForm.value.esPreventivo,
       esActivoPlan: this.planForm.value.esActivoPlan,
       vehiculosIds: this.planForm.value.vehiculosIds,
-      tareas: this.tareas.value
+      tareas: this.tareas.value,
     };
 
     console.log('Datos de la planificación a enviar:', planData);
 
-    const apiCall = isEditMode 
-      ? this.apiService.updatePlanificacion(this.planId!, planData as PlanificacionMantenimientoData)
-      : this.apiService.crearPlanificacion(planData as PlanificacionMantenimientoData);
+    const apiCall = isEditMode
+      ? this.apiService.updatePlanificacion(
+          this.planId!,
+          planData as PlanificacionMantenimientoData
+        )
+      : this.apiService.crearPlanificacion(
+          planData as PlanificacionMantenimientoData
+        );
 
     apiCall.subscribe({
       next: async (response) => {
         await loading.dismiss();
-        const message = isEditMode 
+        const message = isEditMode
           ? `Planificación actualizada exitosamente.`
-          : `Planificación "${response.planificacion?.descPlan || planData.descPlan}" creada exitosamente.`;
-        
+          : `Planificación "${
+              response.planificacion?.descPlan || planData.descPlan
+            }" creada exitosamente.`;
+
         this.mostrarToast(message, 'success');
-        
-    
+
         if (this.modalCtrl) {
-          await this.closeModal({ 
-            planificacionCreated: !isEditMode, 
-            planificacionUpdated: isEditMode 
+          await this.closeModal({
+            planificacionCreated: !isEditMode,
+            planificacionUpdated: isEditMode,
           });
         } else {
           if (!isEditMode) {
@@ -278,21 +341,23 @@ export class PlanificacionFormPage implements OnInit {
             this.agregarTarea();
             this.isSubmitted = false;
           }
-          this.navCtrl.navigateRoot('/tabs/planificaciones', { animationDirection: 'back' });
+          this.navCtrl.navigateRoot('/tabs/planificaciones', {
+            animationDirection: 'back',
+          });
         }
       },
       error: async (error) => {
         await loading.dismiss();
         console.error('Error al procesar planificación:', error);
-        const errorMessage = isEditMode 
+        const errorMessage = isEditMode
           ? 'No se pudo actualizar la planificación. Intente más tarde.'
           : 'No se pudo crear la planificación. Intente más tarde.';
         this.mostrarToast(error.message || errorMessage, 'danger', 5000);
-      }
+      },
     });
   }
 
-  private focusOnError(firstError: { id: string, tab: string }) {
+  private focusOnError(firstError: { id: string; tab: string }) {
     const errorElement = document.getElementById(firstError.id);
     if (errorElement) {
       // Asegurar que el elemento es visible después del cambio de tab
@@ -303,22 +368,37 @@ export class PlanificacionFormPage implements OnInit {
       // Generar mensaje específico según el tipo de error
       let fieldName = '';
       switch (firstError.id) {
-        case 'descPlan': fieldName = 'nombre del mantenimiento'; break;
-        case 'tipoFrecuencia': fieldName = 'tipo de frecuencia'; break;
-        case 'frecuencia': fieldName = 'frecuencia'; break;
-        case 'vehiculosIds': fieldName = 'vehículos asignados'; break;
-        default: fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
+        case 'descPlan':
+          fieldName = 'nombre del mantenimiento';
+          break;
+        case 'tipoFrecuencia':
+          fieldName = 'tipo de frecuencia';
+          break;
+        case 'frecuencia':
+          fieldName = 'frecuencia';
+          break;
+        case 'vehiculosIds':
+          fieldName = 'vehículos asignados';
+          break;
+        default:
+          fieldName = firstError.id.includes('tarea') ? 'tarea' : 'campo';
       }
-      this.mostrarToast(`Por favor, complete el ${fieldName} correctamente.`, 'warning');
+      this.mostrarToast(
+        `Por favor, complete el ${fieldName} correctamente.`,
+        'warning'
+      );
     }
   }
 
-  getFirstError(): { id: string, tab: string } | null {
-   
-    if (this.f['descPlan'].invalid) return { id: 'descPlan', tab: 'infoGeneral' };
-    if (this.f['tipoFrecuencia'].invalid) return { id: 'tipoFrecuencia', tab: 'infoGeneral' };
-    if (this.f['frecuencia'].invalid) return { id: 'frecuencia', tab: 'infoGeneral' };
-    if (this.f['vehiculosIds'].invalid) return { id: 'vehiculosIds', tab: 'infoGeneral' };
+  getFirstError(): { id: string; tab: string } | null {
+    if (this.f['descPlan'].invalid)
+      return { id: 'descPlan', tab: 'infoGeneral' };
+    if (this.f['tipoFrecuencia'].invalid)
+      return { id: 'tipoFrecuencia', tab: 'infoGeneral' };
+    if (this.f['frecuencia'].invalid)
+      return { id: 'frecuencia', tab: 'infoGeneral' };
+    if (this.f['vehiculosIds'].invalid)
+      return { id: 'vehiculosIds', tab: 'infoGeneral' };
 
     // Verificar tareas
     const tareas = this.tareas.controls;
@@ -335,13 +415,17 @@ export class PlanificacionFormPage implements OnInit {
     return null;
   }
 
-  async mostrarToast(mensaje: string, color: string = 'dark', duracion: number = 3000) {
+  async mostrarToast(
+    mensaje: string,
+    color: string = 'dark',
+    duracion: number = 3000
+  ) {
     const toast = await this.toastCtrl.create({
       message: mensaje,
       duration: duracion,
       color: color,
       position: 'bottom',
-      buttons: [{ text: 'Cerrar', role: 'cancel' }]
+      buttons: [{ text: 'Cerrar', role: 'cancel' }],
     });
     toast.present();
   }
@@ -352,46 +436,50 @@ export class PlanificacionFormPage implements OnInit {
   async loadPlanificacionData() {
     if (!this.planId) return;
 
-    const loading = await this.loadingCtrl.create({ message: 'Cargando planificación...' });
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando planificación...',
+    });
     await loading.present();
 
     this.apiService.getPlanificacionById(this.planId).subscribe({
       next: async (data) => {
         await loading.dismiss();
-        
-    
+
         this.planForm.patchValue({
           descPlan: data.descPlan,
           frecuencia: data.frecuencia,
           fechaActivacion: data.fechaActivacion,
           tipoFrecuencia: data.tipoFrecuencia,
           esActivoPlan: data.esActivoPlan,
-          esPreventivo: data.esPreventivo
+          esPreventivo: data.esPreventivo,
         });
 
-       
         this.loadedTareas = data.tareas || [];
-        this.loadedVehiculosIds = data.vehiculosEnPlan?.map(v => v.idVehi) || [];
+        this.loadedVehiculosIds =
+          data.vehiculosEnPlan?.map((v) => v.idVehi) || [];
 
-    
         this.cargarTareasEnFormulario();
 
         this.planForm.patchValue({ vehiculosIds: this.loadedVehiculosIds });
+
+        // Guardar la fecha original para la validación
+        this.fechaOriginal = data.fechaActivacion ?? undefined;
 
         console.log('Planificación cargada:', data);
       },
       error: async (error) => {
         await loading.dismiss();
         console.error('Error al cargar planificación:', error);
-        this.mostrarToast(error.message || 'Error al cargar la planificación', 'danger');
-      }
+        this.mostrarToast(
+          error.message || 'Error al cargar la planificación',
+          'danger'
+        );
+      },
     });
   }
 
   private cargarTareasEnFormulario() {
-
     this.tareas.clear();
-    
 
     if (this.loadedTareas.length > 0) {
       this.loadedTareas.forEach(() => {
@@ -402,11 +490,10 @@ export class PlanificacionFormPage implements OnInit {
         const tareaControl = this.tareas.at(index);
         tareaControl.patchValue({
           nomTareaPlan: tarea.nomTareaPlan,
-          descTareaPlan: tarea.descTareaPlan || ''
+          descTareaPlan: tarea.descTareaPlan || '',
         });
       });
     } else {
-    
       this.agregarTarea();
     }
   }
@@ -420,5 +507,34 @@ export class PlanificacionFormPage implements OnInit {
   // Método para cambiar entre segmentos
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;
+  }
+
+  // Función validadora personalizada para fechas
+  noFechasAntiguas(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const fechaSeleccionada = new Date(control.value);
+    const hoy = new Date();
+
+    // Resetear las horas para comparar solo fechas
+    fechaSeleccionada.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+
+    // Si estamos en modo edición y la fecha no ha cambiado, permitirla
+    if (this.isEditMode && this.planId) {
+      // Si la fecha es la original, no validar
+      if (
+        this.fechaOriginal &&
+        new Date(this.fechaOriginal).getTime() === fechaSeleccionada.getTime()
+      ) {
+        return null;
+      }
+    }
+
+    if (fechaSeleccionada < hoy) {
+      return { fechaAntigua: true };
+    }
+
+    return null;
   }
 }

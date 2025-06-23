@@ -1,12 +1,15 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ ordenTrabajo ? 'OT #' + ordenTrabajo.id_ot : 'Orden de Trabajo' }}</ion-title>
+    <ion-title
+      >{{ ordenTrabajo ? 'OT #' + ordenTrabajo.id_ot : 'Orden de Trabajo'
+      }}</ion-title
+    >
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()" fill="clear" color="light">
         <ion-icon name="close" color="light"></ion-icon>
       </ion-button>
     </ion-buttons>
-    
+
     <ion-buttons slot="end" *ngIf="ordenTrabajo?.encargado">
       <ion-chip color="light" outline>
         <ion-icon name="person-circle"></ion-icon>
@@ -16,131 +19,331 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-segment
+  [value]="selectedTab"
+  (ionChange)="segmentChanged($event)"
+  color="primary"
+  class="ion-margin-bottom"
+>
+  <ion-segment-button value="infoGeneral">
+    <ion-label>Información General</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="tareas">
+    <ion-label>Tareas</ion-label>
+  </ion-segment-button>
+</ion-segment>
+
+<ion-content class="ion-padding ultra-compact">
   <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Cargando información...</p>
   </div>
 
   <div *ngIf="!isLoading && ordenTrabajo">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Detalles Generales</ion-card-title>
-        <ion-badge [color]="getColorForStatus(ordenTrabajo.estado_ot)" class="ion-margin-top">{{ getStatusDisplayName(ordenTrabajo.estado_ot) }}</ion-badge>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-icon name="car-sport-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
-              <h3>Vehículo</h3>
-              <p>{{ ordenTrabajo.vehiculo.marca }} {{ ordenTrabajo.vehiculo.modelo }} ({{ ordenTrabajo.vehiculo.patente }})</p>
-            </ion-label>
-          </ion-item>
+    <!-- Tab: Información General -->
+    <div *ngIf="selectedTab === 'infoGeneral'">
+      <ion-row>
+        <ion-col>
+          <ion-badge
+            [color]="getColorForStatus(ordenTrabajo.estado_ot)"
+            style="
+              width: 100%;
+              text-align: center;
+              padding: 12px;
+              font-size: 1rem;
+              border-radius: 8px;
+              color: white;
+            "
+            >{{ getStatusDisplayName(ordenTrabajo.estado_ot) }}</ion-badge
+          >
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-margin-top ion-margin-bottom">
+        <ion-col size="12">
+          <div
+            class="solicitante-info"
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              padding: 16px;
+              font-size: 2rem;
+              gap: 12px;
+            "
+          >
+            <ion-icon
+              name="person-circle-outline"
+              class="icono"
+              style="font-size: 2.2rem; color: var(--ion-color-primary)"
+            ></ion-icon>
+            <span
+              class="label-left"
+              style="
+                color: black;
+                font-size: 1.3rem;
+                font-weight: 600;
+                text-transform: uppercase;
+              "
+              >SOLICITANTE:</span
+            >
+            <span
+              class="nombre"
+              style="
+                font-weight: 600;
+                color: black;
+                font-size: 1.3rem;
+                text-transform: uppercase;
+              "
+            >
+              {{ ordenTrabajo.solicitante?.pri_nom_usu || 'N/A' }} {{
+              ordenTrabajo.solicitante?.pri_ape_usu || '' }}
+            </span>
+          </div>
+        </ion-col>
+      </ion-row>
 
-          <ion-item>
-            <ion-icon name="speedometer-outline" slot="start" color="primary"></ion-icon>
-            <ion-label position="stacked">
-              <h3>Kilometraje</h3>
-            </ion-label>
-            <ion-input type="number" placeholder="Ingrese kilometraje del vehículo"
-                       [(ngModel)]="ordenTrabajo.km_ot"
-                       [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode">
-            </ion-input>
-          </ion-item>
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Vehículo</ion-label>
+            <ion-item lines="none">
+              <ion-icon
+                name="car-sport-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label>
+                <p>
+                  {{ ordenTrabajo.vehiculo.marca }} {{
+                  ordenTrabajo.vehiculo.modelo }} ({{
+                  ordenTrabajo.vehiculo.patente }})
+                </p>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Kilometraje</ion-label>
+            <ion-item lines="none">
+              <ion-icon
+                style="margin-bottom: 1.6rem"
+                name="speedometer-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-input
+                style="margin-top: 0.3rem"
+                type="text"
+                placeholder="Ej: 125.000"
+                [value]="formatKilometraje(ordenTrabajo.km_ot)"
+                (ionInput)="onKilometrajeChange($event)"
+                [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+              >
+              </ion-input>
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
 
-         <ion-item>
-             <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
-             <ion-label position="stacked">
-               <h3>Descripción del Trabajo Realizado</h3>
-             </ion-label>
-             <ion-textarea placeholder="Describa el trabajo efectuado..."
-                           [(ngModel)]="ordenTrabajo.descripcion_ot"
-                           [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
-                           rows="4">
-             </ion-textarea>
-           </ion-item>
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Fecha Inicio</ion-label>
+            <ion-item lines="none">
+              <ion-icon
+                name="calendar-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label>
+                <p
+                  *ngIf="ordenTrabajo.fec_ini_ot && isValidDate(ordenTrabajo.fec_ini_ot); else noFechaInicio"
+                >
+                  {{ ordenTrabajo.fec_ini_ot | date:'dd/MM/yy HH:mm' }}
+                </p>
+                <ng-template #noFechaInicio>
+                  <p>Sin fecha de inicio</p>
+                </ng-template>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Fecha Cierre</ion-label>
+            <ion-item lines="none">
+              <ion-icon
+                name="checkmark-done-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label>
+                <p
+                  *ngIf="ordenTrabajo.fec_fin_ot && isValidDate(ordenTrabajo.fec_fin_ot); else noFechaCierre"
+                >
+                  {{ ordenTrabajo.fec_fin_ot | date:'dd/MM/yy HH:mm' }}
+                </p>
+                <ng-template #noFechaCierre>
+                  <p>Pendiente</p>
+                </ng-template>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
 
-          <ion-item>
-            <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
-            <ion-label>
-              <h3>Solicitante</h3>
-              <p>{{ ordenTrabajo.solicitante?.pri_nom_usu || 'N/A' }} {{ ordenTrabajo.solicitante?.pri_ape_usu || '' }}</p>
-            </ion-label>
-          </ion-item>
-          <ion-item lines="full">
-            <ion-label>
-              <h3>Fechas</h3>
-              <p *ngIf="ordenTrabajo.fec_ini_ot && isValidDate(ordenTrabajo.fec_ini_ot)">
-                <ion-icon name="calendar-outline" class="align-middle"></ion-icon>
-                <strong>Fecha Inicio:</strong> {{ ordenTrabajo.fec_ini_ot | date:'dd/MM/yy HH:mm' }}
-              </p>
-              <p *ngIf="ordenTrabajo.fec_fin_ot && isValidDate(ordenTrabajo.fec_fin_ot)">
-                <ion-icon name="checkmark-done-outline" class="align-middle"></ion-icon>
-                <strong>Fecha Cierre:</strong> {{ ordenTrabajo.fec_fin_ot | date:'dd/MM/yy HH:mm' }}
-              </p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-    <div *ngIf="ordenTrabajo.estado_ot !== 'completado'">
-      <ion-list-header>
-        <ion-label>Tareas a Realizar</ion-label>
-      </ion-list-header>
+      <ion-row>
+        <ion-col size="12">
+          <div class="input-wrapper">
+            <ion-label>Descripción del Trabajo Realizado</ion-label>
+            <ion-textarea
+              placeholder="Describa el trabajo efectuado..."
+              [(ngModel)]="ordenTrabajo.descripcion_ot"
+              [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+              rows="4"
+            >
+            </ion-textarea>
+          </div>
+        </ion-col>
+      </ion-row>
+    </div>
+    <!-- Tab: Tareas -->
+    <div *ngIf="selectedTab === 'tareas'">
       <ion-card *ngFor="let tarea of ordenTrabajo.detalles" class="task-card">
         <ion-item lines="none" class="task-card-header">
-          <ion-icon name="build-outline" slot="start" [color]="tarea.checklist ? 'success' : 'medium'"></ion-icon>
+          <ion-icon
+            name="build-outline"
+            slot="start"
+            [color]="tarea.checklist ? 'success' : 'medium'"
+          ></ion-icon>
           <ion-label class="ion-text-wrap">
-            <p>{{ tarea.desc_det }}</p>
+            <p style="font-size: 1rem; font-weight: 600; color: black">
+              {{ tarea.desc_det }}
+            </p>
           </ion-label>
-          <ion-checkbox slot="end" [(ngModel)]="tarea.checklist" [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"></ion-checkbox>
+          <ion-checkbox
+            slot="end"
+            [(ngModel)]="tarea.checklist"
+            [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+          ></ion-checkbox>
         </ion-item>
-        <ion-item lines="full" *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode">
-          <ion-button (click)="abrirSelectorTecnicos(tarea)" fill="clear" size="small">
+
+        <!-- Información del técnico - siempre visible -->
+        <ion-item lines="full">
+          <!-- Solo mostrar botón de asignar técnico si está en progreso y no es modo vista -->
+          <ion-button
+            *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode"
+            (click)="abrirSelectorTecnicos(tarea)"
+            fill="clear"
+            size="small"
+          >
             <ion-icon name="person-add-outline" slot="start"></ion-icon>
             Asignar Técnico
           </ion-button>
-          <ion-label slot="end" class="ion-text-right info-col">
+
+          <!-- Información del técnico siempre visible -->
+          <ion-label
+            class="ion-text-right info-col"
+            [attr.slot]="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode ? 'end' : 'start'"
+          >
             <p>
+              <ion-icon
+                name="person-outline"
+                style="margin-right: 8px"
+              ></ion-icon>
               Técnico:
               <span *ngIf="tarea.tecnico; else noAsignado">
                 {{ tarea.tecnico.pri_nom_usu }} {{ tarea.tecnico.pri_ape_usu }}
               </span>
               <ng-template #noAsignado>Sin asignar</ng-template>
             </p>
+
+            <!-- Mostrar estado de la tarea si está completada -->
+            <p *ngIf="ordenTrabajo.estado_ot === 'completado'">
+              <ion-icon
+                [name]="tarea.checklist ? 'checkmark-circle' : 'close-circle'"
+                [color]="tarea.checklist ? 'success' : 'danger'"
+                style="margin-right: 8px"
+              >
+              </ion-icon>
+              Estado: {{ tarea.checklist ? 'Completada' : 'Incompleta' }}
+            </p>
           </ion-label>
         </ion-item>
       </ion-card>
-    </div>
 
-    <div *ngIf="ordenTrabajo.estado_ot === 'completado'" class="ion-text-center ion-padding">
-      <ion-icon name="checkmark-done-circle" color="success" style="font-size: 4rem;"></ion-icon>
-      <p>Esta Orden de Trabajo fue finalizada.</p>
+      <!-- Mensaje de finalización solo si todas las tareas están completas -->
+      <div
+        *ngIf="ordenTrabajo.estado_ot === 'completado' && todasTareasCompletas()"
+        class="ion-text-center ion-padding"
+      >
+        <ion-icon
+          name="checkmark-done-circle"
+          color="success"
+          style="font-size: 3rem; margin-bottom: 16px"
+        ></ion-icon>
+        <h3>¡Orden de Trabajo Completada!</h3>
+        <p>Todas las tareas fueron realizadas exitosamente.</p>
+      </div>
+
+      <!-- Mensaje si hay tareas incompletas en OT finalizada -->
+      <div
+        *ngIf="ordenTrabajo.estado_ot === 'completado' && !todasTareasCompletas()"
+        class="ion-text-center ion-padding"
+      >
+        <ion-icon
+          name="warning"
+          color="warning"
+          style="font-size: 3rem; margin-bottom: 16px"
+        ></ion-icon>
+        <h3>Orden de Trabajo Finalizada</h3>
+        <p>Esta OT fue finalizada, pero algunas tareas quedaron pendientes.</p>
+      </div>
     </div>
   </div>
 </ion-content>
 
 <div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && !isViewMode">
-  <ion-button *ngIf="ordenTrabajo.estado_ot === 'solicitado'" (click)="iniciarOrdenDeTrabajo()" expand="block" style="--background: #008000; --background-hover: #006600;">
+  <ion-button
+    *ngIf="ordenTrabajo.estado_ot === 'solicitado'"
+    (click)="iniciarOrdenDeTrabajo()"
+    expand="block"
+    style="--background: #008000; --background-hover: #006600"
+  >
     <ion-icon name="play-circle-outline" slot="start"></ion-icon>
     Iniciar Orden de Trabajo
   </ion-button>
 
   <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
-    <ion-button (click)="guardarProgresoTareas()" expand="block" style="--background: var(--ion-color-primary); --background-hover: #0056b3;" class="ion-margin-top">
+    <ion-button
+      (click)="guardarProgresoTareas()"
+      expand="block"
+      style="
+        --background: var(--ion-color-primary);
+        --background-hover: #0056b3;
+      "
+      class="ion-margin-top"
+    >
       <ion-icon name="save-outline" slot="start"></ion-icon>
       Guardar Progreso
     </ion-button>
-    <ion-button (click)="finalizarOrdenDeTrabajo()" expand="block" style="--background: #008000; --background-hover: #006600;" class="ion-margin-top">
+    <ion-button
+      (click)="finalizarOrdenDeTrabajo()"
+      expand="block"
+      style="--background: #008000; --background-hover: #006600"
+      class="ion-margin-top"
+    >
       <ion-icon name="flag-outline" slot="start"></ion-icon>
       Finalizar Orden de Trabajo
     </ion-button>
   </div>
 </div>
 
-<div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && (isViewMode || ordenTrabajo.estado_ot === 'completado')">
+<div
+  class="ion-text-center"
+  *ngIf="!isLoading && ordenTrabajo && (isViewMode || ordenTrabajo.estado_ot === 'completado')"
+>
   <ion-button expand="block" (click)="closeModal()" color="medium">
     <ion-icon name="close-outline" slot="start"></ion-icon>
     Cerrar

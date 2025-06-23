@@ -38,7 +38,7 @@
  */
 /* @import "@ionic/angular/css/palettes/dark.always.css"; // Siempre oscuro. */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; // Oscuro basado en clases. */
-@import '@ionic/angular/css/palettes/dark.system.css'; // Oscuro basado en la configuración del sistema.
+@import "@ionic/angular/css/palettes/dark.system.css"; // Oscuro basado en la configuración del sistema.
 
 /* -------------------------------------------------------------------------- */
 /* Variables CSS Globales */
@@ -50,6 +50,30 @@
   --ion-color-secondary: #ffffff; /* Color secundario global (blanco). */
   --ion-color-secondary-rgb: 255, 255, 255; /* Versión RGB del color secundario. */
   --ion-color-tertiary: #a5a5a8; /* Color terciario global (gris claro). */
+
+  /* Color de fondo */
+  --ion-action-sheet-background: #f8f8f8;
+
+  /* Color del texto de los botones */
+  --ion-action-sheet-button-color: #333333;
+
+  /* Color del texto del botón cancelar */
+  --ion-action-sheet-cancel-button-color: #ff4961;
+
+  /* Color de fondo cuando se presiona un botón */
+  --ion-action-sheet-button-activated-background: #e0e0e0;
+
+  /* Altura de los botones */
+  --ion-action-sheet-button-height: 56px;
+
+  /* Tipografía */
+  --ion-action-sheet-font-size: 16px;
+
+  /* Margen superior del título */
+  --ion-action-sheet-title-margin-top: 16px;
+
+  /* Margen inferior del título */
+  --ion-action-sheet-title-margin-bottom: 16px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,20 +107,20 @@ ion-select {
   min-height: 48px !important;
   height: 48px !important;
   max-height: 48px !important;
-  
+
   &::part(container) {
     min-height: 48px;
     height: 48px;
     display: flex;
     align-items: center;
   }
-  
+
   &::part(text) {
     min-height: 24px;
     display: flex;
     align-items: center;
   }
-  
+
   &::part(icon) {
     height: 20px;
     width: 20px;
@@ -123,30 +147,6 @@ ion-select::placeholder,
 ion-datetime::placeholder {
   --color: var(--form-placeholder-color);
   --font-style: var(--form-placeholder-font-style);
-}
-
-/* Estilos para elementos deshabilitados */
-ion-input[disabled],
-ion-select[disabled],
-ion-textarea[disabled],
-ion-datetime[disabled]{
-  --background: var(--form-disabled-background);
-  --color: var(--form-disabled-text-color);
-  opacity: 0.8;
-}
-
-/* Estilos para estados de focus */
-ion-input:focus-within,
-ion-select:focus-within,
-ion-textarea:focus-within,
-ion-datetime:focus-within {
-  border-color: var(--form-border-focus-color);
-  box-shadow: var(--form-focus-shadow);
-}
-
-/* Clase contenedora para inputs */
-.input-wrapper {
-  margin-bottom: var(--form-margin-bottom);
 }
 
 /* Contenedor para mensajes de error */
@@ -192,22 +192,21 @@ ion-toast {
   --border-radius: 12px;
 }
 
-/* Suavizar action sheets */
-ion-action-sheet .action-sheet-wrapper {
-  border-radius: 16px 16px 0 0;
-}
-
 /* -------------------------------------------------------------------------- */
 /* Estilos específicos para el contenido */
 /* -------------------------------------------------------------------------- */
 /* Aplica el color terciario solo al contenido principal, excluyendo el sidebar y el header */
 ion-content {
-    background-color: var(--ion-color-tertiary); /* Fondo del contenido principal */ 
+  background-color: var(
+    --ion-color-tertiary
+  ); /* Fondo del contenido principal */
 }
 
 ion-header,
 ion-menu {
-  background-color: var(--ion-color-primary); /* Asegura que el header y sidebar mantengan el color primario */
+  background-color: var(
+    --ion-color-primary
+  ); /* Asegura que el header y sidebar mantengan el color primario */
 }
 
 ion-router-outlet {
@@ -215,7 +214,7 @@ ion-router-outlet {
 }
 
 .has-header ion-router-outlet {
-  margin-top: 60px
+  margin-top: 60px;
 }
 
 /* Estilo específico para el modal de éxito de logout (si aún se necesita) */
@@ -227,12 +226,79 @@ ion-router-outlet {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Estilos para el modal de vehículos - Pantalla completa */
-/* -------------------------------------------------------------------------- */
+// ACTION-SHEET STYLES
 
+.custom-action-sheet {
+  --background: #f8f8f8;
+  --button-color: #333333;
+  --button-activated-background: #e0e0e0;
+  --height: 60vh; // altura máxima
 
-/* Para pantallas pequeñas, ocupar completamente la pantalla */
-@media (max-width: 768px) {
+  .action-sheet-title {
+    color: #007bff;
+    font-weight: bold;
+  }
 
+  .action-sheet-sub-title {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .action-sheet-cancel {
+    color: var(--ion-color-danger);
+    font-weight: bold;
+  }
 }
 
+// customn action multiple
+
+.custom-action-sheet-multiple {
+  --backdrop-opacity: 0.7;
+
+  // Hacer que los checkboxes sean menos prominentes
+  .action-sheet-button-inner {
+    justify-content: flex-start;
+
+    ion-checkbox {
+      margin-right: 12px;
+      --size: 18px;
+      --background-checked: var(--ion-color-primary);
+      --border-color-checked: var(--ion-color-primary);
+    }
+  }
+
+  // Estilizar el botón "Listo"
+  .action-sheet-confirm-button {
+    color: var(--ion-color-primary) !important;
+    font-weight: bold !important;
+  }
+
+  // Estilizar el botón "Cancelar"
+  .action-sheet-cancel-button {
+    color: var(--ion-color-danger) !important;
+    font-weight: bold !important;
+  }
+
+  // Hacer que los elementos seleccionados tengan un estilo distintivo
+  .action-sheet-selected {
+    color: var(--ion-color-primary);
+    font-weight: 500;
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Estilos para botones flotantes personalizados */
+/* -------------------------------------------------------------------------- */
+.fab-custom {
+  --background: #008000 !important;
+  --background-activated: #006600 !important;
+  --background-hover: #009900 !important;
+  --color: white !important;
+  box-shadow: 0 4px 16px rgba(0, 128, 0, 0.3) !important;
+
+  &:hover {
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+  }
+}

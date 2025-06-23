@@ -1,11 +1,37 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import { Component, OnInit, inject, Input, TemplateRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, ToastController, ModalController } from '@ionic/angular';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
+import {
+  IonicModule,
+  LoadingController,
+  ToastController,
+  ModalController,
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { saveOutline, closeCircleOutline, calendarOutline, speedometerOutline, listOutline, peopleOutline, carSportOutline, closeOutline } from 'ionicons/icons';
+import {
+  saveOutline,
+  closeCircleOutline,
+  calendarOutline,
+  speedometerOutline,
+  listOutline,
+  peopleOutline,
+  carSportOutline,
+  closeOutline,
+} from 'ionicons/icons';
 import { AlertaPersonalizadaComponent } from 'src/app/componentes/alerta-personalizada/alerta-personalizada.component';
-import { ApiService, AsignacionRecorridoData, Route as RutaPlantilla, VehiculoAsignacionInfo, UsuarioConductorInfo } from '../../services/api.service';
+import {
+  ApiService,
+  AsignacionRecorridoData,
+  Route as RutaPlantilla,
+  VehiculoAsignacionInfo,
+  UsuarioConductorInfo,
+} from '../../services/api.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -16,10 +42,10 @@ import { forkJoin } from 'rxjs';
   imports: [
     IonicModule,
     CommonModule,
-    ReactiveFormsModule, 
-    FormsModule,        
-    DatePipe
-  ]
+    ReactiveFormsModule,
+    FormsModule,
+    DatePipe,
+  ],
 })
 export class AsignacionFormPage implements OnInit {
   @Input() asignacionId: number | null = null;
@@ -39,12 +65,48 @@ export class AsignacionFormPage implements OnInit {
 
   conductores: UsuarioConductorInfo[] = [];
   rutasPlantilla: RutaPlantilla[] = [];
-  vehiculos: VehiculoAsignacionInfo[] = []; 
+  vehiculos: VehiculoAsignacionInfo[] = [];
 
-  estadosAsignacion = ['pendiente', 'asignado', 'en_progreso', 'completado', 'cancelado'];
+  estadosAsignacion = [
+    'pendiente',
+    'asignado',
+    'en_progreso',
+    'completado',
+    'cancelado',
+  ];
+
+  customActionSheetOptions = {
+    header: 'Seleccione una ruta',
+    subHeader: 'Elija la ruta que se recorrerá',
+    translucent: true,
+    backdropDismiss: true,
+    animated: true,
+    cssClass: 'custom-action-sheet',
+    mode: 'ios', // o 'md' para Material Design
+    buttons: [
+      {
+        text: 'Cerrar selector', // Texto personalizado
+        role: 'cancel',
+        cssClass: 'action-sheet-cancel-button',
+        handler: () => {
+          console.log('Usuario canceló la selección');
+          // Puedes ejecutar código adicional cuando se cancela
+        },
+      },
+    ],
+  };
 
   constructor() {
-    addIcons({ saveOutline, closeCircleOutline, calendarOutline, speedometerOutline, listOutline, peopleOutline, carSportOutline, closeOutline });
+    addIcons({
+      saveOutline,
+      closeCircleOutline,
+      calendarOutline,
+      speedometerOutline,
+      listOutline,
+      peopleOutline,
+      carSportOutline,
+      closeOutline,
+    });
   }
 
   ngOnInit() {
@@ -66,43 +128,60 @@ export class AsignacionFormPage implements OnInit {
       usuarioIdUsu: [formState, Validators.required],
       rutaIdRuta: [formState, Validators.required],
       vehiculoIdVehi: [formState, Validators.required],
-      fecIniRecor: [{ value: new Date().toISOString(), disabled: this.isViewMode }, Validators.required],
+      fecIniRecor: [
+        { value: new Date().toISOString(), disabled: this.isViewMode },
+        Validators.required,
+      ],
       fecFinRecor: [formState],
       kmIniRecor: [formState, [Validators.required, Validators.min(0)]],
       kmFinRecor: [formState, [Validators.min(0)]],
-      estadoAsig: [{ value: 'asignado', disabled: this.isViewMode }, Validators.required],
+      estadoAsig: [
+        { value: 'asignado', disabled: this.isViewMode },
+        Validators.required,
+      ],
       notas: [formState],
-      efiCombRecor: [formState]
+      efiCombRecor: [formState],
     });
   }
 
   async loadInitialData() {
     this.isLoading = true;
-    const conductores$ = this.apiService.getUsuarios({ rol: 'conductor' });
+    const conductores$ = this.apiService.getUsuarios({
+      rol: 'conductor',
+    });
     const rutas$ = this.apiService.getRoutes();
     const vehiculos$ = this.apiService.getVehicles({ estado: 'activo' });
+    console.log(this.apiService.getUsuarios({ rol: 'conductor' }));
 
     forkJoin([conductores$, rutas$, vehiculos$]).subscribe({
       next: ([conductoresData, rutasData, vehiculosData]) => {
         this.conductores = conductoresData;
         this.rutasPlantilla = rutasData;
-        this.vehiculos = vehiculosData.map(v => ({
+        this.vehiculos = vehiculosData.map((v) => ({
           idVehi: v.idVehi || 0,
           patente: v.patente,
           modelo: v.modelo,
-          marca: v.marca
+          marca: v.marca,
         }));
+        console.log(this.conductores);
+
         if (this.asignacionId) {
           this.loadAsignacionData();
+          console.log(this.conductores);
         } else {
           this.isLoading = false;
+          console.log(this.conductores);
         }
       },
       error: async (error) => {
         this.isLoading = false;
-        await this.showErrorAlert('Error al Cargar Datos', error.message || 'No se pudieron obtener los datos para el formulario.');
+        await this.showErrorAlert(
+          'Error al Cargar Datos',
+          error.message ||
+            'No se pudieron obtener los datos para el formulario.'
+        );
         this.closeModal();
-      }
+      },
     });
   }
 
@@ -115,16 +194,25 @@ export class AsignacionFormPage implements OnInit {
       next: (asignacion) => {
         this.asignacionForm.patchValue({
           ...asignacion,
-          fecIniRecor: asignacion.fecIniRecor ? new Date(asignacion.fecIniRecor).toISOString() : null,
-          fecFinRecor: asignacion.fecFinRecor ? new Date(asignacion.fecFinRecor).toISOString() : null
+          usuarioIdUsu: asignacion.conductor?.idUsu || null,
+          fecIniRecor: asignacion.fecIniRecor
+            ? new Date(asignacion.fecIniRecor).toISOString()
+            : null,
+          fecFinRecor: asignacion.fecFinRecor
+            ? new Date(asignacion.fecFinRecor).toISOString()
+            : null,
         });
+        console.log('Asignación cargada:', asignacion);
         this.isLoading = false;
       },
       error: async (error) => {
         this.isLoading = false;
-        await this.showErrorAlert('Error al cargar la asignación', error.message || 'No se pudo cargar la información.');
+        await this.showErrorAlert(
+          'Error al cargar la asignación',
+          error.message || 'No se pudo cargar la información.'
+        );
         this.closeModal();
-      }
+      },
     });
   }
 
@@ -132,19 +220,32 @@ export class AsignacionFormPage implements OnInit {
     const vehiculoId = event.detail.value;
     if (vehiculoId && !this.isEditMode) {
       this.apiService.getVehicle(vehiculoId).subscribe({
-        next: veh => { if (veh?.kmVehi) this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi }); }
+        next: (veh) => {
+          if (veh?.kmVehi)
+            this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi });
+        },
       });
     }
   }
-
   async submitForm() {
     if (this.isSubmitting) return;
 
     this.isSubmitting = true;
-    Object.values(this.asignacionForm.controls).forEach(control => control.markAsTouched());
+    this.asignacionForm.markAllAsTouched();
 
+    // Agregamos un console.log para depuración
+    console.log('=== DATOS DEL FORMULARIO DE ASIGNACIÓN ===');
+    console.log('Form Values:', this.asignacionForm.getRawValue());
+    console.log('Form Valid:', this.asignacionForm.valid);
+    console.log('Form Errors:', this.getFormValidationErrors());
+    console.log('=======================================');
+
+    // Si el formulario no es válido, mostramos un mensaje y salimos
     if (!this.asignacionForm.valid) {
-      this.presentToast('Por favor, completa todos los campos requeridos.', 'warning');
+      this.presentToast(
+        'Hay campos incompletos o con errores. Por favor, revisa el formulario.',
+        'warning'
+      );
       this.isSubmitting = false;
       return;
     }
@@ -155,43 +256,57 @@ export class AsignacionFormPage implements OnInit {
         title: this.isEditMode ? 'Confirmar Edición' : 'Confirmar Creación',
         message: '¿Estás seguro de continuar con esta operación?',
         icon: this.isEditMode ? 'warning' : 'info',
-        buttons: [{ text: 'Cancelar', role: 'cancel' }, { text: this.isEditMode ? 'Actualizar' : 'Crear', role: 'confirm' }]
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          { text: this.isEditMode ? 'Actualizar' : 'Crear', role: 'confirm' },
+        ],
       },
       backdropDismiss: false,
-      cssClass: 'custom-alert-modal'
+      cssClass: 'custom-alert-modal',
     });
-    
+
     await confirm.present();
     const { data } = await confirm.onDidDismiss();
-    
+
     if (data !== 'confirm') {
       this.isSubmitting = false;
       return;
     }
-    
+
     // --- LÓGICA DE CARGA MANUAL Y ROBUSTA ---
     const loading = await this.loadingCtrl.create({
-      message: this.isEditMode ? 'Actualizando asignación...' : 'Creando asignación...'
+      message: this.isEditMode
+        ? 'Actualizando asignación...'
+        : 'Creando asignación...',
     });
     await loading.present();
 
     try {
       const formData = this.asignacionForm.getRawValue();
       const asignacionData = this.prepareDataForApi(formData);
-      
-      const operation$ = this.isEditMode && this.asignacionId
-        ? this.apiService.updateAsignacionRecorrido(this.asignacionId, asignacionData)
-        : this.apiService.createAsignacionRecorrido(asignacionData);
+
+      const operation$ =
+        this.isEditMode && this.asignacionId
+          ? this.apiService.updateAsignacionRecorrido(
+              this.asignacionId,
+              asignacionData
+            )
+          : this.apiService.createAsignacionRecorrido(asignacionData);
 
       await operation$.toPromise();
-      
-      await loading.dismiss();
-      this.presentToast(`Asignación ${this.isEditMode ? 'actualizada' : 'creada'} con éxito.`, 'success');
-      this.closeModal(true);
 
+      await loading.dismiss();
+      this.presentToast(
+        `Asignación ${this.isEditMode ? 'actualizada' : 'creada'} con éxito.`,
+        'success'
+      );
+      this.closeModal(true);
     } catch (error: any) {
       await loading.dismiss(); // Nos aseguramos de cerrar el loading incluso si hay error
-      this.presentToast(error.message || 'No se pudo guardar la asignación.', 'danger');
+      this.presentToast(
+        error.message || 'No se pudo guardar la asignación.',
+        'danger'
+      );
     } finally {
       // Este bloque se ejecutará siempre, tanto si hay éxito como si hay error.
       this.isSubmitting = false;
@@ -199,15 +314,37 @@ export class AsignacionFormPage implements OnInit {
   }
 
   private prepareDataForApi(formData: any): AsignacionRecorridoData {
-    const kmIniRecorNum = Number(formData.kmIniRecor);
-    if (isNaN(kmIniRecorNum)) throw new Error('El kilometraje inicial es inválido.');
+    let usuarioId = formData.usuarioIdUsu;
+    if (typeof usuarioId === 'string') {
+      // Si es una cadena, intentar convertirla a número y eliminar espacios
+      usuarioId = parseInt(usuarioId.trim(), 10);
+      if (isNaN(usuarioId)) {
+        // Si no es un número, buscar el ID por nombre
+        const conductorEncontrado = this.conductores.find(
+          (c) =>
+            `${c.pri_nom_usu} ${c.pri_ape_usu}`.trim() ===
+            formData.usuarioIdUsu.trim()
+        );
+        usuarioId = conductorEncontrado ? conductorEncontrado.idUsu : null;
+      }
+    }
 
-    const kmFinRecorNum = formData.kmFinRecor ? Number(formData.kmFinRecor) : null;
+    const kmIniRecorNum = Number(formData.kmIniRecor);
+    if (isNaN(kmIniRecorNum))
+      throw new Error('El kilometraje inicial es inválido.');
+
+    const kmFinRecorNum = formData.kmFinRecor
+      ? Number(formData.kmFinRecor)
+      : null;
     if (kmFinRecorNum !== null) {
-      if (isNaN(kmFinRecorNum)) throw new Error('El kilometraje final no es válido.');
-      if (kmFinRecorNum <= kmIniRecorNum) throw new Error('El kilometraje final debe ser mayor al inicial.');
+      if (isNaN(kmFinRecorNum))
+        throw new Error('El kilometraje final no es válido.');
+      if (kmFinRecorNum <= kmIniRecorNum)
+        throw new Error('El kilometraje final debe ser mayor al inicial.');
     } else if (formData.estadoAsig === 'completado') {
-      throw new Error('El kilometraje final es requerido para completar la asignación.');
+      throw new Error(
+        'El kilometraje final es requerido para completar la asignación.'
+      );
     }
 
     const data: AsignacionRecorridoData = {
@@ -215,30 +352,53 @@ export class AsignacionFormPage implements OnInit {
       rutaIdRuta: parseInt(formData.rutaIdRuta, 10),
       vehiculoIdVehi: parseInt(formData.vehiculoIdVehi, 10),
       fecIniRecor: new Date(formData.fecIniRecor).toISOString(),
-      fecFinRecor: formData.fecFinRecor ? new Date(formData.fecFinRecor).toISOString() : null,
+      fecFinRecor: formData.fecFinRecor
+        ? new Date(formData.fecFinRecor).toISOString()
+        : null,
       kmIniRecor: kmIniRecorNum,
       kmFinRecor: kmFinRecorNum,
       estadoAsig: formData.estadoAsig,
       notas: formData.notas,
-      efiCombRecor: formData.efiCombRecor ? Number(formData.efiCombRecor) : null
+      efiCombRecor: formData.efiCombRecor
+        ? Number(formData.efiCombRecor)
+        : null,
     };
 
-    if (data.fecFinRecor && new Date(data.fecFinRecor) <= new Date(data.fecIniRecor)) {
-      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio.');
+    if (
+      data.fecFinRecor &&
+      new Date(data.fecFinRecor) <= new Date(data.fecIniRecor)
+    ) {
+      throw new Error(
+        'La fecha de fin debe ser posterior a la fecha de inicio.'
+      );
     }
     return data;
   }
 
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' = 'success', duration: number = 3000) {
-    const toast = await this.toastCtrl.create({ message, duration, color, position: 'bottom' });
+  async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'success',
+    duration: number = 3000
+  ) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration,
+      color,
+      position: 'bottom',
+    });
     toast.present();
   }
 
   async showErrorAlert(title: string, message: string) {
     const alert = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
-      componentProps: { title, message, icon: 'error', buttons: [{ text: 'Aceptar', role: 'confirm' }] },
-      cssClass: 'custom-alert-modal'
+      componentProps: {
+        title,
+        message,
+        icon: 'error',
+        buttons: [{ text: 'Aceptar', role: 'confirm' }],
+      },
+      cssClass: 'custom-alert-modal',
     });
     await alert.present();
   }
@@ -249,5 +409,17 @@ export class AsignacionFormPage implements OnInit {
 
   get f() {
     return this.asignacionForm.controls;
+  }
+
+  // Método auxiliar para obtener todos los errores del formulario (añadir esto también)
+  private getFormValidationErrors() {
+    const errors: any = {};
+    Object.keys(this.asignacionForm.controls).forEach((key) => {
+      const control = this.asignacionForm.get(key);
+      if (control && control.errors) {
+        errors[key] = control.errors;
+      }
+    });
+    return errors;
   }
 }

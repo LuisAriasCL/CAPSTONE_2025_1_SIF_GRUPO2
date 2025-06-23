@@ -1,0 +1,23 @@
+.solicitante-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.label-left {
+  font-weight: bold;
+  white-space: nowrap;
+  color: var(--ion-color-dark);
+}
+
+.icono {
+  font-size: 1.5rem;
+  color: var(--ion-color-primary);
+}
+
+.nombre {
+  white-space: nowrap;
+  color: var(--ion-color-medium);
+  font-weight: 500;
+}

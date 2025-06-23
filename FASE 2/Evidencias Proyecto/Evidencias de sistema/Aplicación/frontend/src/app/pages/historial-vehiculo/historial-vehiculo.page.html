@@ -1,47 +1,62 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/vehicle-list"></ion-back-button>
-    </ion-buttons>
-    <ion-title *ngIf="vehiculoActual">
-      {{ vehiculoActual.patente }}
-      <p class="header-subtitle">{{ vehiculoActual.marca }} {{ vehiculoActual.modelo }}</p>
-    </ion-title>
-    <ion-title *ngIf="!vehiculoActual">
-      Historial del Vehículo
-    </ion-title>
-  </ion-toolbar>
+<ion-content [fullscreen]="true">
+  <!-- Botón de navegación y información del vehículo -->
+  <div
+    class="page-navigation"
+    style="
+      padding: 16px;
+      background: var(--ion-color-light);
+      border-bottom: 1px solid var(--ion-color-medium);
+    "
+  >
+    <ion-button
+      fill="clear"
+      routerLink="/vehicle-list"
+      style="--color: var(--ion-color-primary)"
+    >
+      <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+      Volver
+    </ion-button>
 
-  <ion-toolbar *ngIf="vehiculoActual">
-    <ion-chip slot="start" class="ion-margin-start">
-      <ion-icon name="speedometer-outline"></ion-icon>
-      <ion-label>{{ vehiculoActual.kmVehi | number }} km</ion-label>
-    </ion-chip>
-    <ion-chip slot="end" class="ion-margin-end" [color]="vehiculoActual.estadoVehi === 'activo' ? 'success' : 'medium'">
-      <ion-label>{{ vehiculoActual.estadoVehi | titlecase }}</ion-label>
-    </ion-chip>
-  </ion-toolbar>
+    <div *ngIf="vehiculoActual" style="margin-top: 8px">
+      <h2 style="margin: 0; color: var(--ion-color-dark)">
+        {{ vehiculoActual.patente }}
+      </h2>
+      <p
+        style="
+          margin: 4px 0 0 0;
+          color: var(--ion-color-medium);
+          font-size: 0.9rem;
+        "
+      >
+        {{ vehiculoActual.marca }} {{ vehiculoActual.modelo }}
+      </p>
 
-  <ion-toolbar>
+      <ion-chip style="margin-top: 8px">
+        <ion-icon name="speedometer-outline"></ion-icon>
+        <ion-label>{{ vehiculoActual.kmVehi | number }} km</ion-label>
+      </ion-chip>
+    </div>
+  </div>
+  <!-- Barra de búsqueda -->
+  <div style="padding: 8px 16px; background: var(--ion-color-light)">
     <ion-searchbar
       placeholder="Buscar en historial..."
       animated="true"
       (ionInput)="filtrarHistorial()"
-      [(ngModel)]="terminoBusqueda">
+      [(ngModel)]="terminoBusqueda"
+    >
     </ion-searchbar>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
+  </div>
 
   <ion-grid class="ion-no-padding">
     <ion-row>
-     
       <ion-col size="12" size-md="4">
         <ion-card class="kpi-card">
           <ion-card-content>
             <ion-label>Costo Combustible</ion-label>
-            <h2 *ngIf="!isLoading; else skeleton">{{ kpis.costoCombustible | currency:'CLP':'symbol':'1.0-0' }}</h2>
+            <h2 *ngIf="!isLoading; else skeleton">
+              {{ kpis.costoCombustible | currency:'CLP':'symbol':'1.0-0' }}
+            </h2>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -49,7 +64,10 @@
         <ion-card class="kpi-card">
           <ion-card-content>
             <ion-label>Rendimiento</ion-label>
-            <h2 *ngIf="!isLoading; else skeleton">{{ kpis.rendimientoPromedio | number:'1.1-1' }} <span class="unit">km/L</span></h2>
+            <h2 *ngIf="!isLoading; else skeleton">
+              {{ kpis.rendimientoPromedio | number:'1.1-1' }}
+              <span class="unit">km/L</span>
+            </h2>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -57,14 +75,30 @@
   </ion-grid>
 
   <ng-template #skeleton>
-    <ion-skeleton-text animated="true" style="width: 60%; height: 1.6rem; margin: 4px auto 0;"></ion-skeleton-text>
+    <ion-skeleton-text
+      animated="true"
+      style="width: 60%; height: 1.6rem; margin: 4px auto 0"
+    ></ion-skeleton-text>
   </ng-template>
 
-  <ion-segment [(ngModel)]="filtroTipo" (ionChange)="filtrarHistorial()" value="todos" class="ion-padding-horizontal">
-    <ion-segment-button value="todos"><ion-label>Todos</ion-label></ion-segment-button>
-    <ion-segment-button value="Mantenimiento"><ion-label>Mantenimiento</ion-label></ion-segment-button>
-    <ion-segment-button value="Siniestro"><ion-label>Siniestros</ion-label></ion-segment-button>
-    <ion-segment-button value="Combustible"><ion-label>Combustible</ion-label></ion-segment-button>
+  <ion-segment
+    [(ngModel)]="filtroTipo"
+    (ionChange)="filtrarHistorial()"
+    value="todos"
+    class="ion-padding-horizontal"
+  >
+    <ion-segment-button value="todos"
+      ><ion-label>Todos</ion-label></ion-segment-button
+    >
+    <ion-segment-button value="Mantenimiento"
+      ><ion-label>Mantenimiento</ion-label></ion-segment-button
+    >
+    <ion-segment-button value="Siniestro"
+      ><ion-label>Siniestros</ion-label></ion-segment-button
+    >
+    <ion-segment-button value="Combustible"
+      ><ion-label>Combustible</ion-label></ion-segment-button
+    >
   </ion-segment>
 
   <div *ngIf="isLoading" class="loading-state">
@@ -78,23 +112,34 @@
   </div>
 
   <ion-list *ngIf="!isLoading && historialFiltrado.length > 0">
-    <ion-card 
-      *ngFor="let item of historialFiltrado" 
+    <ion-card
+      *ngFor="let item of historialFiltrado"
       class="history-card clickable"
-      (click)="verDetalle(item)">
-        
+      (click)="verDetalle(item)"
+    >
       <ion-item lines="none">
-        <ion-icon [name]="item.icon" slot="start" [color]="item.color" class="ion-icon-big"></ion-icon>
+        <ion-icon
+          [name]="item.icon"
+          slot="start"
+          [color]="item.color"
+          class="ion-icon-big"
+        ></ion-icon>
         <ion-label>
           <h2 class="ion-text-wrap"><strong>{{ item.titulo }}</strong></h2>
           <p>{{ item.subtitulo }}</p>
         </ion-label>
-        <ion-note slot="end" color="medium">{{ item.fecha | date:'dd/MM/yy' }}</ion-note>
+        <ion-note slot="end" color="medium"
+          >{{ item.fecha | date:'dd/MM/yy' }}</ion-note
+        >
       </ion-item>
       <div class="costo-chip" *ngIf="item.costo">
-        <ion-chip><ion-label>{{ item.costo | currency:'CLP':'symbol-narrow':'1.0-0' }}</ion-label></ion-chip>
+        <ion-chip
+          ><ion-label
+            >{{ item.costo | currency:'CLP':'symbol-narrow':'1.0-0'
+            }}</ion-label
+          ></ion-chip
+        >
       </div>
     </ion-card>
   </ion-list>
-  
 </ion-content>

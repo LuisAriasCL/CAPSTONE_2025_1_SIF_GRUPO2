@@ -1,17 +1,19 @@
 // src/app/services/api.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpParams,
+} from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import * as L from 'leaflet';
 
-
-
 // Interfaz para la respuesta de OSRM (como la definimos antes)
 export interface OsrmRouteData {
   points: L.LatLngTuple[];
-  distance: number; 
-  duration: number; 
+  distance: number;
+  duration: number;
 }
 export interface UsuarioSiniestro {
   id_usu: number;
@@ -68,6 +70,7 @@ export interface Route {
   descripcionRuta: string | null;
   puntosRuta: Array<[number, number]>;
   kilometrosRuta?: number | null;
+  duracionEstimada?: number | null; // Duración en minutos como INT
 }
 
 // Interfaz para VEHICULO (simplificada para el contexto de asignación)
@@ -81,7 +84,10 @@ export interface VehiculoAsignacionInfo {
 // Interfaz para USUARIO (conductor, simplificada)
 export interface UsuarioConductorInfo {
   idUsu: number;
+  id_usu: number;
   priNomUsu: string;
+  pri_nom_usu: string;
+  pri_ape_usu: string;
   priApeUsu: string;
   email?: string;
 }
@@ -111,7 +117,7 @@ export interface PlanificacionMantenimientoResumen {
   descPlan: string;
   frecuencia: number;
   tipoFrecuencia: string;
-   fechaActivacion?: string | null;
+  fechaActivacion?: string | null;
   esActivoPlan: boolean;
   esPreventivo: boolean;
   fecCrePlan?: string;
@@ -122,8 +128,13 @@ export interface PlanificacionMantenimientoResumen {
 }
 export interface AsignacionRecorrido {
   idAsig: number;
-  estadoAsig: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
-  fecCreAsig: string; 
+  estadoAsig:
+    | 'pendiente'
+    | 'asignado'
+    | 'en_progreso'
+    | 'completado'
+    | 'cancelado';
+  fecCreAsig: string;
   fecIniRecor: string;
   fecFinRecor?: string | null;
   efiCombRecor?: number | null;
@@ -136,7 +147,7 @@ export interface AsignacionRecorrido {
 
   vehiculo?: VehiculoAsignacionInfo;
   conductor?: UsuarioConductorInfo;
-  rutaPlantilla?: Route; 
+  rutaPlantilla?: Route;
 }
 
 export interface UsuarioResumen {
@@ -158,7 +169,7 @@ export interface DetalleOtData {
   desc_det: string;
   checklist: boolean;
   es_activo_det: boolean;
-  tecnico?: UsuarioResumen; 
+  tecnico?: UsuarioResumen;
 }
 
 export interface OrdenTrabajoResumen {
@@ -187,12 +198,28 @@ export interface AsignacionRecorridoData {
   vehiculoIdVehi: number;
   usuarioIdUsu: number;
   rutaIdRuta: number;
-  estadoAsig?: 'pendiente' | 'asignado' | 'en_progreso' | 'completado' | 'cancelado';
+  estadoAsig?:
+    | 'pendiente'
+    | 'asignado'
+    | 'en_progreso'
+    | 'completado'
+    | 'cancelado';
   efiCombRecor?: number | null;
 }
 
-export type EstadoVehiculo = 'activo' | 'inactivo' | 'mantenimiento' | 'taller' | 'baja';
-export type TipoCombustibleVehiculo = 'gasolina_93' | 'gasolina_95' | 'gasolina_97' | 'diesel' | 'electrico' | 'otro';
+export type EstadoVehiculo =
+  | 'activo'
+  | 'inactivo'
+  | 'mantenimiento'
+  | 'taller'
+  | 'baja';
+export type TipoCombustibleVehiculo =
+  | 'gasolina_93'
+  | 'gasolina_95'
+  | 'gasolina_97'
+  | 'diesel'
+  | 'electrico'
+  | 'otro';
 
 export interface Vehiculo {
   idVehi?: number;
@@ -212,32 +239,41 @@ export interface Vehiculo {
   longitud?: number | null;
 }
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
-
   private apiUrl = 'http://localhost:8101/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   // --- Métodos para Rutas (plantillas) ---
-  getRoutePath(start: L.LatLngTuple, end: L.LatLngTuple): Observable<OsrmRouteData | null> {
+  getRoutePath(
+    start: L.LatLngTuple,
+    end: L.LatLngTuple
+  ): Observable<OsrmRouteData | null> {
     const lonLatStart = `${start[1]},${start[0]}`;
     const lonLatEnd = `${end[1]},${end[0]}`;
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lonLatStart};${lonLatEnd}?overview=full&geometries=geojson`;
     return this.http.get<any>(osrmUrl).pipe(
-      map(response => {
-        if (response?.routes?.[0]?.geometry?.coordinates &&
-            typeof response.routes[0].distance === 'number' &&
-            typeof response.routes[0].duration === 'number') {
+      map((response) => {
+        if (
+          response?.routes?.[0]?.geometry?.coordinates &&
+          typeof response.routes[0].distance === 'number' &&
+          typeof response.routes[0].duration === 'number'
+        ) {
           const routeLeg = response.routes[0];
           const coordinates = routeLeg.geometry.coordinates;
           const distanceInMeters = routeLeg.distance;
           const durationInSeconds = routeLeg.duration;
-          const latLngPoints: L.LatLngTuple[] = coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
-          return { points: latLngPoints, distance: distanceInMeters, duration: durationInSeconds };
+          const latLngPoints: L.LatLngTuple[] = coordinates.map(
+            (coord: [number, number]) => [coord[1], coord[0]]
+          );
+          return {
+            points: latLngPoints,
+            distance: distanceInMeters,
+            duration: durationInSeconds,
+          };
         }
         return null;
       }),
@@ -245,72 +281,91 @@ export class ApiService {
     );
   }
   crearPlanificacion(data: PlanificacionMantenimientoData): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/planificaciones`, data)
+    return this.http
+      .post<any>(`${this.apiUrl}/planificaciones`, data)
       .pipe(catchError(this.handleError));
   }
   deleteUser(id_usu: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
       .pipe(catchError(this.handleError));
   }
- createUser(data: Partial<Usuario> & { clave: string }): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.apiUrl}/usuarios`, data)
+  createUser(data: Partial<Usuario> & { clave: string }): Observable<Usuario> {
+    return this.http
+      .post<Usuario>(`${this.apiUrl}/usuarios`, data)
       .pipe(catchError(this.handleError));
   }
-  getHistorialVehiculo(id: number): Observable<{ kpis: any, historial: HistorialItem[] }> {
-    return this.http.get<{ kpis: any, historial: HistorialItem[] }>(`${this.apiUrl}/vehiculos/${id}/historial`)
+  getHistorialVehiculo(
+    id: number
+  ): Observable<{ kpis: any; historial: HistorialItem[] }> {
+    return this.http
+      .get<{ kpis: any; historial: HistorialItem[] }>(
+        `${this.apiUrl}/vehiculos/${id}/historial`
+      )
       .pipe(catchError(this.handleError));
   }
 
-getDashboardKpis(): Observable<any> {
-  // Asegúrate de que la ruta coincida con la que definiste en tus rutas del backend
-  return this.http.get(`${this.apiUrl}/stats/dashboard-kpis`).pipe(
-    catchError(this.handleError)
-  );
-}
-   getCombustibleById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/combustibles/${id}`)
+  getDashboardKpis(): Observable<any> {
+    // Asegúrate de que la ruta coincida con la que definiste en tus rutas del backend
+    return this.http
+      .get(`${this.apiUrl}/stats/dashboard-kpis`)
+      .pipe(catchError(this.handleError));
+  }
+  getCombustibleById(id: number): Observable<any> {
+    return this.http
+      .get<any>(`${this.apiUrl}/combustibles/${id}`)
       .pipe(catchError(this.handleError));
   }
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
-    return this.http.get<PlanificacionMantenimientoResumen[]>(`${this.apiUrl}/planificaciones`)
+    return this.http
+      .get<PlanificacionMantenimientoResumen[]>(
+        `${this.apiUrl}/planificaciones`
+      )
       .pipe(catchError(this.handleError));
   }
-    getAllUsers(rol?: string): Observable<Usuario[]> {
+  getAllUsers(rol?: string): Observable<Usuario[]> {
     let params = new HttpParams();
     if (rol) {
-
       params = params.set('rol', rol);
     }
-    
 
-    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
+    return this.http
+      .get<Usuario[]>(`${this.apiUrl}/usuarios`, { params })
       .pipe(catchError(this.handleError));
   }
-    getVehiculos(): Observable<Vehiculo[]> {
+  getVehiculos(): Observable<Vehiculo[]> {
     return this.http.get<Vehiculo[]>(this.apiUrl);
   }
-   updateUser(id_usu: number, data: Partial<Usuario>): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
+  updateUser(id_usu: number, data: Partial<Usuario>): Observable<Usuario> {
+    return this.http
+      .put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
       .pipe(catchError(this.handleError));
   }
-   getSiniestros(): Observable<Siniestro[]> {
-    return this.http.get<Siniestro[]>(`${this.apiUrl}/siniestros`)
+  getSiniestros(): Observable<Siniestro[]> {
+    return this.http
+      .get<Siniestro[]>(`${this.apiUrl}/siniestros`)
       .pipe(catchError(this.handleError));
   }
-    getSiniestroById(id: number): Observable<Siniestro> {
-    return this.http.get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
+  getSiniestroById(id: number): Observable<Siniestro> {
+    return this.http
+      .get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
       .pipe(catchError(this.handleError));
   }
-   updateSiniestroStatus(id: number, estado: string): Observable<any> {
-      return this.http.put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
+  updateSiniestroStatus(id: number, estado: string): Observable<any> {
+    return this.http
+      .put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
       .pipe(catchError(this.handleError));
   }
 
-    getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
-    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`);
+  getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
+    return this.http.get<OrdenTrabajoResumen[]>(
+      `${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`
+    );
   }
-getHistorialCombustible(conductorId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/combustibles/historial/conductor/${conductorId}`);
+  getHistorialCombustible(conductorId: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/combustibles/historial/conductor/${conductorId}`
+    );
   }
   getStatsVehiculosPorTipo(): Observable<any> {
     return this.http.get(`${this.apiUrl}/stats/vehiculos-por-tipo`);
@@ -318,19 +373,25 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
   getStatsMantenimientosPorEstado(): Observable<any> {
     return this.http.get(`${this.apiUrl}/stats/mantenimientos-por-estado`);
   }
-    registrarIncidente(data: FormData): Observable<any> {
+  registrarIncidente(data: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/siniestros`, data);
   }
   // Método para registrar la carga de combustible
   registrarCargaCombustible(data: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/combustibles`, data);
   }
-  
+
   getVehiculoActivo(conductorId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/asignaciones-recorrido/vehiculo-activo/conductor/${conductorId}`);
+    return this.http.get(
+      `${this.apiUrl}/asignaciones-recorrido/vehiculo-activo/conductor/${conductorId}`
+    );
   }
   // --- Métodos para el Módulo de Órdenes de Trabajo ---
-  actualizarEstadoOt(id: number, estado: string, encargadoId?: number): Observable<any> {
+  actualizarEstadoOt(
+    id: number,
+    estado: string,
+    encargadoId?: number
+  ): Observable<any> {
     const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
       estado_ot: estado,
     };
@@ -340,81 +401,120 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
     return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
   }
 
-  generarOt(idPlan: number, idVehi: number, idUsuario: number): Observable<{ message: string, id_ot: number }> {
-    const body = { 
-      id_plan: idPlan, 
+  generarOt(
+    idPlan: number,
+    idVehi: number,
+    idUsuario: number
+  ): Observable<{ message: string; id_ot: number }> {
+    const body = {
+      id_plan: idPlan,
       id_vehi: idVehi,
-      id_usuario_solicitante: idUsuario 
+      id_usuario_solicitante: idUsuario,
     };
-    return this.http.post<{ message: string, id_ot: number }>(`${this.apiUrl}/ordenes-trabajo/generar`, body);
+    return this.http.post<{ message: string; id_ot: number }>(
+      `${this.apiUrl}/ordenes-trabajo/generar`,
+      body
+    );
   }
 
   getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
-    return this.http.get<OrdenTrabajoResumen[]>(`${this.apiUrl}/ordenes-trabajo`);
+    return this.http.get<OrdenTrabajoResumen[]>(
+      `${this.apiUrl}/ordenes-trabajo`
+    );
   }
 
-
   actualizarDetallesOt(idOt: number, payload: any): Observable<any> {
-      return this.http.put(`${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`, payload);
+    return this.http.put(
+      `${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`,
+      payload
+    );
   }
 
   getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
-    return this.http.get<OrdenTrabajoDetalle>(`${this.apiUrl}/ordenes-trabajo/${id}`);
+    return this.http.get<OrdenTrabajoDetalle>(
+      `${this.apiUrl}/ordenes-trabajo/${id}`
+    );
   }
-  
+
   getUsuariosPorRol(rol: string): Observable<UsuarioResumen[]> {
-    return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, { params: { rol } });
+    return this.http.get<UsuarioResumen[]>(`${this.apiUrl}/usuarios`, {
+      params: { rol },
+    });
   }
 
-  asignarTecnico(idDetalle: number, idTecnico: number): Observable<{ message: string }> {
-    const body = { 
-      id_detalle: idDetalle, 
-      id_tecnico: idTecnico 
+  asignarTecnico(
+    idDetalle: number,
+    idTecnico: number
+  ): Observable<{ message: string }> {
+    const body = {
+      id_detalle: idDetalle,
+      id_tecnico: idTecnico,
     };
-    return this.http.post<{ message: string }>(`${this.apiUrl}/ordenes-trabajo/asignar-tecnico`, body);
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/ordenes-trabajo/asignar-tecnico`,
+      body
+    );
   }
 
-  getPlanificacionById(id: number): Observable<PlanificacionMantenimientoResumen> {
-    return this.http.get<PlanificacionMantenimientoResumen>(`${this.apiUrl}/planificaciones/${id}`)
+  getPlanificacionById(
+    id: number
+  ): Observable<PlanificacionMantenimientoResumen> {
+    return this.http
+      .get<PlanificacionMantenimientoResumen>(
+        `${this.apiUrl}/planificaciones/${id}`
+      )
       .pipe(catchError(this.handleError));
   }
 
-  updatePlanificacion(id: number, data: Partial<PlanificacionMantenimientoData>): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/planificaciones/${id}`, data)
+  updatePlanificacion(
+    id: number,
+    data: Partial<PlanificacionMantenimientoData>
+  ): Observable<any> {
+    return this.http
+      .put<any>(`${this.apiUrl}/planificaciones/${id}`, data)
       .pipe(catchError(this.handleError));
   }
 
   deletePlanificacion(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/planificaciones/${id}`)
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}/planificaciones/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   getRoutes(): Observable<Route[]> {
-    return this.http.get<Route[]>(`${this.apiUrl}/rutas`)
+    return this.http
+      .get<Route[]>(`${this.apiUrl}/rutas`)
       .pipe(catchError(this.handleError));
   }
 
   getRoute(id: number): Observable<Route> {
-    return this.http.get<Route>(`${this.apiUrl}/rutas/${id}`)
+    return this.http
+      .get<Route>(`${this.apiUrl}/rutas/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createRoute(routeData: Partial<Route>): Observable<Route> {
-    return this.http.post<Route>(`${this.apiUrl}/rutas`, routeData)
+    return this.http
+      .post<Route>(`${this.apiUrl}/rutas`, routeData)
       .pipe(catchError(this.handleError));
   }
 
   updateRoute(id: number, routeData: Partial<Route>): Observable<Route> {
-    return this.http.put<Route>(`${this.apiUrl}/rutas/${id}`, routeData)
+    return this.http
+      .put<Route>(`${this.apiUrl}/rutas/${id}`, routeData)
       .pipe(catchError(this.handleError));
   }
 
   deleteRoute(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/rutas/${id}`)
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}/rutas/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  getVehicles(params?: { estado?: EstadoVehiculo, tipo?: string }): Observable<Vehiculo[]> {
+  getVehicles(params?: {
+    estado?: EstadoVehiculo;
+    tipo?: string;
+  }): Observable<Vehiculo[]> {
     let httpParams = new HttpParams();
     if (params?.estado) {
       httpParams = httpParams.set('estado', params.estado);
@@ -422,63 +522,91 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
     if (params?.tipo) {
       httpParams = httpParams.set('tipo', params.tipo);
     }
-    return this.http.get<Vehiculo[]>(`${this.apiUrl}/vehicles`, { params: httpParams })
+    return this.http
+      .get<Vehiculo[]>(`${this.apiUrl}/vehicles`, { params: httpParams })
       .pipe(catchError(this.handleError));
   }
 
   getVehicle(id: number): Observable<Vehiculo> {
-    return this.http.get<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`)
+    return this.http
+      .get<Vehiculo>(`${this.apiUrl}/vehiculos/${id}`)
       .pipe(catchError(this.handleError));
   }
   getVehiculosDisponibles(): Observable<VehiculoAsignacionInfo[]> {
-    return this.http.get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`)
+    return this.http
+      .get<VehiculoAsignacionInfo[]>(`${this.apiUrl}/vehicles`)
       .pipe(catchError(this.handleError));
   }
   createVehicle(vehicleData: Vehiculo): Observable<Vehiculo> {
-    return this.http.post<Vehiculo>(`${this.apiUrl}/vehicles`, vehicleData)
+    return this.http
+      .post<Vehiculo>(`${this.apiUrl}/vehicles`, vehicleData)
       .pipe(catchError(this.handleError));
   }
 
-  updateVehicle(id: number, vehicleData: Partial<Vehiculo>): Observable<Vehiculo> {
-    return this.http.put<Vehiculo>(`${this.apiUrl}/vehicles/${id}`, vehicleData)
+  updateVehicle(
+    id: number,
+    vehicleData: Partial<Vehiculo>
+  ): Observable<Vehiculo> {
+    return this.http
+      .put<Vehiculo>(`${this.apiUrl}/vehicles/${id}`, vehicleData)
       .pipe(catchError(this.handleError));
   }
 
   deleteVehicle(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/vehicles/${id}`)
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}/vehicles/${id}`)
       .pipe(catchError(this.handleError));
   }
 
   getAsignacionesRecorrido(filtros?: any): Observable<AsignacionRecorrido[]> {
     let params = new HttpParams();
     if (filtros) {
-      Object.keys(filtros).forEach(key => {
+      Object.keys(filtros).forEach((key) => {
         if (filtros[key] !== null && filtros[key] !== undefined) {
           params = params.set(key, filtros[key]);
         }
       });
     }
-    return this.http.get<AsignacionRecorrido[]>(`${this.apiUrl}/asignaciones-recorrido`, { params })
+    return this.http
+      .get<AsignacionRecorrido[]>(`${this.apiUrl}/asignaciones-recorrido`, {
+        params,
+      })
       .pipe(catchError(this.handleError));
   }
 
   getAsignacionRecorrido(idAsig: number): Observable<AsignacionRecorrido> {
-    return this.http.get<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`)
+    return this.http
+      .get<AsignacionRecorrido>(
+        `${this.apiUrl}/asignaciones-recorrido/${idAsig}`
+      )
       .pipe(catchError(this.handleError));
   }
 
-  createAsignacionRecorrido(data: AsignacionRecorridoData): Observable<AsignacionRecorrido> {
-    return this.http.post<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido`, data)
+  createAsignacionRecorrido(
+    data: AsignacionRecorridoData
+  ): Observable<AsignacionRecorrido> {
+    return this.http
+      .post<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido`, data)
       .pipe(catchError(this.handleError));
   }
 
-  updateAsignacionRecorrido(idAsig: number, data: Partial<AsignacionRecorridoData>): Observable<AsignacionRecorrido> {
-    return this.http.put<AsignacionRecorrido>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`, data)
+  updateAsignacionRecorrido(
+    idAsig: number,
+    data: Partial<AsignacionRecorridoData>
+  ): Observable<AsignacionRecorrido> {
+    return this.http
+      .put<AsignacionRecorrido>(
+        `${this.apiUrl}/asignaciones-recorrido/${idAsig}`,
+        data
+      )
       .pipe(catchError(this.handleError));
   }
 
   deleteAsignacionRecorrido(idAsig: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/asignaciones-recorrido/${idAsig}`)
+    return this.http
+      .delete<{ message: string }>(
+        `${this.apiUrl}/asignaciones-recorrido/${idAsig}`
+      )
       .pipe(catchError(this.handleError));
   }
 
@@ -487,39 +615,63 @@ getHistorialCombustible(conductorId: number): Observable<any[]> {
     if (params?.rol) {
       httpParams = httpParams.set('rol', params.rol);
     }
-    return this.http.get<UsuarioConductorInfo[]>(`${this.apiUrl}/auth/users`, { params: httpParams })
+    console.log('getUsuarios', params, httpParams);
+
+    return this.http
+      .get<UsuarioConductorInfo[]>(`${this.apiUrl}/auth/users`, {
+        params: httpParams,
+      })
       .pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Ocurrió un error desconocido.';
-    let userFriendlyMessage = 'No se pudo completar la operación. Inténtalo de nuevo.';
+    let userFriendlyMessage =
+      'No se pudo completar la operación. Inténtalo de nuevo.';
 
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Error del cliente o de red: ${error.error.message}`;
-      userFriendlyMessage = 'Error de red o del navegador. Por favor, revisa tu conexión.';
+      userFriendlyMessage =
+        'Error de red o del navegador. Por favor, revisa tu conexión.';
     } else {
       errorMessage = `Error del Servidor Código: ${error.status}\nMensaje: ${error.message}`;
-      if (error.error && typeof error.error === 'object' && error.error.message) {
+      if (
+        error.error &&
+        typeof error.error === 'object' &&
+        error.error.message
+      ) {
         errorMessage += `\nDetalle Backend: ${error.error.message}`;
         userFriendlyMessage = error.error.message;
-      } else if (error.error && typeof error.error === 'string' && error.error.length < 200) { 
+      } else if (
+        error.error &&
+        typeof error.error === 'string' &&
+        error.error.length < 200
+      ) {
         errorMessage += `\nDetalle Backend: ${error.error}`;
         userFriendlyMessage = error.error;
       } else if (error.status === 400) {
-        userFriendlyMessage = 'Solicitud incorrecta. Revisa los datos enviados.';
+        userFriendlyMessage =
+          'Solicitud incorrecta. Revisa los datos enviados.';
       } else if (error.status === 401) {
-        userFriendlyMessage = 'No autorizado. Por favor, inicia sesión de nuevo.';
+        userFriendlyMessage =
+          'No autorizado. Por favor, inicia sesión de nuevo.';
       } else if (error.status === 403) {
-        userFriendlyMessage = 'Acceso prohibido. No tienes permisos para esta acción.';
+        userFriendlyMessage =
+          'Acceso prohibido. No tienes permisos para esta acción.';
       } else if (error.status === 404) {
-        userFriendlyMessage = 'El recurso solicitado no fue encontrado en el servidor.';
+        userFriendlyMessage =
+          'El recurso solicitado no fue encontrado en el servidor.';
       } else if (error.status === 500) {
-        userFriendlyMessage = 'Error interno del servidor. Inténtalo más tarde.';
+        userFriendlyMessage =
+          'Error interno del servidor. Inténtalo más tarde.';
       }
     }
     console.error('Error en ApiService:', errorMessage, error);
-    return throwError(() => ({ message: userFriendlyMessage, status: error.status, errorContent: error.error }));
+    return throwError(() => ({
+      message: userFriendlyMessage,
+      status: error.status,
+      errorContent: error.error,
+    }));
   }
 
   private handleErrorSimple(error: HttpErrorResponse) {

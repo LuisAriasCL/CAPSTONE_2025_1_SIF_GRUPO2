@@ -1,12 +1,4 @@
-
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Gestión de Usuarios</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <ion-toolbar>
     <ion-searchbar
       animated="true"
@@ -15,7 +7,11 @@
     ></ion-searchbar>
   </ion-toolbar>
 
-  <ion-segment (ionChange)="filterByRole($event)" [(ngModel)]="selectedRole" scrollable="true">
+  <ion-segment
+    (ionChange)="filterByRole($event)"
+    [(ngModel)]="selectedRole"
+    scrollable="true"
+  >
     <ion-segment-button value="todos">
       <ion-label>Todos</ion-label>
     </ion-segment-button>
@@ -23,16 +19,25 @@
       <ion-label>{{ rol | titlecase }}</ion-label>
     </ion-segment-button>
   </ion-segment>
-  
+
   <div *ngIf="cargando">
     <ion-list>
       <ion-card *ngFor="let item of skeletonItems" class="skeleton-card">
         <ion-card-header>
-          <ion-skeleton-text animated="true" style="width: 60%;"></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 60%"
+          ></ion-skeleton-text>
         </ion-card-header>
         <ion-card-content>
-          <ion-skeleton-text animated="true" style="width: 80%;"></ion-skeleton-text>
-          <ion-skeleton-text animated="true" style="width: 40%;"></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 80%"
+          ></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 40%"
+          ></ion-skeleton-text>
         </ion-card-content>
       </ion-card>
     </ion-list>
@@ -40,14 +45,20 @@
 
   <div *ngIf="error" class="ion-padding ion-text-center">
     <ion-text color="danger"><p>No se pudo cargar la información.</p></ion-text>
-    <ion-button (click)="cargarUsuarios()"><ion-icon name="refresh-outline" slot="start"></ion-icon>Reintentar</ion-button>
+    <ion-button (click)="cargarUsuarios()"
+      ><ion-icon name="refresh-outline" slot="start"></ion-icon
+      >Reintentar</ion-button
+    >
   </div>
 
   <ion-list *ngIf="!cargando && !error">
     <ion-card *ngFor="let usuario of resultadosFiltrados" class="usuario-card">
       <ion-card-header>
         <ion-card-title>
-          <ion-icon [name]="getIconForRole(usuario.rol)" color="primary"></ion-icon>
+          <ion-icon
+            [name]="getIconForRole(usuario.rol)"
+            color="primary"
+          ></ion-icon>
           {{ usuario.pri_nom_usu }} {{ usuario.pri_ape_usu }}
         </ion-card-title>
         <ion-card-subtitle>{{ usuario.email }}</ion-card-subtitle>
@@ -72,12 +83,20 @@
     </ion-card>
   </ion-list>
 
-  <div *ngIf="!cargando && resultadosFiltrados.length === 0" class="ion-text-center ion-padding">
+  <div
+    *ngIf="!cargando && resultadosFiltrados.length === 0"
+    class="ion-text-center ion-padding"
+  >
     <p>No se encontraron usuarios.</p>
   </div>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="onCreate()">
+  <!-- Botón flotante para crear usuario -->
+  <ion-fab
+    vertical="top"
+    horizontal="start"
+    slot="fixed"
+    style="top: 80px; left: 16px"
+  >
+    <ion-fab-button (click)="onCreate()" class="custom-fab-green">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

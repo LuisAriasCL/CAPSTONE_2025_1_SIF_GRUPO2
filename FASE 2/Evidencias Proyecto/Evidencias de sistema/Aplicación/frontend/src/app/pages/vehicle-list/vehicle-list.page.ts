@@ -1,16 +1,43 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, ToastController, RefresherCustomEvent, NavController, ModalController } from '@ionic/angular';
+import {
+  IonicModule,
+  LoadingController,
+  ToastController,
+  RefresherCustomEvent,
+  NavController,
+  ModalController,
+} from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 // CAMBIO 1: Añadir el nuevo icono 'newspaperOutline' y 'eyeOutline'
-import { pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline, eyeOutline, newspaperOutline } from 'ionicons/icons';
+import {
+  pencilOutline,
+  trashOutline,
+  addCircleOutline,
+  settingsOutline,
+  searchOutline,
+  carOutline,
+  eyeOutline,
+  newspaperOutline,
+  add,
+} from 'ionicons/icons';
 
-import { ApiService, Vehiculo, EstadoVehiculo } from '../../services/api.service';
+import {
+  ApiService,
+  Vehiculo,
+  EstadoVehiculo,
+} from '../../services/api.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { TitleService } from '../../services/title.service';
 
-import { DataTableComponent, Column, PageEvent, ActionButton } from '../../componentes/data-table/data-table.component';
+import {
+  DataTableComponent,
+  Column,
+  PageEvent,
+  ActionButton,
+} from '../../componentes/data-table/data-table.component';
 import { VehicleFormPage } from '../vehicle-form/vehicle-form.page';
 import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
 
@@ -19,7 +46,7 @@ import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personali
   templateUrl: './vehicle-list.page.html',
   styleUrls: ['./vehicle-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent, AlertaPersonalizadaComponent]
+  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent],
 })
 export class VehicleListPage implements OnInit {
   private apiService = inject(ApiService);
@@ -27,6 +54,7 @@ export class VehicleListPage implements OnInit {
   private toastController = inject(ToastController);
   private loadingController = inject(LoadingController);
   private modalController = inject(ModalController);
+  private titleService = inject(TitleService);
 
   vehiculos: Vehiculo[] = [];
   isLoading = false;
@@ -45,15 +73,20 @@ export class VehicleListPage implements OnInit {
       header: 'Estado',
       field: 'estadoVehi',
       sortable: true,
-      cell: (data: Vehiculo) => this.getStatusBadge(data.estadoVehi)
+      cell: (data: Vehiculo) => this.getStatusBadge(data.estadoVehi),
     },
-    { header: 'Kilometraje', field: 'kmVehi', sortable: true, cell: (data: Vehiculo) => `${data.kmVehi.toLocaleString('es-CL')} km` },
+    {
+      header: 'Kilometraje',
+      field: 'kmVehi',
+      sortable: true,
+      cell: (data: Vehiculo) => `${data.kmVehi.toLocaleString('es-CL')} km`,
+    },
     {
       header: 'Acciones',
       field: 'actions',
       width: '150px', // Aumentamos un poco el ancho para el nuevo botón
-      isAction: true
-    }
+      isAction: true,
+    },
   ];
 
   // CAMBIO 2: Añadir el nuevo botón de historial al array de acciones
@@ -62,33 +95,46 @@ export class VehicleListPage implements OnInit {
       icon: 'eye-outline',
       color: 'primary',
       tooltip: 'Ver detalles',
-      onClick: (row: Vehiculo) => this.goToViewVehicle(row.idVehi)
+      onClick: (row: Vehiculo) => this.goToViewVehicle(row.idVehi),
     },
     {
       icon: 'newspaper-outline',
       color: 'success', // Un color distintivo
       tooltip: 'Ver historial',
-      onClick: (row: Vehiculo) => this.verHistorial(row.idVehi)
+      onClick: (row: Vehiculo) => this.verHistorial(row.idVehi),
     },
     {
       icon: 'pencil-outline',
       color: 'primary',
       tooltip: 'Editar vehículo',
-      onClick: (row: Vehiculo) => this.goToEditVehicle(row.idVehi)
+      onClick: (row: Vehiculo) => this.goToEditVehicle(row.idVehi),
     },
     {
       icon: 'trash-outline',
       color: 'danger',
       tooltip: 'Eliminar vehículo',
-      onClick: (row: Vehiculo) => this.confirmDeleteVehicle(row.idVehi, row.patente)
-    }
+      onClick: (row: Vehiculo) =>
+        this.confirmDeleteVehicle(row.idVehi, row.patente),
+    },
   ];
 
   constructor() {
-    addIcons({ pencilOutline, trashOutline, addCircleOutline, settingsOutline, searchOutline, carOutline, eyeOutline, newspaperOutline });
+    addIcons({
+      pencilOutline,
+      trashOutline,
+      addCircleOutline,
+      settingsOutline,
+      searchOutline,
+      carOutline,
+      eyeOutline,
+      newspaperOutline,
+      add,
+    });
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.titleService.setTitle('Gestión de Vehículos');
+  }
 
   ionViewWillEnter() {
     this.loadVehicles();
@@ -98,7 +144,9 @@ export class VehicleListPage implements OnInit {
     let loadingIndicator: HTMLIonLoadingElement | undefined;
     if (showLoading && !event && !(await this.loadingController.getTop())) {
       this.isLoading = true;
-      loadingIndicator = await this.loadingController.create({ message: 'Cargando vehículos...' });
+      loadingIndicator = await this.loadingController.create({
+        message: 'Cargando vehículos...',
+      });
       await loadingIndicator.present();
     } else if (showLoading && !event) {
       showLoading = false;
@@ -117,7 +165,10 @@ export class VehicleListPage implements OnInit {
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
-        const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
+        const message =
+          error instanceof HttpErrorResponse
+            ? error.error?.message || error.message
+            : error.message;
 
         const modal = await this.modalController.create({
           component: AlertaPersonalizadaComponent,
@@ -125,12 +176,12 @@ export class VehicleListPage implements OnInit {
             title: 'Error',
             message: `No se pudo cargar la lista de vehículos. ${message}`,
             icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            buttons: [{ text: 'Aceptar', role: 'confirm' }],
           },
-          cssClass: 'custom-alert-modal'
+          cssClass: 'custom-alert-modal',
         });
         await modal.present();
-      }
+      },
     });
   }
 
@@ -148,7 +199,7 @@ export class VehicleListPage implements OnInit {
   async goToAddVehicle() {
     const modal = await this.modalController.create({
       component: VehicleFormPage,
-      cssClass: 'vehicle-form-modal'
+      cssClass: 'vehicle-form-modal',
     });
 
     modal.onDidDismiss().then((result) => {
@@ -166,9 +217,9 @@ export class VehicleListPage implements OnInit {
         component: VehicleFormPage,
         componentProps: {
           vehicleId: idVehi,
-          isEditMode: true
+          isEditMode: true,
         },
-        cssClass: 'vehicle-form-modal'
+        cssClass: 'vehicle-form-modal',
       });
 
       modal.onDidDismiss().then((result) => {
@@ -189,9 +240,9 @@ export class VehicleListPage implements OnInit {
         component: VehicleFormPage,
         componentProps: {
           vehicleId: idVehi,
-          isViewMode: true
+          isViewMode: true,
         },
-        cssClass: 'vehicle-form-modal'
+        cssClass: 'vehicle-form-modal',
       });
       return await modal.present();
     } else {
@@ -204,13 +255,22 @@ export class VehicleListPage implements OnInit {
     if (idVehi !== undefined) {
       this.router.navigate(['/historial-vehiculo', idVehi]);
     } else {
-      this.presentToast('No se especificó un ID para ver el historial.', 'danger');
+      this.presentToast(
+        'No se especificó un ID para ver el historial.',
+        'danger'
+      );
     }
   }
 
-  async confirmDeleteVehicle(idVehi: number | undefined, patente: string | undefined) {
+  async confirmDeleteVehicle(
+    idVehi: number | undefined,
+    patente: string | undefined
+  ) {
     if (idVehi === undefined || patente === undefined) {
-      this.presentToast('Error: Datos del vehículo no válidos para eliminar.', 'danger');
+      this.presentToast(
+        'Error: Datos del vehículo no válidos para eliminar.',
+        'danger'
+      );
       return;
     }
 
@@ -222,11 +282,11 @@ export class VehicleListPage implements OnInit {
         icon: 'warning',
         buttons: [
           { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' }
-        ]
+          { text: 'Eliminar', role: 'confirm', cssClass: 'button-danger' },
+        ],
       },
       backdropDismiss: false,
-      cssClass: 'custom-alert-modal'
+      cssClass: 'custom-alert-modal',
     });
     await modal.present();
 
@@ -237,7 +297,9 @@ export class VehicleListPage implements OnInit {
   }
 
   private async deleteVehicle(idVehi: number) {
-    const loading = await this.loadingController.create({ message: 'Eliminando...' });
+    const loading = await this.loadingController.create({
+      message: 'Eliminando...',
+    });
     await loading.present();
 
     this.apiService.deleteVehicle(idVehi).subscribe({
@@ -248,7 +310,10 @@ export class VehicleListPage implements OnInit {
       },
       error: async (error: HttpErrorResponse | Error) => {
         await loading.dismiss();
-        const message = (error instanceof HttpErrorResponse) ? (error.error?.message || error.message) : error.message;
+        const message =
+          error instanceof HttpErrorResponse
+            ? error.error?.message || error.message
+            : error.message;
 
         const modal = await this.modalController.create({
           component: AlertaPersonalizadaComponent,
@@ -256,27 +321,40 @@ export class VehicleListPage implements OnInit {
             title: 'Error al Eliminar',
             message: `No se pudo eliminar el vehículo. ${message}`,
             icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
+            buttons: [{ text: 'Aceptar', role: 'confirm' }],
           },
-          cssClass: 'custom-alert-modal'
+          cssClass: 'custom-alert-modal',
         });
         await modal.present();
-      }
+      },
     });
   }
 
   getStatusColor(estado: EstadoVehiculo | string): string {
     switch (estado) {
-      case 'activo': return 'success';
-      case 'inactivo': return 'medium';
-      case 'mantenimiento': return 'warning';
-      case 'taller': return 'danger';
-      default: return 'light';
+      case 'activo':
+        return 'success';
+      case 'inactivo':
+        return 'medium';
+      case 'mantenimiento':
+        return 'warning';
+      case 'taller':
+        return 'danger';
+      default:
+        return 'light';
     }
   }
 
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
-    const toast = await this.toastController.create({ message, duration: 2500, position: 'bottom', color });
+  async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' | 'medium' = 'medium'
+  ) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2500,
+      position: 'bottom',
+      color,
+    });
     toast.present();
   }
 
@@ -291,17 +369,23 @@ export class VehicleListPage implements OnInit {
     console.log('Fila seleccionada:', row);
   }
 
-  onSortColumn(event: { column: string, direction: 'asc' | 'desc' }) {
+  onSortColumn(event: { column: string; direction: 'asc' | 'desc' }) {
     console.log('Ordenar por:', event);
   }
 
   onExport(format: string) {
     console.log('Exportar en formato:', format);
-    this.presentToast(`Funcionalidad de exportar a ${format} no implementada.`, 'warning');
+    this.presentToast(
+      `Funcionalidad de exportar a ${format} no implementada.`,
+      'warning'
+    );
   }
 
   onImport(format: string) {
     console.log('Importar desde formato:', format);
-    this.presentToast(`Funcionalidad de importar desde ${format} no implementada.`, 'warning');
+    this.presentToast(
+      `Funcionalidad de importar desde ${format} no implementada.`,
+      'warning'
+    );
   }
 }

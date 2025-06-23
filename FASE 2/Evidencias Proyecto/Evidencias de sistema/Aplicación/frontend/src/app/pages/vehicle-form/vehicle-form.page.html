@@ -10,308 +10,462 @@
   </ion-toolbar>
 </ion-header>
 
+<!-- Segmentos/Tabs -->
+<ion-segment
+  [value]="selectedTab"
+  (ionChange)="segmentChanged($event)"
+  color="primary"
+  class="ion-margin-bottom"
+>
+  <ion-segment-button value="infoBasica">
+    <ion-label>Información Básica</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="infoAdicional">
+    <ion-label>Información Adicional</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="recorridos" *ngIf="isEditMode || isViewMode">
+    <ion-label>Recorridos</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="combustible" *ngIf="isEditMode || isViewMode">
+    <ion-label>Combustible</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="mantenimiento" *ngIf="isEditMode || isViewMode">
+    <ion-label>Mantenimiento</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="incidentes" *ngIf="isEditMode || isViewMode">
+    <ion-label>Incidentes</ion-label>
+  </ion-segment-button>
+  <ion-segment-button value="documentos" *ngIf="isEditMode || isViewMode">
+    <ion-label>Documentos</ion-label>
+  </ion-segment-button>
+</ion-segment>
+
 <!-- Modal Content -->
 <ion-content class="ion-padding ultra-compact">
-  <!-- Segmentos/Tabs -->
-  <ion-segment 
-    [value]="selectedTab" 
-    (ionChange)="segmentChanged($event)" 
-    color="primary" 
-    class="ion-margin-bottom">
-    <ion-segment-button value="infoBasica">
-      <ion-label>Información Básica</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="infoAdicional">
-      <ion-label>Información Adicional</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="recorridos" *ngIf="isEditMode || isViewMode">
-      <ion-label>Recorridos</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="combustible" *ngIf="isEditMode || isViewMode">
-      <ion-label>Combustible</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="mantenimiento" *ngIf="isEditMode || isViewMode">
-      <ion-label>Mantenimiento</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="incidentes" *ngIf="isEditMode || isViewMode">
-      <ion-label>Incidentes</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="documentos" *ngIf="isEditMode || isViewMode">
-      <ion-label>Documentos</ion-label>
-    </ion-segment-button>
-  </ion-segment>
-
   <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
     <!-- Tab: Información Básica -->
     <div *ngIf="selectedTab === 'infoBasica'">
-      <ion-grid class="ultra-compact">        <!-- Patente y Chasis -->
-        <ion-row>          <ion-col size="12" size-md="6">            <div class="uniform-input-wrapper">
-              <ion-label>Patente <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="patente" 
-                type="text" 
-                required 
-                placeholder="XXXX-XX (Ej: ABCD-12)"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['patente'].errors?.['required']">Patente es requerida.</div>
-                <div *ngIf="f['patente'].errors?.['pattern']">Formato debe ser XXXX-XX, con los últimos dos caracteres numéricos.</div>
+      <!-- Patente y Chasis -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Patente <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input
+              formControlName="patente"
+              type="text"
+              maxlength="6"
+              required
+              placeholder="XXXXXX (Ej: ABCD12)"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['patente'].invalid && (f['patente'].dirty || f['patente'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['patente'].errors?.['required']">
+                  Patente es requerida.
+                </div>
+                <div *ngIf="f['patente'].errors?.['pattern']">
+                  Formato debe ser ABXX12, con los últimos dos caracteres
+                  numéricos, y los primeros dos, letras.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Chasis <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="chasis" 
-                type="text" 
-                required 
-                maxlength="17" 
-                autocapitalize="characters"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['chasis'].errors?.['required']">Chasis es requerido.</div>
-                <div *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']">Chasis debe tener 17 caracteres.</div>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Chasis <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input
+              formControlName="chasis"
+              type="text"
+              required
+              placeholder="El número debe tener 17 caracteres"
+              maxlength="17"
+              autocapitalize="characters"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['chasis'].errors?.['required']">
+                  Chasis es requerido.
+                </div>
+                <div
+                  *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']"
+                >
+                  Chasis debe tener 17 caracteres.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>
+          </div>
+        </ion-col>
+      </ion-row>
 
-        <!-- Marca y Modelo -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Marca <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="marca" 
-                type="text" 
-                required
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['marca'].errors?.['required']">Marca es requerida.</div>
+      <!-- Marca y Modelo -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Marca <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input
+              formControlName="marca"
+              placeholder="Ej: Toyota"
+              type="text"
+              required
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['marca'].invalid && (f['marca'].dirty || f['marca'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['marca'].errors?.['required']">
+                  Marca es requerida.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Modelo <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="modelo" 
-                type="text" 
-                required
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['modelo'].errors?.['required']">Modelo es requerido.</div>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Modelo <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input
+              formControlName="modelo"
+              placeholder="Ej: Hilux"
+              type="text"
+              required
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['modelo'].invalid && (f['modelo'].dirty || f['modelo'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['modelo'].errors?.['required']">
+                  Modelo es requerido.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>
+          </div>
+        </ion-col>
+      </ion-row>
 
-        <!-- Año y Kilometraje -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Año <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="anio" 
-                type="number" 
-                inputmode="numeric" 
-                min="1970"
-                max="2025"
-                required
-                placeholder="Entre 1970 y 2025"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['anio'].errors?.['required']">Año es requerido.</div>
-                <div *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']">Año debe estar entre 1970 y 2025.</div>
+      <!-- Año y Kilometraje -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Año <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input
+              formControlName="anio"
+              type="number"
+              inputmode="numeric"
+              min="1970"
+              max="2025"
+              required
+              placeholder="Entre 1970 y 2025"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['anio'].invalid && (f['anio'].dirty || f['anio'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['anio'].errors?.['required']">
+                  Año es requerido.
+                </div>
+                <div
+                  *ngIf="f['anio'].errors?.['min'] || f['anio'].errors?.['max']"
+                >
+                  Año debe estar entre 1970 y 2025.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Kilometraje <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="kmVehi" 
-                type="number" 
-                inputmode="numeric" 
-                min="0"
-                max="1000000"
-                required
-                placeholder="Máximo 1.000.000 km"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['kmVehi'].errors?.['required']">Kilometraje es requerido.</div>
-                <div *ngIf="f['kmVehi'].errors?.['min']">Kilometraje debe ser positivo.</div>
-                <div *ngIf="f['kmVehi'].errors?.['max']">Kilometraje no puede superar 1.000.000 km.</div>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label
+              >Kilometraje <ion-text color="danger">*</ion-text></ion-label
+            >
+            <ion-input
+              formControlName="kmVehi"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="1000000"
+              required
+              placeholder="Máximo 1.000.000 km"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['kmVehi'].invalid && (f['kmVehi'].dirty || f['kmVehi'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['kmVehi'].errors?.['required']">
+                  Kilometraje es requerido.
+                </div>
+                <div *ngIf="f['kmVehi'].errors?.['min']">
+                  Kilometraje debe ser positivo.
+                </div>
+                <div *ngIf="f['kmVehi'].errors?.['max']">
+                  Kilometraje no puede superar 1.000.000 km.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>
+          </div>
+        </ion-col>
+      </ion-row>
 
-        <!-- Fecha de Adquisición y Estado -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Fecha de Adquisición <ion-text color="danger">*</ion-text></ion-label>
-              <ion-input 
-                formControlName="fecAdqui" 
-                type="date" 
-                required 
-                displayFormat="YYYY-MM-DD" 
-                pickerFormat="YYYY-MM-DD"
-                placeholder="Fecha de adquisición"
-                [readonly]="isViewMode">
-              </ion-input>
-              <div class="helper-text">Por defecto se usa la fecha actual</div>
-            </div>            <div *ngIf="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['fecAdqui'].errors?.['required']">Fecha de adquisición es requerida.</div>
+      <!-- Fecha de Adquisición y Estado -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label
+              >Fecha de Adquisición
+              <ion-text color="danger">*</ion-text></ion-label
+            >
+            <ion-input
+              formControlName="fecAdqui"
+              type="date"
+              required
+              displayFormat="YYYY-MM-DD"
+              pickerFormat="YYYY-MM-DD"
+              placeholder="Fecha de adquisición"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['fecAdqui'].invalid && (f['fecAdqui'].dirty || f['fecAdqui'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['fecAdqui'].errors?.['required']">
+                  Fecha de adquisición es requerida.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Estado <ion-text color="danger">*</ion-text></ion-label>
-              <ion-select 
-                formControlName="estadoVehi" 
-                interface="popover" 
-                placeholder="Selecciona estado"
-                [disabled]="isViewMode">
-                <ion-select-option *ngFor="let estado of estadosVehiculoOptions" [value]="estado">
-                  {{ estado | titlecase }}
-                </ion-select-option>
-              </ion-select>
-            </div>            <div *ngIf="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['estadoVehi'].errors?.['required']">Estado es requerido.</div>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Estado <ion-text color="danger">*</ion-text></ion-label>
+            <ion-select
+              formControlName="estadoVehi"
+              interface="popover"
+              placeholder="Selecciona estado"
+              [disabled]="isViewMode"
+            >
+              <ion-select-option
+                *ngFor="let estado of estadosVehiculoOptions"
+                [value]="estado"
+              >
+                {{ estado | titlecase }}
+              </ion-select-option>
+            </ion-select>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['estadoVehi'].invalid && (f['estadoVehi'].dirty || f['estadoVehi'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['estadoVehi'].errors?.['required']">
+                  Estado es requerido.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+          </div>
+        </ion-col>
+      </ion-row>
     </div>
 
     <!-- Tab: Información Adicional -->
     <div *ngIf="selectedTab === 'infoAdicional'">
-      <ion-grid class="ultra-compact">        <!-- Tipo de Vehículo y Tipo de Combustible -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Tipo de Vehículo</ion-label>
-              <ion-select 
-                formControlName="tipoVehi" 
-                interface="popover" 
-                placeholder="Selecciona tipo de vehículo"
-                [disabled]="isViewMode">
-                <ion-select-option value="Camioneta">Camioneta</ion-select-option>
-                <ion-select-option value="Furgón">Furgón</ion-select-option>
-                <ion-select-option value="Camión Liviano">Camión Liviano</ion-select-option>
-                <ion-select-option value="Camión Pesado">Camión Pesado</ion-select-option>
-              </ion-select>
+      <!-- Tipo de Vehículo y Tipo de Combustible -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Tipo de Vehículo</ion-label>
+            <ion-select
+              formControlName="tipoVehi"
+              interface="popover"
+              placeholder="Selecciona tipo de vehículo"
+              [disabled]="isViewMode"
+            >
+              <ion-select-option value="Camioneta">Camioneta</ion-select-option>
+              <ion-select-option value="Furgón">Furgón</ion-select-option>
+              <ion-select-option value="Camión Liviano"
+                >Camión Liviano</ion-select-option
+              >
+              <ion-select-option value="Camión Pesado"
+                >Camión Pesado</ion-select-option
+              >
+            </ion-select>
+            <div class="error-container">
+              <div class="error-message"></div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Tipo de Combustible</ion-label>
-              <ion-select 
-                formControlName="tipoCombVehi" 
-                interface="popover" 
-                placeholder="Selecciona combustible"
-                [disabled]="isViewMode">
-                <ion-select-option value="">Ninguno</ion-select-option>
-                <ion-select-option value="gasolina_93">93 Octanos</ion-select-option>
-                <ion-select-option value="gasolina_95">95 Octanos</ion-select-option>
-                <ion-select-option value="gasolina_97">97 Octanos</ion-select-option>
-                <ion-select-option value="diesel">Diesel</ion-select-option>
-                <ion-select-option value="electrico">Eléctrico</ion-select-option>
-              </ion-select>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Tipo de Combustible</ion-label>
+            <ion-select
+              formControlName="tipoCombVehi"
+              interface="popover"
+              placeholder="Seleccione el tipo de combustible"
+              [disabled]="isViewMode"
+            >
+              <ion-select-option value="">Ninguno</ion-select-option>
+              <ion-select-option value="gasolina_93"
+                >93 Octanos</ion-select-option
+              >
+              <ion-select-option value="gasolina_95"
+                >95 Octanos</ion-select-option
+              >
+              <ion-select-option value="gasolina_97"
+                >97 Octanos</ion-select-option
+              >
+              <ion-select-option value="diesel">Diesel</ion-select-option>
+              <ion-select-option value="electrico">Eléctrico</ion-select-option>
+            </ion-select>
+            <div class="error-container">
+              <div class="error-message"></div>
             </div>
-          </ion-col>
-        </ion-row>
+          </div>
+        </ion-col>
+      </ion-row>
 
-        <!-- Kilometraje Vida Útil y Eficiencia Combustible -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Kilometraje Vida Útil</ion-label>
-              <ion-input 
-                formControlName="kmVidaUtil" 
-                type="number" 
-                inputmode="numeric"
-                min="1000"
-                max="5000000"
-                placeholder="Entre 1.000 y 5.000.000 km"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['kmVidaUtil'].errors?.['min']">Kilometraje vida útil debe ser al menos 1.000 km.</div>
-                <div *ngIf="f['kmVidaUtil'].errors?.['max']">Kilometraje vida útil no puede superar 5.000.000 km.</div>
+      <!-- Kilometraje Vida Útil y Eficiencia Combustible -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Kilometraje Vida Útil</ion-label>
+            <ion-input
+              formControlName="kmVidaUtil"
+              type="number"
+              inputmode="numeric"
+              min="1000"
+              max="5000000"
+              placeholder="Entre 1.000 y 5.000.000 km"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['kmVidaUtil'].invalid && (f['kmVidaUtil'].dirty || f['kmVidaUtil'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['kmVidaUtil'].errors?.['min']">
+                  Kilometraje vida útil debe ser al menos 1.000 km.
+                </div>
+                <div *ngIf="f['kmVidaUtil'].errors?.['max']">
+                  Kilometraje vida útil no puede superar 5.000.000 km.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Eficiencia Combustible (km/L)</ion-label>
-              <ion-input 
-                formControlName="efiComb" 
-                type="number" 
-                inputmode="decimal" 
-                step="0.01" 
-                min="2"
-                max="30"
-                placeholder="Entre 2 y 30 km/L"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched || isSubmitted)" class="error-container">
-              <div class="error-message">
-                <div *ngIf="f['efiComb'].errors?.['min']">Eficiencia debe ser al menos 2 km/L.</div>
-                <div *ngIf="f['efiComb'].errors?.['max']">Eficiencia no puede superar 30 km/L.</div>
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Eficiencia Combustible (km/L)</ion-label>
+            <ion-input
+              formControlName="efiComb"
+              type="number"
+              inputmode="decimal"
+              step="0.01"
+              min="2"
+              max="30"
+              placeholder="Entre 2 y 30 km/L"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div class="error-container">
+              <div
+                class="error-message"
+                [class.visible]="f['efiComb'].invalid && (f['efiComb'].dirty || f['efiComb'].touched || isSubmitted)"
+              >
+                <div *ngIf="f['efiComb'].errors?.['min']">
+                  Eficiencia debe ser al menos 2 km/L.
+                </div>
+                <div *ngIf="f['efiComb'].errors?.['max']">
+                  Eficiencia no puede superar 30 km/L.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>
+          </div>
+        </ion-col>
+      </ion-row>
 
-        <!-- Ubicación GPS -->
-        <ion-row>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Latitud</ion-label>
-              <ion-input 
-                formControlName="latitud" 
-                type="number" 
-                inputmode="decimal" 
-                step="any" 
-                placeholder="-33.12345678"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched || isSubmitted)" class="error-container">
+      <!-- Ubicación GPS -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Latitud</ion-label>
+            <ion-input
+              formControlName="latitud"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              placeholder="-33.12345678"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div
+              *ngIf="f['latitud'].invalid && (f['latitud'].dirty || f['latitud'].touched || isSubmitted)"
+              class="error-container"
+            >
               <div class="error-message">
-                <div *ngIf="f['latitud'].errors?.['min'] || f['latitud'].errors?.['max']">Latitud debe estar entre -90 y 90.</div>
+                <div
+                  *ngIf="f['latitud'].errors?.['min'] || f['latitud'].errors?.['max']"
+                >
+                  Latitud debe estar entre -90 y 90.
+                </div>
               </div>
             </div>
-          </ion-col>          <ion-col size="12" size-md="6">
-            <div class="uniform-input-wrapper">
-              <ion-label>Longitud</ion-label>
-              <ion-input 
-                formControlName="longitud" 
-                type="number" 
-                inputmode="decimal" 
-                step="any" 
-                placeholder="-70.12345678"
-                [readonly]="isViewMode">
-              </ion-input>
-            </div>            <div *ngIf="f['longitud'].invalid && (f['longitud'].dirty || f['longitud'].touched || isSubmitted)" class="error-container">
+          </div>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <div class="input-wrapper">
+            <ion-label>Longitud</ion-label>
+            <ion-input
+              formControlName="longitud"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              placeholder="-70.12345678"
+              [readonly]="isViewMode"
+            >
+            </ion-input>
+            <div
+              *ngIf="f['longitud'].invalid && (f['longitud'].dirty || f['longitud'].touched || isSubmitted)"
+              class="error-container"
+            >
               <div class="error-message">
-                <div *ngIf="f['longitud'].errors?.['min'] || f['longitud'].errors?.['max']">Longitud debe estar entre -180 y 180.</div>
+                <div
+                  *ngIf="f['longitud'].errors?.['min'] || f['longitud'].errors?.['max']"
+                >
+                  Longitud debe estar entre -180 y 180.
+                </div>
               </div>
             </div>
-          </ion-col>
-        </ion-row>      </ion-grid>
+          </div>
+        </ion-col>
+      </ion-row>
     </div>
   </form>
   <!-- Tabla de historial de mantenimiento - Solo visible en modo edición -->
-  <ion-card *ngIf="(isEditMode || isViewMode) && mantenimientos.length > 0 && selectedTab !== 'mantenimiento'" class="ion-margin-top">
+  <ion-card
+    *ngIf="(isEditMode || isViewMode) && mantenimientos.length > 0 && selectedTab !== 'mantenimiento'"
+    class="ion-margin-top"
+  >
     <ion-card-header>
       <ion-card-title>Historial de Mantenimiento</ion-card-title>
     </ion-card-header>
@@ -327,7 +481,8 @@
         (page)="onHistorialPageChange($event)"
         (rowClick)="onHistorialRowClick($event)"
         (sort)="onHistorialSortColumn($event)"
-        (export)="onHistorialExport($event)">
+        (export)="onHistorialExport($event)"
+      >
       </app-data-table>
     </ion-card-content>
   </ion-card>
@@ -337,7 +492,9 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Historial de Recorridos</ion-card-title>
-        <ion-card-subtitle>Recorridos realizados por este vehículo</ion-card-subtitle>
+        <ion-card-subtitle
+          >Recorridos realizados por este vehículo</ion-card-subtitle
+        >
       </ion-card-header>
       <ion-card-content>
         <app-data-table
@@ -351,7 +508,8 @@
           (page)="onRecorridosPageChange($event)"
           (rowClick)="onRecorridosRowClick($event)"
           (sort)="onRecorridosSort($event)"
-          (export)="onRecorridosExport($event)">
+          (export)="onRecorridosExport($event)"
+        >
         </app-data-table>
       </ion-card-content>
     </ion-card>
@@ -362,7 +520,9 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Registro de Combustible</ion-card-title>
-        <ion-card-subtitle>Historial de cargas de combustible</ion-card-subtitle>
+        <ion-card-subtitle
+          >Historial de cargas de combustible</ion-card-subtitle
+        >
       </ion-card-header>
       <ion-card-content>
         <app-data-table
@@ -376,7 +536,8 @@
           (page)="onCombustiblePageChange($event)"
           (rowClick)="onCombustibleRowClick($event)"
           (sort)="onCombustibleSort($event)"
-          (export)="onCombustibleExport($event)">
+          (export)="onCombustibleExport($event)"
+        >
         </app-data-table>
       </ion-card-content>
     </ion-card>
@@ -387,7 +548,9 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Historial de Mantenimientos</ion-card-title>
-        <ion-card-subtitle>Registros de mantenimientos realizados</ion-card-subtitle>
+        <ion-card-subtitle
+          >Registros de mantenimientos realizados</ion-card-subtitle
+        >
       </ion-card-header>
       <ion-card-content>
         <app-data-table
@@ -401,7 +564,8 @@
           (page)="onMantenimientoPageChange($event)"
           (rowClick)="onMantenimientoRowClick($event)"
           (sort)="onMantenimientoSort($event)"
-          (export)="onMantenimientoExport($event)">
+          (export)="onMantenimientoExport($event)"
+        >
         </app-data-table>
       </ion-card-content>
     </ion-card>
@@ -412,7 +576,9 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Registro de Incidentes</ion-card-title>
-        <ion-card-subtitle>Incidentes y siniestros reportados</ion-card-subtitle>
+        <ion-card-subtitle
+          >Incidentes y siniestros reportados</ion-card-subtitle
+        >
       </ion-card-header>
       <ion-card-content>
         <app-data-table
@@ -426,7 +592,8 @@
           (page)="onIncidentesPageChange($event)"
           (rowClick)="onIncidentesRowClick($event)"
           (sort)="onIncidentesSort($event)"
-          (export)="onIncidentesExport($event)">
+          (export)="onIncidentesExport($event)"
+        >
         </app-data-table>
       </ion-card-content>
     </ion-card>
@@ -443,11 +610,17 @@
         <ion-list lines="full">
           <ion-item *ngIf="documentos.length === 0">
             <ion-label color="medium">
-              <p class="ion-text-center">No hay documentos registrados para este vehículo.</p>
+              <p class="ion-text-center">
+                No hay documentos registrados para este vehículo.
+              </p>
             </ion-label>
           </ion-item>
           <ion-item *ngFor="let doc of documentos">
-            <ion-icon name="document-outline" slot="start" color="primary"></ion-icon>
+            <ion-icon
+              name="document-outline"
+              slot="start"
+              color="primary"
+            ></ion-icon>
             <ion-label>
               <h2>{{ doc.nombre }}</h2>
               <p>{{ doc.descripcion }}</p>
@@ -463,7 +636,12 @@
             </ion-buttons>
           </ion-item>
         </ion-list>
-        <ion-button expand="block" color="tertiary" class="ion-margin-top" *ngIf="!isViewMode">
+        <ion-button
+          expand="block"
+          color="tertiary"
+          class="ion-margin-top"
+          *ngIf="!isViewMode"
+        >
           <ion-icon name="add-circle-outline" slot="start"></ion-icon>
           Subir Nuevo Documento
         </ion-button>
@@ -474,8 +652,16 @@
 
 <!-- Footer con botones de acción -->
 <div class="ion-text-center" *ngIf="!isViewMode">
-  <ion-button type="submit" expand="block" (click)="saveVehicle()" [disabled]="!vehicleForm.valid || isLoading" style="--background: #008000; --background-hover: #006600;">
-    <ion-icon [name]="isEditMode ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
+  <ion-button
+    type="submit"
+    expand="block"
+    (click)="saveVehicle()"
+    style="--background: #008000; --background-hover: #006600"
+  >
+    <ion-icon
+      [name]="isEditMode ? 'save-outline' : 'add-circle-outline'"
+      slot="start"
+    ></ion-icon>
     {{ isEditMode ? 'Actualizar Vehículo' : 'Crear Vehículo' }}
   </ion-button>
 </div>

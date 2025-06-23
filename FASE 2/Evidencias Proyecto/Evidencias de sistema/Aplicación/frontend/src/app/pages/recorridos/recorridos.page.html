@@ -1,19 +1,147 @@
-<ion-header [translucent]="true">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
+<ion-content [fullscreen]="true">
+  <!-- Barra de herramientas -->
+  <ion-toolbar>
+    <ion-segment [value]="vistaActual" (ionChange)="cambiarVista($event)">
+      <ion-segment-button value="mapa">
+        <ion-label>Mapa</ion-label>
+        <ion-icon name="map-outline"></ion-icon>
+      </ion-segment-button>
+      <ion-segment-button value="lista">
+        <ion-label>Lista Vehículos</ion-label>
+        <ion-icon name="list-outline"></ion-icon>
+      </ion-segment-button>
+      <ion-segment-button value="ambos">
+        <ion-label>Ambos</ion-label>
+        <ion-icon name="grid-outline"></ion-icon>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 
-  </ion-header>
-  
-  <ion-content [fullscreen]="true">
-    
-    <!-- recorridos -->
-   
-    
-    <div #mapContainer id="mapId" style="height: 800%; width: 100%;"> ```
-       </div>
-  
-    </ion-content>
+  <!-- Vista del Mapa -->
+  <div
+    *ngIf="vistaActual === 'mapa' || vistaActual === 'ambos'"
+    [style.height]="vistaActual === 'ambos' ? '60%' : '100%'"
+  >
+    <div #mapContainer id="mapId" style="height: 100%; width: 100%"></div>
+  </div>
+
+  <!-- Vista de Lista de Vehículos -->
+  <div
+    *ngIf="vistaActual === 'lista' || vistaActual === 'ambos'"
+    [style.height]="vistaActual === 'ambos' ? '40%' : '100%'"
+    style="overflow-y: auto"
+  >
+    <!-- Filtros -->
+    <ion-toolbar>
+      <ion-segment [value]="filtroEstado" (ionChange)="cambiarFiltro($event)">
+        <ion-segment-button value="todos">
+          <ion-label>Todos ({{ vehiculosConEstado.length }})</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="en_recorrido">
+          <ion-label
+            >En Recorrido ({{ vehiculosEnRecorrido.length }})</ion-label
+          >
+        </ion-segment-button>
+        <ion-segment-button value="disponible">
+          <ion-label>Disponibles ({{ vehiculosDisponibles.length }})</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+
+    <!-- Lista de Vehículos -->
+    <ion-list>
+      <ion-item
+        *ngFor="let vehiculo of vehiculosFiltrados; trackBy: trackByVehiculoId"
+        (click)="seguirVehiculo(vehiculo)"
+        button
+        class="vehiculo-item"
+        [class.en-recorrido]="vehiculo.enRecorrido"
+        [class.disponible]="!vehiculo.enRecorrido"
+      >
+        <ion-avatar slot="start">
+          <ion-icon
+            [name]="vehiculo.enRecorrido ? 'car-sport' : 'car-sport-outline'"
+            [color]="vehiculo.enRecorrido ? 'success' : 'medium'"
+            size="large"
+          >
+          </ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
+          <p>Patente: {{ vehiculo.patente }}</p>
+          <p *ngIf="vehiculo.rutaActual">
+            <ion-icon name="navigate-outline" color="primary"></ion-icon>
+            Ruta: {{ vehiculo.rutaActual }}
+          </p>
+          <p>
+            <ion-icon
+              [name]="vehiculo.enRecorrido ? 'checkmark-circle' : 'pause-circle'"
+              [color]="vehiculo.enRecorrido ? 'success' : 'warning'"
+            >
+            </ion-icon>
+            {{ vehiculo.enRecorrido ? 'En Recorrido' : 'Disponible' }}
+          </p>
+          <p>
+            <ion-icon
+              [name]="tieneUbicacionValida(vehiculo) ? 'locate-outline' : 'location-outline'"
+              [color]="tieneUbicacionValida(vehiculo) ? 'success' : 'danger'"
+            ></ion-icon>
+            GPS: {{ tieneUbicacionValida(vehiculo) ? 'Válido' : 'Sin ubicación'
+            }}
+          </p>
+          <p *ngIf="vehiculo.ultimaActualizacion">
+            <ion-icon name="time-outline" color="medium"></ion-icon>
+            Última actualización: {{ vehiculo.ultimaActualizacion |
+            date:'dd/MM/yy HH:mm:ss' }}
+          </p>
+        </ion-label>
+
+        <ion-chip
+          slot="end"
+          [color]="vehiculo.enRecorrido ? 'success' : 'medium'"
+        >
+          {{ vehiculo.enRecorrido ? 'ACTIVO' : 'PARADO' }}
+        </ion-chip>
+      </ion-item>
+
+      <!-- Mensaje cuando no hay vehículos -->
+      <ion-item *ngIf="vehiculosFiltrados.length === 0">
+        <ion-label>
+          <h3>
+            No hay vehículos {{ filtroEstado === 'todos' ? '' : filtroEstado ===
+            'en_recorrido' ? 'en recorrido' : 'disponibles' }}
+          </h3>
+          <p>
+            {{ filtroEstado === 'todos' ? 'Verifique la conexión' : 'Cambie el
+            filtro para ver otros vehículos' }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- FAB para acciones rápidas -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="primary">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="debugEstadoAplicacion()" color="dark">
+        <ion-icon name="information-circle-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="centrarEnTodosLosVehiculos()" color="secondary">
+        <ion-icon name="locate-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="actualizarDatos()" color="tertiary">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button
+        (click)="limpiarSeguimiento()"
+        color="warning"
+        *ngIf="vehiculoIdParaSeguir"
+      >
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

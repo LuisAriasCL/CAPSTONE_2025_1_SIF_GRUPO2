@@ -1,84 +1,115 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, LoadingController, ToastController, AlertController, ModalController } from '@ionic/angular';
+import {
+  IonicModule,
+  NavController,
+  LoadingController,
+  ToastController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import { ApiService, OrdenTrabajoResumen } from 'src/app/services/api.service';
+import { TitleService } from 'src/app/services/title.service';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 import { OrdenTrabajoDetallePage } from '../orden-trabajo-detalle/orden-trabajo-detalle.page';
+import { BaseListPageComponent } from '../../../components/base-list-page.component';
+import {
+  BaseListService,
+  FilterConfig,
+} from '../../../services/base-list.service';
 
 @Component({
   selector: 'app-orden-trabajo-list',
   templateUrl: './orden-trabajo-list.page.html',
   styleUrls: ['./orden-trabajo-list.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DatePipe]
+  imports: [IonicModule, CommonModule, FormsModule, DatePipe],
 })
-export class OrdenTrabajoListPage implements OnInit {
+export class OrdenTrabajoListPage
+  extends BaseListPageComponent<OrdenTrabajoResumen>
+  implements OnInit
+{
+  private apiService = inject(ApiService);
+  private navCtrl = inject(NavController);
+  private alertCtrl = inject(AlertController);
 
-  ordenes: OrdenTrabajoResumen[] = [];
-  isLoading: boolean = false;
+  // Filtros específicos
+  private _filterStatus: string = '';
 
-  constructor(
-    private apiService: ApiService,
-    private navCtrl: NavController,
-    private loadingCtrl: LoadingController,
-    private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
-    private modalController: ModalController
-  ) { }
+  constructor() {
+    const baseListService = inject(BaseListService<OrdenTrabajoResumen>);
+    const toastController = inject(ToastController);
+    const loadingController = inject(LoadingController);
+    const modalController = inject(ModalController);
+    const titleService = inject(TitleService);
 
-  ngOnInit() {
+    super(
+      baseListService,
+      toastController,
+      loadingController,
+      modalController,
+      titleService
+    );
+  }
+  override async ngOnInit() {
+    await super.ngOnInit();
   }
 
-  ionViewWillEnter() {
-    this.cargarOrdenes();
+  override ionViewWillEnter() {
+    super.ionViewWillEnter();
+    // Forzar la carga inicial de datos
+    this.loadItems();
   }
 
-  async cargarOrdenes(event?: any) {
-    if (!event) {
-      this.isLoading = true;
-    }
+  // Getters/setters para filtros específicos
+  get filterStatus(): string {
+    return this._filterStatus;
+  }
 
-    this.apiService.getOrdenesTrabajo().subscribe({
-      next: (data) => {
-        this.ordenes = data;
-        this.isLoading = false;
-        if (event) {
-          event.target.complete();
-        }
+  set filterStatus(value: string) {
+    this._filterStatus = value;
+    this.setFilter('estado', value);
+  }
+
+  // Implementación de métodos abstractos
+  getPageTitle(): string {
+    return 'Órdenes de Trabajo';
+  }
+  getFilterConfig(): FilterConfig<OrdenTrabajoResumen> {
+    return {
+      searchFields: ['vehiculo.patente', 'vehiculo.modelo'] as any,
+      customFilters: {
+        estado: (item: OrdenTrabajoResumen, value: string) => {
+          // Obtener el estado de forma segura
+          const estado = item.estado_ot || (item as any).estadoOt;
+          return !value || estado === value;
+        },
       },
-      error: async (error) => {
-        console.error('Error al cargar las órdenes de trabajo', error);
-        this.isLoading = false;
-        if (event) {
-          event.target.complete();
-        }
-        
-        // Mostrar alerta personalizada en caso de error
-        const modal = await this.modalController.create({
-          component: AlertaPersonalizadaComponent,
-          componentProps: {
-            title: 'Error',
-            message: 'No se pudo cargar la lista de órdenes de trabajo. ' + (error.message || 'Inténtelo nuevamente.'),
-            icon: 'error',
-            buttons: [{ text: 'Aceptar', role: 'confirm' }]
-          },
-          cssClass: 'custom-alert-modal'
-        });
-        await modal.present();
-      }
+    };
+  }
+
+  async loadData(): Promise<OrdenTrabajoResumen[]> {
+    return new Promise((resolve, reject) => {
+      this.apiService.getOrdenesTrabajo().subscribe({
+        next: (data) => resolve(data),
+        error: (error) => reject(error),
+      });
     });
   }
 
+  get paginatedOrdenes() {
+    return this.paginatedItems;
+  }
   async verDetalle(idOt: number) {
     // En lugar de navegar a otra página, abrir un modal
-    const modal = await this.modalController.create({
+    const modal = await this.modalCtrl.create({
       component: OrdenTrabajoDetallePage,
       componentProps: {
-        ordenTrabajoId: idOt
+        ordenTrabajoId: idOt,
       },
       cssClass: 'orden-trabajo-modal',
-      backdropDismiss: false
+      backdropDismiss: false,
     });
 
     await modal.present();
@@ -86,7 +117,7 @@ export class OrdenTrabajoListPage implements OnInit {
     // Manejar el cierre del modal
     const { data } = await modal.onDidDismiss();
     if (data && data.updated) {
-      this.cargarOrdenes(); // Recargar la lista si se actualizó algo
+      this.loadItems(); // Recargar la lista si se actualizó algo
     }
   }
 
@@ -119,48 +150,60 @@ export class OrdenTrabajoListPage implements OnInit {
         return 'medium';
     }
   }
-
   // Función para mostrar los estados en formato legible
   getStatusDisplayName(estado: string | undefined): string {
     if (!estado) return 'Sin estado';
-    
+
     const estadosDisplay: { [key: string]: string } = {
       solicitado: 'Solicitado',
       en_progreso: 'En Progreso',
       completado: 'Completado',
-      cancelado: 'Cancelado'
+      cancelado: 'Cancelado',
     };
-    
+
     return estadosDisplay[estado] || estado;
   }
 
   // Método para validar fechas antes de aplicar el pipe date
   isValidDate(dateStr: any): boolean {
     if (!dateStr) return false;
-    
+
     // Si es un string, verificar que tenga formato de fecha válido
     if (typeof dateStr === 'string') {
       // Intentar convertirlo a fecha
       const date = new Date(dateStr);
       return !isNaN(date.getTime());
     }
-    
+
     // Si ya es un objeto Date
     if (dateStr instanceof Date) {
       return !isNaN(dateStr.getTime());
     }
-    
+
     return false;
   }
-
   // Método para mostrar mensajes toast
-  async presentToast(message: string, color: 'success' | 'warning' | 'danger' | 'medium' = 'medium') {
-    const toast = await this.toastCtrl.create({
-      message: message,
-      duration: 2500,
-      position: 'bottom',
-      color: color
-    });
-    toast.present();
+  async presentToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' | 'medium' = 'medium'
+  ) {
+    await this.mostrarToast(message, color);
+  }
+
+  // Método para abrir formulario de nueva orden (placeholder)
+  abrirFormularioNuevaOrden() {
+    // TODO: Implementar navegación o modal para crear nueva orden
+    this.presentToast('Funcionalidad de nueva orden por implementar', 'medium');
+  }
+
+  // Método auxiliar para acceder al estado de forma segura
+  getEstadoOT(orden: any): string | undefined {
+    // Intentar diferentes formatos de nombres de propiedades
+    return orden?.estado_ot || orden?.estadoOt || undefined;
+  }
+  getEstadoOTColor(orden: any): string {
+    const estado = this.getEstadoOT(orden);
+    if (!estado) return 'medium';
+    return this.getColorForStatus(estado);
   }
 }

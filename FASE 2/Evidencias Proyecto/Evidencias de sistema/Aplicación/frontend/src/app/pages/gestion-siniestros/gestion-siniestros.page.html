@@ -1,52 +1,71 @@
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Gestión de Incidentes</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <div *ngIf="cargando">
     <ion-list>
       <ion-card *ngFor="let item of skeletonItems">
         <ion-card-header>
-          <ion-skeleton-text animated="true" style="width: 60%;"></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 60%"
+          ></ion-skeleton-text>
         </ion-card-header>
         <ion-card-content>
-          <ion-skeleton-text animated="true" style="width: 80%;"></ion-skeleton-text>
-          <ion-skeleton-text animated="true" style="width: 40%;"></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 80%"
+          ></ion-skeleton-text>
+          <ion-skeleton-text
+            animated="true"
+            style="width: 40%"
+          ></ion-skeleton-text>
         </ion-card-content>
       </ion-card>
     </ion-list>
   </div>
 
   <ion-list *ngIf="!cargando">
-    <ion-card *ngFor="let siniestro of siniestros" button (click)="verDetalles(siniestro.id)">
+    <ion-card
+      *ngFor="let siniestro of siniestros"
+      button
+      (click)="verDetalles(siniestro.id)"
+    >
       <ion-card-header>
         <ion-card-subtitle>
-          {{ siniestro.fecha | date:'dd/MM/yyyy HH:mm' }} - Vehículo: {{ siniestro.vehiculo?.patente || 'N/A' }}
+          {{ siniestro.fecha | date:'dd/MM/yyyy HH:mm' }} - Vehículo: {{
+          siniestro.vehiculo?.patente || 'N/A' }}
         </ion-card-subtitle>
         <ion-card-title>
-          Reportado por: {{ siniestro.conductor?.pri_nom_usu || 'Usuario' }} {{ siniestro.conductor?.pri_ape_usu || 'Desconocido' }}
+          Reportado por: {{ siniestro.conductor?.pri_nom_usu || 'Usuario' }} {{
+          siniestro.conductor?.pri_ape_usu || 'Desconocido' }}
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div *ngIf="siniestro.descripcion; else noDescription">
           <p class="ion-text-wrap">
-            {{ siniestro.descripcion | slice:0:100 }}{{ siniestro.descripcion.length > 100 ? '...' : '' }}
+            {{ siniestro.descripcion | slice:0:100 }}{{
+            siniestro.descripcion.length > 100 ? '...' : '' }}
           </p>
         </div>
         <ng-template #noDescription>
-            <p><em>No hay descripción disponible.</em></p>
+          <p><em>No hay descripción disponible.</em></p>
         </ng-template>
 
-        <ion-chip [color]="getColorForStatus(siniestro.estado)" outline="true" class="ion-margin-top">
-          <ion-label>{{ siniestro.estado.replace('_', ' ') | titlecase }}</ion-label>
+        <ion-chip
+          [color]="getColorForStatus(siniestro.estado)"
+          outline="true"
+          class="ion-margin-top"
+        >
+          <ion-label
+            >{{ siniestro.estado.replace('_', ' ') | titlecase }}</ion-label
+          >
         </ion-chip>
       </ion-card-content>
     </ion-card>
   </ion-list>
 
-  <div *ngIf="!cargando && siniestros.length === 0" class="ion-text-center ion-padding">
+  <div
+    *ngIf="!cargando && siniestros.length === 0"
+    class="ion-text-center ion-padding"
+  >
     <p>No hay incidentes reportados.</p>
   </div>
 </ion-content>

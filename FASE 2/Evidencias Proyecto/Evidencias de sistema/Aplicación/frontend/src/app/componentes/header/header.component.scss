@@ -4,19 +4,21 @@
   align-items: center;
   width: 100%;
   padding: 0 10px;
+  position: relative;
 }
 
 /* Mantenemos la transición si quieres la animación en el header */
 .header-left,
 .header-right {
   transition: transform 0.3s ease;
+  flex: 1;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   ion-menu-toggle ion-button {
     --padding-start: 8px;
     --padding-end: 8px;
@@ -24,13 +26,24 @@
   }
 }
 
-.header-logo {
-  height: 40px;
+.header-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 2;
 }
 
-.header-title {
+.header-title-center {
   font-weight: bold;
   font-size: 1.2rem;
+  color: white !important;
+  text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
 .header-right {
@@ -56,7 +69,7 @@
   right: 0;
   z-index: 1000;
   width: 100%;
-  
+
   ion-toolbar {
     --min-height: 56px;
     --padding-start: 0;
@@ -86,16 +99,16 @@
   .header-container {
     padding: 0 8px;
   }
-  
+
   .header-title {
     font-size: 1rem;
     display: none; /* Ocultar título en móviles para ahorrar espacio */
   }
-  
+
   .header-logo {
     height: 32px;
   }
-  
+
   .header-left {
     gap: 4px;
   }
@@ -110,7 +123,7 @@
       .user-info-text {
         display: none; /* Oculta el nombre y rol */
       }
-      
+
       ion-avatar {
         margin-right: 4px;
       }
@@ -132,8 +145,21 @@
   .header-title {
     display: none;
   }
-  
+
   .header-container {
     padding: 0 4px;
   }
+}
+
+.header-logo {
+  height: 40px;
+}
+
+.transparent-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  --border-color: transparent;
+  --box-shadow: none;
+  background: transparent !important;
+  border: none !important;
 }

@@ -6,10 +6,9 @@
 // Le da un poco de profundidad y hace que las tarjetas blancas resalten.
 :host {
   ion-content {
-    --background: #f4f5f8;
+    --background: #f8f9fa;
   }
 }
-
 
 // 2. Estilo principal para las tarjetas del Dashboard
 ion-card {
@@ -26,7 +25,6 @@ ion-card {
   }
 }
 
-
 // 3. Estilos para el encabezado de las tarjetas
 ion-card-header {
   padding: 20px 20px 16px 20px;
@@ -38,7 +36,6 @@ ion-card-title {
   font-weight: 600; // Un grosor de fuente que denota importancia
   color: var(--ion-color-dark-shade);
 }
-
 
 // 4. Estilos para el contenido de las tarjetas (donde van los gráficos)
 ion-card-content {
