@@ -934,79 +934,11 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  // Nuevos métodos para la UI mejorada
   cambiarVista(event: any) {
     const nuevaVista = event.detail.value;
     console.log('[Recorridos] cambiarVista: Cambiando vista a', nuevaVista);
-
-    const vistaAnterior = this.vistaActual;
     this.vistaActual = nuevaVista;
-
-    // Detectar si el mapa se está haciendo visible por primera vez
-    const mapaSeHaceVisible =
-      vistaAnterior === 'lista' &&
-      (nuevaVista === 'mapa' || nuevaVista === 'ambos');
-
-    // Si se cambia a vista de mapa, asegurar que se redibuje correctamente
-    if (this.vistaActual === 'mapa' || this.vistaActual === 'ambos') {
-      // Timeouts escalonados para diferentes escenarios
-      const timeouts = mapaSeHaceVisible ? [150, 400, 700] : [100, 300, 500];
-
-      timeouts.forEach((delay, index) => {
-        setTimeout(() => {
-          this.refrescarMapa(vistaAnterior);
-        }, delay);
-      });
-    }
-
-    // Forzar detección de cambios
     this.cdr.detectChanges();
-  }
-
-  private refrescarMapa(vistaAnterior: string) {
-    if (!this.map) {
-      console.warn('[Recorridos] refrescarMapa: Mapa no inicializado');
-      return;
-    }
-
-    try {
-      console.log('[Recorridos] refrescarMapa: Invalidando tamaño del mapa', {
-        vistaAnterior,
-        vistaActual: this.vistaActual,
-      });
-
-      // Invalidar el tamaño del mapa de forma forzada
-      this.map.invalidateSize({
-        debounceMoveend: true,
-        pan: false,
-      });
-
-      // Si hay un vehículo siendo seguido, centrar en él
-      if (
-        this.vehiculoIdParaSeguir &&
-        this.vehicleMarkers[this.vehiculoIdParaSeguir]
-      ) {
-        const marker = this.vehicleMarkers[this.vehiculoIdParaSeguir];
-        const latLng = marker.getLatLng();
-        console.log(
-          '[Recorridos] refrescarMapa: Centrando en vehículo seguido',
-          latLng
-        );
-        this.map.setView(latLng, this.map.getZoom() || 16);
-      } else if (Object.keys(this.vehicleMarkers).length > 0) {
-        // Si no hay vehículo seguido pero hay marcadores, ajustar límites
-        console.log(
-          '[Recorridos] refrescarMapa: Ajustando límites a todos los marcadores'
-        );
-        this.fitMapToBounds();
-      } // Los marcadores se actualizan automáticamente con invalidateSize
-      console.log('[Recorridos] refrescarMapa: Mapa refrescado exitosamente');
-    } catch (error) {
-      console.error(
-        '[Recorridos] refrescarMapa: Error al refrescar mapa',
-        error
-      );
-    }
   }
 
   cambiarFiltro(event: any) {

@@ -1,22 +1,4 @@
 <ion-content [fullscreen]="true">
-  <!-- Barra de herramientas -->
-  <ion-toolbar>
-    <ion-segment [value]="vistaActual" (ionChange)="cambiarVista($event)">
-      <ion-segment-button value="mapa">
-        <ion-label>Mapa</ion-label>
-        <ion-icon name="map-outline"></ion-icon>
-      </ion-segment-button>
-      <ion-segment-button value="lista">
-        <ion-label>Lista Vehículos</ion-label>
-        <ion-icon name="list-outline"></ion-icon>
-      </ion-segment-button>
-      <ion-segment-button value="ambos">
-        <ion-label>Ambos</ion-label>
-        <ion-icon name="grid-outline"></ion-icon>
-      </ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
-
   <!-- Vista del Mapa -->
   <div
     *ngIf="vistaActual === 'mapa' || vistaActual === 'ambos'"

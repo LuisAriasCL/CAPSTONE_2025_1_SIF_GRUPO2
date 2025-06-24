@@ -9,14 +9,14 @@ exports.getMantenimientoReport = async (req, res) => {
 
         let whereClause = {};
         
-        // Aplicar filtro de fecha si se proporcionan ambas fechas
+   
         if (fechaDesde && fechaHasta) {
             whereClause.fec_ini_ot = {
                 [Op.between]: [new Date(fechaDesde), new Date(fechaHasta)]
             };
         }
         
-        // Aplicar filtro de vehículo si se proporciona
+       
         if (vehiculoId) {
             whereClause.vehiculoIdVehi = vehiculoId;
         }
@@ -31,7 +31,7 @@ exports.getMantenimientoReport = async (req, res) => {
                 },
                 {
                     model: Usuario,
-                    as: 'encargado', // Usamos el 'encargado' como el técnico principal para el reporte
+                    as: 'encargado', 
                     attributes: ['pri_nom_usu', 'pri_ape_usu']
                 }
             ],
@@ -275,22 +275,28 @@ exports.actualizarEstadoOt = async (req, res) => {
             return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
         }
 
-        const camposAActualizar = { estado_ot: estado_ot };
+   
+        ordenTrabajo.estado_ot = estado_ot;
 
-        if (estado_ot === 'en_progreso' && usuario_id_usu_encargado) {
-            camposAActualizar.usuario_id_usu_encargado = usuario_id_usu_encargado;
-            
-            if (!ordenTrabajo.fec_ini_ot) {
-                camposAActualizar.fec_ini_ot = new Date();
-            }
+   
+        if (usuario_id_usu_encargado) {
+            ordenTrabajo.usuarioIdUsuEncargado = usuario_id_usu_encargado;
         }
         
+    
+        if (estado_ot === 'en_progreso' && !ordenTrabajo.fec_ini_ot) {
+            ordenTrabajo.fec_ini_ot = new Date();
+        }
         if (estado_ot === 'completado') {
-            camposAActualizar.fec_fin_ot = new Date();
+            ordenTrabajo.fec_fin_ot = new Date();
         }
 
-        await ordenTrabajo.update(camposAActualizar);
-        res.json({ message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', ordenTrabajo });
+        await ordenTrabajo.save();
+        
+        res.status(200).json({ 
+            message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', 
+            ordenTrabajo 
+        });
 
     } catch (error) {
         console.error('Error al actualizar el estado de la OT:', error);
