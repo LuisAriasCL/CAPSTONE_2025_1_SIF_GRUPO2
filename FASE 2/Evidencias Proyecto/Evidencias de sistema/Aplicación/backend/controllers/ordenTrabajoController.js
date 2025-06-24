@@ -303,3 +303,73 @@ exports.actualizarEstadoOt = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor', error: error.message });
     }
 };
+exports.generarOtsParaPlanBulk = async (req, res) => {
+    // 1. Extraer los datos enviados desde el nuevo método del ApiService
+    const { id_plan, vehiculos_ids, id_usuario_solicitante } = req.body;
+
+    // 2. Validar que los datos requeridos estén presentes
+    if (!id_plan || !vehiculos_ids || !Array.isArray(vehiculos_ids) || vehiculos_ids.length === 0) {
+        return res.status(400).json({ msg: 'Faltan datos requeridos: id_plan y un array de vehiculos_ids son obligatorios.' });
+    }
+    if (!id_usuario_solicitante) {
+        return res.status(400).json({ msg: 'El ID del usuario solicitante es obligatorio.' });
+    }
+
+    // 3. Iniciar una transacción para asegurar la integridad de los datos
+    const transaction = await sequelize.transaction();
+
+    try {
+        // Buscar la planificación y sus tareas una sola vez
+        const planificacion = await PlanificacionMantenimiento.findByPk(id_plan, {
+            include: [{ model: TareaPlanificacion, as: 'tareas' }],
+            transaction
+        });
+
+        if (!planificacion || !planificacion.tareas || planificacion.tareas.length === 0) {
+            await transaction.rollback();
+            return res.status(404).json({ msg: 'Planificación no encontrada o no tiene tareas asociadas.' });
+        }
+
+        // 4. Iniciar un bucle para procesar cada vehículo
+        for (const vehiculoId of vehiculos_ids) {
+            const vehiculo = await Vehiculo.findByPk(vehiculoId, { transaction });
+            if (!vehiculo) {
+                // Si un vehículo no existe, la transacción entera debe fallar
+                throw new Error(`El vehículo con ID ${vehiculoId} no fue encontrado.`);
+            }
+
+            // Crear la Orden de Trabajo para este vehículo
+            const nuevaOt = await OrdenTrabajo.create({
+                km_ot: vehiculo.kmVehi,
+                descripcion_ot: `OT generada desde el plan: "${planificacion.descPlan}"`,
+                fec_ini_ot: new Date(),
+                vehiculoIdVehi: vehiculoId,
+                usuarioIdUsuSolicitante: id_usuario_solicitante,
+            }, { transaction });
+
+            // Crear los detalles para esta nueva OT
+            const detallesParaCrear = planificacion.tareas.map(tarea => ({
+                desc_det: tarea.nomTareaPlan,
+                ordenTrabajoIdOt: nuevaOt.id_ot
+            }));
+            await DetalleOt.bulkCreate(detallesParaCrear, { transaction });
+
+            // Actualizar el estado del vehículo a 'mantenimiento'
+            await Vehiculo.update(
+                { estadoVehi: 'mantenimiento' },
+                { where: { idVehi: vehiculoId }, transaction }
+            );
+        }
+
+        // 5. Si el bucle se completa sin errores, confirmar todos los cambios
+        await transaction.commit();
+
+        res.status(201).json({ message: `${vehiculos_ids.length} Órden(es) de Trabajo generada(s) con éxito.` });
+
+    } catch (error) {
+        // 6. Si algo falla, revertir todos los cambios
+        await transaction.rollback();
+        console.error('Error en la generación masiva de OTs:', error);
+        res.status(500).json({ msg: 'Error interno del servidor al generar las OTs.', error: error.message });
+    }
+};

@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; // <-- 1. IMPORTAR ChangeDetectorRef
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
 import { IonicModule, ToastController, AlertController, NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService, Siniestro } from '../../services/api.service';
 import { HeaderComponent } from 'src/app/componentes/header/header.component';
+import { Location } from '@angular/common'; // Importar Location
 
 @Component({
   selector: 'app-siniestro-detalle',
@@ -15,16 +16,17 @@ import { HeaderComponent } from 'src/app/componentes/header/header.component';
 export class SiniestroDetallePage implements OnInit {
   public siniestro: Siniestro | null = null;
   public cargando = true;
-  public readonly apiUrl = 'http://localhost:8101'; 
+  public readonly apiUrl = 'http://localhost:8101';
 
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
   private navCtrl = inject(NavController);
-  private cdr = inject(ChangeDetectorRef); 
+  private cdr = inject(ChangeDetectorRef);
+  private location = inject(Location); // Inyectar Location
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {
     this.cargarDetalleSiniestro();
@@ -35,7 +37,7 @@ export class SiniestroDetallePage implements OnInit {
     const siniestroId = this.route.snapshot.paramMap.get('id');
 
     if (!siniestroId) {
-      this.navCtrl.back();
+      this.goBack(); // Usar la nueva función de navegación
       return;
     }
 
@@ -43,13 +45,12 @@ export class SiniestroDetallePage implements OnInit {
       next: (data) => {
         this.siniestro = data;
         this.cargando = false;
-        // --- 3. LÍNEA CLAVE PARA FORZAR LA ACTUALIZACIÓN VISUAL ---
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges(); // Forzar actualización visual
       },
       error: (err) => {
         this.cargando = false;
         this.mostrarToast('No se pudo cargar la información del incidente.', 'danger');
-        this.navCtrl.back();
+        this.goBack(); // Usar la nueva función de navegación
       }
     });
   }
@@ -62,9 +63,9 @@ export class SiniestroDetallePage implements OnInit {
     const alert = await this.alertCtrl.create({
       header: 'Actualizar Estado',
       message: 'Selecciona el nuevo estado para este incidente.',
-      inputs: estadosPosibles.map(estado => ({
+      inputs: estadosPosibles.map((estado) => ({
         type: 'radio',
-        label: estado.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        label: estado.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
         value: estado,
         checked: this.siniestro?.estado === estado
       })),
@@ -79,7 +80,7 @@ export class SiniestroDetallePage implements OnInit {
                   this.mostrarToast('Estado actualizado con éxito.', 'success');
                   if (this.siniestro) {
                     this.siniestro.estado = nuevoEstado;
-                    this.cdr.detectChanges(); // Forzar actualización aquí también es buena idea
+                    this.cdr.detectChanges(); // Forzar actualización visual
                   }
                 },
                 error: (err) => this.mostrarToast('Error al actualizar el estado.', 'danger')
@@ -92,15 +93,20 @@ export class SiniestroDetallePage implements OnInit {
 
     await alert.present();
   }
-  
+
   getColorForStatus(estado: string | undefined): string {
-    if(!estado) return 'light';
+    if (!estado) return 'light';
     switch (estado) {
-      case 'reportado': return 'warning';
-      case 'en_revision': return 'primary';
-      case 'resuelto': return 'success';
-      case 'cancelado': return 'medium';
-      default: return 'light';
+      case 'reportado':
+        return 'warning';
+      case 'en_revision':
+        return 'primary';
+      case 'resuelto':
+        return 'success';
+      case 'cancelado':
+        return 'medium';
+      default:
+        return 'light';
     }
   }
 
@@ -111,5 +117,13 @@ export class SiniestroDetallePage implements OnInit {
       color: color
     });
     toast.present();
+  }
+
+  goBack() {
+    if (window.history.length > 1) {
+      this.location.back(); // Navegar hacia atrás en el historial
+    } else {
+      this.navCtrl.navigateBack('/gestion-siniestros'); // Navegar a la página por defecto
+    }
   }
 }

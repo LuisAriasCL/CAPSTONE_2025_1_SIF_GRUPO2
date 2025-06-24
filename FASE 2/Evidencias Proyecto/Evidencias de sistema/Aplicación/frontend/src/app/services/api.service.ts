@@ -404,6 +404,27 @@ export class ApiService {
       `${this.apiUrl}/asignaciones-recorrido/vehiculo-activo/conductor/${conductorId}`
     );
   }
+  generarOtsParaPlan(
+    idPlan: number,
+    vehiculosIds: number[],
+    idUsuario: number
+  ): Observable<{ message: string }> {
+    const body = {
+      id_plan: idPlan,
+      vehiculos_ids: vehiculosIds, // Enviamos el array completo
+      id_usuario_solicitante: idUsuario,
+    };
+    console.log('[ApiService] Cuerpo para generar OTs en masa:', body);
+    
+    // Llamamos a un nuevo endpoint que crearemos en el backend
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/ordenes-trabajo/generar-bulk`, // Nuevo endpoint
+      body
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // --- Métodos para el Módulo de Órdenes de Trabajo ---
   actualizarEstadoOt(
     id: number,

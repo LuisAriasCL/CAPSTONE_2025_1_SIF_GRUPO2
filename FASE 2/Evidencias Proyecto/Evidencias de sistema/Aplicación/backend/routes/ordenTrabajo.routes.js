@@ -16,7 +16,7 @@ router.get('/:id', ordenTrabajoController.getOrdenTrabajoPorId);
 
 
 router.put('/:id/detalles', ordenTrabajoController.actualizarDetallesOt);
-
+router.post('/generar-bulk', ordenTrabajoController.generarOtsParaPlanBulk);
 
 router.put('/:id/estado', ordenTrabajoController.actualizarEstadoOt);
 router.get('/tecnico/:tecnicoId', ordenTrabajoController.getOrdenesPorTecnico);
