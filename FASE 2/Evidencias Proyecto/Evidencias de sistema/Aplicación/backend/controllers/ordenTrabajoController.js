@@ -269,29 +269,62 @@ exports.actualizarEstadoOt = async (req, res) => {
         return res.status(400).json({ message: 'El campo estado_ot es requerido.' });
     }
 
+    // 1. Se inicia una transacción para toda la operación
+    const transaction = await sequelize.transaction();
+
     try {
-        const ordenTrabajo = await OrdenTrabajo.findByPk(id);
+        const ordenTrabajo = await OrdenTrabajo.findByPk(id, { transaction });
         if (!ordenTrabajo) {
+            await transaction.rollback();
             return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
         }
 
-   
+        // --- LÓGICA DE ACTUALIZACIÓN ---
+
         ordenTrabajo.estado_ot = estado_ot;
 
-   
         if (usuario_id_usu_encargado) {
             ordenTrabajo.usuarioIdUsuEncargado = usuario_id_usu_encargado;
         }
-        
-    
+
         if (estado_ot === 'en_progreso' && !ordenTrabajo.fec_ini_ot) {
             ordenTrabajo.fec_ini_ot = new Date();
         }
+
+        // --- INICIO DE LA NUEVA LÓGICA PARA COMPLETAR UNA OT ---
         if (estado_ot === 'completado') {
             ordenTrabajo.fec_fin_ot = new Date();
-        }
 
-        await ordenTrabajo.save();
+            const vehiculoId = ordenTrabajo.vehiculoIdVehi;
+
+            // 2. Contar si existen OTRAS órdenes activas para el mismo vehículo
+            const otrasOtsActivas = await OrdenTrabajo.count({
+                where: {
+                    vehiculoIdVehi: vehiculoId,
+                    id_ot: { [Op.ne]: id }, // Excluir la OT que estamos completando
+                    estado_ot: { [Op.in]: ['solicitado', 'aprobado', 'en_progreso', 'pendiente_repuestos'] }
+                },
+                transaction
+            });
+
+            console.log(`Vehículo ID #${vehiculoId} tiene ${otrasOtsActivas} otra(s) OT(s) activa(s).`);
+
+            // 3. Si no hay otras OTs activas, el vehículo vuelve a estar operativo
+            if (otrasOtsActivas === 0) {
+                await Vehiculo.update(
+                    { estadoVehi: 'activo' },
+                    { where: { idVehi: vehiculoId }, transaction }
+                );
+                console.log(`Vehículo ID #${vehiculoId} ha sido actualizado al estado 'activo'.`);
+            }
+        }
+        // --- FIN DE LA NUEVA LÓGICA ---
+
+        // Guardamos los cambios en la OT
+        await ordenTrabajo.save({ transaction });
+        
+        // Si todo fue exitoso, se confirman todos los cambios en la base de datos
+        await transaction.commit();
         
         res.status(200).json({ 
             message: 'El estado de la Orden de Trabajo ha sido actualizado exitosamente.', 
@@ -299,6 +332,8 @@ exports.actualizarEstadoOt = async (req, res) => {
         });
 
     } catch (error) {
+        // Si algo falla, se revierten todos los cambios
+        await transaction.rollback();
         console.error('Error al actualizar el estado de la OT:', error);
         res.status(500).json({ message: 'Error interno del servidor', error: error.message });
     }
