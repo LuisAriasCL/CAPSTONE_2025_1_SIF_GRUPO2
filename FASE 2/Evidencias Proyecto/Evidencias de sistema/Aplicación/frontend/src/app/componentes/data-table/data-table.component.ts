@@ -60,7 +60,9 @@ export class DataTableComponent implements OnInit, OnChanges {
   @Output() rowClick = new EventEmitter<any>();
   @Output() export = new EventEmitter<string>(); // csv, excel, pdf
   @Output() import = new EventEmitter<string>(); // Nuevo evento para importación
-
+ @Output() exportCsv = new EventEmitter<void>();
+  @Output() exportPdf = new EventEmitter<void>();
+  @Output() exportExcel = new EventEmitter<void>();
   // Variables para paginación
   currentPage = 1;
   displayData: any[] = [];
@@ -101,7 +103,16 @@ export class DataTableComponent implements OnInit, OnChanges {
       this.displayData = this.data.slice(start, end);
     }
   }
+ onExportCsvClick() {
+    this.exportCsv.emit();
+  }
 
+  onExportPdfClick() {
+    this.exportPdf.emit();
+  }
+  onExportExcelClick() {
+    this.exportExcel.emit();
+  }
   onPageChange(page: number): void {
     if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;

@@ -110,7 +110,37 @@ table {
     }
   }
 }
+// Botones de exportación
+.export-buttonss{
+  display: flex;
+  gap: 8px;
+  align-items: end;
 
+  ion-button {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    height: 40px;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &.csv-button {
+      --background: #28a745;
+      --background-hover: #218838;
+      --color: white;
+    }
+
+    &.pdf-button {
+      --background: #dc3545;
+      --background-hover: #c82333;
+      --color: white;
+    }
+  }
+}
 /* Filas fijadas - Asegurarse que tengan suficiente contraste */
 .data-table tbody tr.pinned {
   background: linear-gradient(90deg, #fff3cd 0%, #ffeaa7 100%) !important;
@@ -214,7 +244,7 @@ table {
 
 .table-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
   margin-bottom: 15px;
   gap: 10px;

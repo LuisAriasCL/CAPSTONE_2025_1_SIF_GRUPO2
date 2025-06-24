@@ -62,6 +62,11 @@ export interface Usuario {
   celular?: string;
   estado_usu?: 'activo' | 'inactivo' | 'licencia';
   fec_cre_usu: string;
+  // AÑADIDO: Propiedades de la licencia para que coincidan con el backend
+  fec_emi_lic?: string | null;
+  fec_ven_lic?: string | null;
+  tipo_lic?: string | null;
+  archivo_url_lic?: string | null;
 }
 // Interfaz para RUTA (plantilla)
 export interface Route {
@@ -318,6 +323,16 @@ export class ApiService {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
       .pipe(catchError(this.handleError));
+  }
+   checkRutExists(rut: string, userId?: number): Observable<{ exists: boolean }> {
+    let params = new HttpParams().set('rut', rut);
+    if (userId) {
+      params = params.set('id', userId.toString()); // Pasa el ID del usuario actual para excluirlo en ediciones
+    }
+    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-rut`, { params })
+      .pipe(
+        catchError(this.handleError) // Puedes usar handleError o un handleError más simple si no quieres tostar errores aquí
+      );
   }
   createUser(data: Partial<Usuario> & { clave: string }): Observable<Usuario> {
     return this.http

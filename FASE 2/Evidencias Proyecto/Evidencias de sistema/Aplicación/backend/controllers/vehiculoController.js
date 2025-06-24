@@ -68,7 +68,7 @@ exports.getHistorialByVehiculoId = async (req, res) => {
 
     const historialSiniestro = siniestros.map(s => {
       const sData = s.dataValues;
-      // CORRECCIÓN: Usando los nombres de propiedad que vimos en el log ('tipo', 'estado', etc.)
+    
       return {
         tipo: 'Siniestro',
         fecha: sData.fecha,
@@ -90,9 +90,7 @@ exports.getHistorialByVehiculoId = async (req, res) => {
         subtitulo: conductor ? `Registrado por: ${conductor.get('pri_nom_usu')} ${conductor.get('pri_ape_usu')}` : 'Registro manual',
         costo: c.get('monto'),
         id: c.get('id'),
-        // CAMBIO: Añadir la URL del comprobante al objeto que enviamos
-        urlComprobante: c.get('urlComprobante'),
-        icon: 'color-fill-outline',
+      
         color: 'primary'
       };
     });
@@ -125,13 +123,12 @@ exports.getHistorialByVehiculoId = async (req, res) => {
       costoCombustible,
       rendimientoPromedio: parseFloat(rendimientoPromedio.toFixed(2))
     };
-
-    // --- Combinar y ordenar ---
+ // --- Combinar y ordenar ---
     const historialCompleto = [...historialMantenimiento, ...historialSiniestro, ...historialCombustible];
-    historialCompleto.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Orden ascendente para timeline
-    historialCompleto.reverse(); // Invertir para que lo más nuevo quede arriba
+    historialCompleto.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    historialCompleto.reverse(); 
 
-    // CAMBIO: Añadido el console.log para el objeto de KPIs
+  
     console.log("Objeto KPIs final enviado al frontend:", kpis);
 
     res.json({

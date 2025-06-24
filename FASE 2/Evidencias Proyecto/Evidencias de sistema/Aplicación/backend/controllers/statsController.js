@@ -47,12 +47,11 @@ exports.getDashboardKpis = async (req, res) => {
         });
         console.log("Paso 3 - OTs Pendientes/En Progreso:", otsPendientes);
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Se usan las claves correctas que vienen del objeto 'estadoVehiculos'.
+    
         const kpis = {
             totalVehiculos,
-            vehiculosOperativos: estadoVehiculos.activo || 0,          // Cambiado de 'operativo' a 'activo'
-            vehiculosEnTaller: estadoVehiculos.mantenimiento || 0, // Cambiado de 'en_mantenimiento' a 'mantenimiento'
+            vehiculosOperativos: estadoVehiculos.activo || 0,          
+            vehiculosEnTaller: estadoVehiculos.mantenimiento || 0, 
             siniestrosMes,
             otsPendientes
         };

@@ -99,15 +99,17 @@
     class="data-table-container"
     *ngIf="!isLoading && reporteData.length > 0"
   >
-    <app-data-table
-      [columns]="tableColumns"
-      [data]="paginatedReporteData"
-      [pageSize]="pageSize"
-      [totalItems]="filteredReporteData.length"
-      [showPagination]="true"
-      [showExport]="true"
-      [showImport]="true"
-      (page)="onPageChange($event)"
+ <app-data-table
+  [columns]="tableColumns"
+  [data]="paginatedReporteData"
+  [pageSize]="pageSize"
+  [totalItems]="filteredReporteData.length"
+  [showPagination]="true"
+  [showExport]="true" 
+  [showImport]="true"
+  (page)="onPageChange($event)"
+  (exportCsv)="exportarCSV()"
+  (exportPdf)="exportarPDF()"
     >
       <!-- Mensaje si no hay resultados filtrados -->
       <div
