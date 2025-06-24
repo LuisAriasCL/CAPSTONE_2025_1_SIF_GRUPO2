@@ -79,28 +79,46 @@ export class RegisterPage implements OnInit {
   ngOnInit() {
     this.registerForm = this.formBuilder.group(
       {
-        pri_nom_usu: ['', [Validators.required]],
-        seg_nom_usu: [''],
-        pri_ape_usu: ['', [Validators.required]],
-        seg_ape_usu: [''],
-        email: ['', [Validators.required, Validators.email]],
-        rut_usu: [''],
-        celular: [''],
-        clave: ['', [Validators.required, Validators.minLength(6)]],
-        confirmarClave: ['', [Validators.required]],
-        rol: ['conductor', [Validators.required]],
+        pri_nom_usu: ['', [Validators.required]], // Campo requerido
+        seg_nom_usu: [''], // Campo opcional
+        pri_ape_usu: ['', [Validators.required]], // Campo requerido
+        seg_ape_usu: [''], // Campo opcional
+        email: ['', [Validators.required, Validators.email]], // Campo requerido con validación de formato
+        rut_usu: ['', [this.rutValidator]], // Campo opcional con validación de formato
+        celular: ['', [this.phoneValidator]], // Campo opcional con validación de formato
+        rol: ['conductor', [Validators.required]], // Campo requerido
+        clave: ['', [Validators.required, Validators.minLength(6)]], // Campo requerido con longitud mínima
+        confirmarClave: ['', [Validators.required]], // Campo requerido
       },
       {
-        validators: passwordMatchValidator('clave', 'confirmarClave'),
+        validators: passwordMatchValidator('clave', 'confirmarClave'), // Validación para asegurar que las contraseñas coincidan
       }
     );
   }
 
+  // Validador para RUT chileno
+  private rutValidator(control: AbstractControl): ValidationErrors | null {
+    const rut = control.value;
+    if (!rut) return null;
+
+    const rutRegex = /^[0-9]+-[0-9kK]{1}$/;
+    return rutRegex.test(rut) ? null : { invalidRut: true };
+  }
+
+  // Validador para número de teléfono
+  private phoneValidator(control: AbstractControl): ValidationErrors | null {
+    const phone = control.value;
+    if (!phone) return null;
+
+    const phoneRegex = /^\+56[0-9]{9}$/;
+    return phoneRegex.test(phone) ? null : { invalidPhone: true };
+  }
+
   async register() {
-    this.isSubmitted = true;
+    this.isSubmitted = true; // Marca el formulario como enviado
     if (this.registerForm.invalid) {
       console.log('Formulario inválido:', this.registerForm.value);
-      this.presentToast('Por favor, completa todos los campos requeridos correctamente.');
+      this.presentToast('Por favor, revisa los campos marcados en rojo.');
       return;
     }
 

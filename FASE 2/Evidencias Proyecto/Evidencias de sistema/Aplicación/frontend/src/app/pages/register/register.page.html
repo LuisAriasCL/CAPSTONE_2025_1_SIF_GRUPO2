@@ -19,6 +19,7 @@
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" novalidate>
       <ion-list>
+        <!-- Primer Nombre -->
         <ion-item lines="full">
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="stacked">Primer Nombre</ion-label>
@@ -33,11 +34,10 @@
           *ngIf="isSubmitted && registerForm.controls['pri_nom_usu']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"
-            ><small>El primer nombre es requerido.</small></ion-text
-          >
+          <ion-text color="danger"><small>El primer nombre es requerido.</small></ion-text>
         </div>
 
+        <!-- Segundo Nombre (Opcional) -->
         <ion-item lines="full">
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="stacked">Segundo Nombre (Opcional)</ion-label>
@@ -48,6 +48,7 @@
           ></ion-input>
         </ion-item>
 
+        <!-- Primer Apellido -->
         <ion-item lines="full">
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="stacked">Primer Apellido</ion-label>
@@ -62,11 +63,10 @@
           *ngIf="isSubmitted && registerForm.controls['pri_ape_usu']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"
-            ><small>El primer apellido es requerido.</small></ion-text
-          >
+          <ion-text color="danger"><small>El primer apellido es requerido.</small></ion-text>
         </div>
 
+        <!-- Segundo Apellido (Opcional) -->
         <ion-item lines="full">
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="stacked">Segundo Apellido (Opcional)</ion-label>
@@ -77,6 +77,7 @@
           ></ion-input>
         </ion-item>
 
+        <!-- Email -->
         <ion-item lines="full">
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="stacked">Email</ion-label>
@@ -89,35 +90,36 @@
           ></ion-input>
         </ion-item>
         <div
-          *ngIf="isSubmitted && registerForm.controls['email']?.errors"
+          *ngIf="isSubmitted && registerForm.controls['email']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text
-            color="danger"
-            *ngIf="registerForm.controls['email'].errors?.['required']"
-          >
-            <small>El email es requerido.</small>
-          </ion-text>
-          <ion-text
-            color="danger"
-            *ngIf="registerForm.controls['email'].errors?.['email']"
-          >
-            <small>Introduce un email válido.</small>
-          </ion-text>
+          <ion-text color="danger"><small>El email es requerido.</small></ion-text>
+        </div>
+        <div
+          *ngIf="isSubmitted && registerForm.controls['email']?.errors?.['email']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>Introduce un email válido.</small></ion-text>
         </div>
 
-        <!-- Campo RUT con ícono -->
+        <!-- RUT (Opcional) -->
         <ion-item lines="full">
-          <ion-icon slot="start" name="id-card-outline"></ion-icon>
+          <ion-icon slot="start" name="card-outline"></ion-icon>
           <ion-label position="stacked">RUT (Opcional)</ion-label>
           <ion-input
             type="text"
             formControlName="rut_usu"
-            placeholder="Ej: 12345678-9"
+            placeholder="Ej: 12.345.678-9"
           ></ion-input>
         </ion-item>
+        <div
+          *ngIf="isSubmitted && registerForm.controls['rut_usu']?.errors?.['invalidRut']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>Introduce un RUT válido.</small></ion-text>
+        </div>
 
-        <!-- Campo Celular con ícono -->
+        <!-- Número de Teléfono -->
         <ion-item lines="full">
           <ion-icon slot="start" name="call-outline"></ion-icon>
           <ion-label position="stacked">Celular (Opcional)</ion-label>
@@ -128,31 +130,34 @@
             placeholder="Ej: +56912345678"
           ></ion-input>
         </ion-item>
+        <div
+          *ngIf="isSubmitted && registerForm.controls['celular']?.errors?.['invalidPhone']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>Introduce un número de teléfono válido.</small></ion-text>
+        </div>
 
+        <!-- Rol -->
         <ion-item lines="full">
-          <ion-icon slot="start" name="settings-outline"></ion-icon>
+          <ion-icon slot="start" name="briefcase-outline"></ion-icon>
           <ion-label position="stacked">Rol</ion-label>
-          <ion-select formControlName="rol" interface="popover" required>
-            <ion-select-option
-              *ngFor="let roleOption of availableRoles"
-              [value]="roleOption"
-            >
-              {{ roleOption.charAt(0).toUpperCase() + roleOption.slice(1) }}
-            </ion-select-option>
+          <ion-select formControlName="rol" required>
+            <ion-select-option value="gestor">Gestor</ion-select-option>
+            <ion-select-option value="tecnico">Técnico</ion-select-option>
+            <ion-select-option value="conductor">Conductor</ion-select-option>
           </ion-select>
         </ion-item>
         <div
           *ngIf="isSubmitted && registerForm.controls['rol']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"
-            ><small>El rol es requerido.</small></ion-text
-          >
+          <ion-text color="danger"><small>El rol es requerido.</small></ion-text>
         </div>
 
+        <!-- Contraseña -->
         <ion-item lines="full">
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
-          <ion-label position="stacked">Contraseña (Clave)</ion-label>
+          <ion-label position="stacked">Contraseña</ion-label>
           <ion-input
             type="password"
             formControlName="clave"
@@ -161,23 +166,19 @@
           ></ion-input>
         </ion-item>
         <div
-          *ngIf="isSubmitted && registerForm.controls['clave']?.errors"
+          *ngIf="isSubmitted && registerForm.controls['clave']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text
-            color="danger"
-            *ngIf="registerForm.controls['clave'].errors?.['required']"
-          >
-            <small>La contraseña es requerida.</small>
-          </ion-text>
-          <ion-text
-            color="danger"
-            *ngIf="registerForm.controls['clave'].errors?.['minlength']"
-          >
-            <small>La contraseña debe tener al menos 6 caracteres.</small>
-          </ion-text>
+          <ion-text color="danger"><small>La contraseña es requerida.</small></ion-text>
+        </div>
+        <div
+          *ngIf="isSubmitted && registerForm.controls['clave']?.errors?.['minlength']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>La contraseña debe tener al menos 6 caracteres.</small></ion-text>
         </div>
 
+        <!-- Confirmar Contraseña -->
         <ion-item lines="full">
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="stacked">Confirmar Contraseña</ion-label>
@@ -192,17 +193,13 @@
           *ngIf="isSubmitted && registerForm.controls['confirmarClave']?.errors?.['required']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"
-            ><small>Confirmar la contraseña es requerido.</small></ion-text
-          >
+          <ion-text color="danger"><small>Confirmar la contraseña es requerido.</small></ion-text>
         </div>
         <div
-          *ngIf="isSubmitted && registerForm.errors?.['passwordMismatch'] && (registerForm.controls['confirmarClave']?.touched || registerForm.controls['confirmarClave']?.dirty)"
+          *ngIf="isSubmitted && registerForm.errors?.['passwordMismatch']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"
-            ><small>Las contraseñas no coinciden.</small></ion-text
-          >
+          <ion-text color="danger"><small>Las contraseñas no coinciden.</small></ion-text>
         </div>
       </ion-list>
 
@@ -210,7 +207,6 @@
         class="ion-margin-top"
         type="submit"
         expand="block"
-        [disabled]="registerForm.invalid"
       >
         Registrarse
       </ion-button>
