@@ -263,7 +263,6 @@ exports.actualizarDetallesOt = async (req, res) => {
 
 exports.actualizarEstadoOt = async (req, res) => {
     const { id } = req.params;
-
     const { estado_ot, usuario_id_usu_encargado } = req.body;
 
     if (!estado_ot) {
@@ -276,21 +275,21 @@ exports.actualizarEstadoOt = async (req, res) => {
             return res.status(404).json({ message: 'Orden de trabajo no encontrada' });
         }
 
-       
+   
         ordenTrabajo.estado_ot = estado_ot;
+
    
         if (usuario_id_usu_encargado) {
             ordenTrabajo.usuarioIdUsuEncargado = usuario_id_usu_encargado;
         }
         
-
+    
         if (estado_ot === 'en_progreso' && !ordenTrabajo.fec_ini_ot) {
             ordenTrabajo.fec_ini_ot = new Date();
         }
         if (estado_ot === 'completado') {
             ordenTrabajo.fec_fin_ot = new Date();
         }
-
 
         await ordenTrabajo.save();
         

@@ -318,80 +318,89 @@ export class OrdenTrabajoDetallePage implements OnInit {
   }
 
   async finalizarOrdenDeTrabajo() {
-    if (!this.ordenTrabajo) return;
+    if (!this.ordenTrabajo) return;
 
-    const todasCompletas = this.ordenTrabajo.detalles.every((t) => t.checklist);
+    const todasCompletas = this.ordenTrabajo.detalles.every((t) => t.checklist);
 
-    if (!todasCompletas) {
-      const warnModal = await this.modalCtrl.create({
-        component: AlertaPersonalizadaComponent,
-        componentProps: {
-          title: 'Advertencia',
-          message:
-            'Debes completar todas las tareas para poder finalizar la OT.',
-          icon: 'warning',
-          buttons: [{ text: 'Entendido', role: 'confirm' }],
-        },
-        cssClass: 'custom-alert-modal',
-      });
-      await warnModal.present();
-      return;
-    }
+    if (!todasCompletas) {
+      const warnModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Advertencia',
+          message:
+            'Debes completar todas las tareas para poder finalizar la OT.',
+          icon: 'warning',
+          buttons: [{ text: 'Entendido', role: 'confirm' }],
+        },
+        cssClass: 'custom-alert-modal',
+      });
+      await warnModal.present();
+      return;
+    }
 
-    const confirmModal = await this.modalCtrl.create({
-      component: AlertaPersonalizadaComponent,
-      componentProps: {
-        title: 'Finalizar Orden de Trabajo',
-        message:
-          '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
-        icon: 'help',
-        buttons: [
-          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-          {
-            text: 'Sí, Finalizar',
-            role: 'confirm',
-            cssClass: 'confirm-button',
-          },
-        ],
-      },
-      backdropDismiss: false,
-      cssClass: 'custom-alert-modal',
-    });
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Finalizar Orden de Trabajo',
+        message:
+          '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          {
+            text: 'Sí, Finalizar',
+            role: 'confirm',
+            cssClass: 'confirm-button',
+          },
+        ],
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal',
+    });
 
-    await confirmModal.present();
-    const { data } = await confirmModal.onDidDismiss();
+    await confirmModal.present();
+    const { data } = await confirmModal.onDidDismiss();
 
-    if (data === 'confirm') {
-      const loading = await this.loadingCtrl.create({
-        message: 'Finalizando orden de trabajo...',
-      });
-      await loading.present();
+    if (data === 'confirm') {
+  
+      
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        this.presentToast('Error: No se pudo identificar al usuario actual.', 'danger');
+        return;
+      }
 
-      this.apiService
-        .actualizarEstadoOt(this.ordenTrabajo.id_ot, 'completado')
-        .subscribe({
-          next: async () => {
-            await loading.dismiss();
-            this.presentToast('Orden de Trabajo finalizada.', 'success');
-            this.closeModal(true);
-          },
-          error: async (err) => {
-            await loading.dismiss();
-            const errorModal = await this.modalCtrl.create({
-              component: AlertaPersonalizadaComponent,
-              componentProps: {
-                title: 'Error',
-                message: 'No se pudo finalizar la orden de trabajo.',
-                icon: 'error',
-                buttons: [{ text: 'Aceptar', role: 'confirm' }],
-              },
-              cssClass: 'custom-alert-modal',
-            });
-            await errorModal.present();
-          },
-        });
-    }
-  }
+      const loading = await this.loadingCtrl.create({
+        message: 'Finalizando orden de trabajo...',
+      });
+      await loading.present();
+
+      this.apiService
+        .actualizarEstadoOt(this.ordenTrabajo.id_ot, 'completado', currentUser.idUsu)
+        .subscribe({
+          next: async () => {
+            await loading.dismiss();
+            this.presentToast('Orden de Trabajo finalizada.', 'success');
+            this.closeModal(true);
+          },
+          error: async (err) => {
+            await loading.dismiss();
+            const errorModal = await this.modalCtrl.create({
+              component: AlertaPersonalizadaComponent,
+              componentProps: {
+                title: 'Error',
+                message: 'No se pudo finalizar la orden de trabajo.',
+                icon: 'error',
+                buttons: [{ text: 'Aceptar', role: 'confirm' }],
+              },
+              cssClass: 'custom-alert-modal',
+            });
+            await errorModal.present();
+          },
+        });
+       
+    }
+  }
 
   getColorForStatus(estado: string | undefined): string {
     if (!estado) return 'medium';
