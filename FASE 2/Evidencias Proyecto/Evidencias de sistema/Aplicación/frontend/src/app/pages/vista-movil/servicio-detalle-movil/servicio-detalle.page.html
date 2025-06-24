@@ -13,16 +13,20 @@
   </div>
 
   <div *ngIf="!isLoading && ot">
-   
     <ion-card class="main-info-card">
       <ion-card-header>
-        <ion-card-subtitle>{{ ot.vehiculo.patente }}</ion-card-subtitle>
-        <ion-card-title>{{ ot.vehiculo.marca }} {{ ot.vehiculo.modelo }}</ion-card-title>
+        <ion-card-subtitle>{{ ot.vehiculo?.patente }}</ion-card-subtitle>
+        <ion-card-title
+          >{{ ot.vehiculo?.marca }} {{ ot.vehiculo?.modelo }}</ion-card-title
+        >
       </ion-card-header>
       <ion-card-content>
         <div class="status-line">
           <strong>Estado:</strong>
-          <ion-chip [outline]="true" [color]="ot.estado_ot === 'en_progreso' ? 'warning' : 'medium'">
+          <ion-chip
+            [outline]="true"
+            [color]="ot.estado_ot === 'en_progreso' ? 'warning' : 'medium'"
+          >
             <ion-label>{{ ot.estado_ot | titlecase }}</ion-label>
           </ion-chip>
         </div>
@@ -40,32 +44,35 @@
       </ion-card-content>
     </ion-card>
 
-  <ion-list-header>
-  <ion-label>Tareas Asignadas</ion-label>
-</ion-list-header>
+    <ion-list-header>
+      <ion-label>Tareas Asignadas</ion-label>
+    </ion-list-header>
 
-<ion-list [inset]="true">
-  <ion-item *ngFor="let tarea of ot.detalles">
-    <ion-label class="ion-text-wrap">
-      <h3>{{ tarea.desc_det }}</h3>
-      <p *ngIf="tarea.tecnico">
-        <ion-icon name="person-outline" class="small-icon"></ion-icon>
-        Asignado a: {{ tarea.tecnico.pri_nom_usu }}
-      </p>
-      <p *ngIf="!tarea.tecnico">
-        <ion-icon name="person-remove-outline" class="small-icon"></ion-icon>
-        Sin asignar
-      </p>
-    </ion-label>
-    
-    <ion-checkbox 
-      slot="end" 
-      [(ngModel)]="tarea.checklist"
-      [disabled]="!tarea.tecnico || tarea.tecnico.id_usu !== currentUserId">
-    </ion-checkbox>
+    <ion-list [inset]="true">
+      <ion-item *ngFor="let tarea of ot.detalles">
+        <ion-label class="ion-text-wrap">
+          <h3>{{ tarea.desc_det }}</h3>
+          <p *ngIf="tarea.tecnico">
+            <ion-icon name="person-outline" class="small-icon"></ion-icon>
+            Asignado a: {{ tarea.tecnico.pri_nom_usu }}
+          </p>
+          <p *ngIf="!tarea.tecnico">
+            <ion-icon
+              name="person-remove-outline"
+              class="small-icon"
+            ></ion-icon>
+            Sin asignar
+          </p>
+        </ion-label>
 
-  </ion-item>
-</ion-list>
+        <ion-checkbox
+          slot="end"
+          [(ngModel)]="tarea.checklist"
+          [disabled]="!tarea.tecnico || tarea.tecnico.id_usu !== currentUserId"
+        >
+        </ion-checkbox>
+      </ion-item>
+    </ion-list>
 
     <!-- Botón de Acción -->
     <div class="ion-padding">

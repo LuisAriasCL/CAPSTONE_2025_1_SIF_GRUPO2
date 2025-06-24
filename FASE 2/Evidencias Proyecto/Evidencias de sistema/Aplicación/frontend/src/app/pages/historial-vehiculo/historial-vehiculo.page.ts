@@ -123,6 +123,10 @@ export class HistorialVehiculoPage implements OnInit {
     });
   }
 
+  volver() {
+    this.router.navigate(['/vehiculos']);
+  }
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -131,8 +135,6 @@ export class HistorialVehiculoPage implements OnInit {
       this.cargarDetallesVehiculo(vehiculoId);
     }
   }
-
-
 
   cargarHistorial(vehiculoId: number) {
     this.isLoading = true;

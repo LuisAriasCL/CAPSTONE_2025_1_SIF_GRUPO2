@@ -114,9 +114,14 @@
               ></ion-icon>
               <ion-label>
                 <p>
-                  {{ ordenTrabajo.vehiculo.marca }} {{
-                  ordenTrabajo.vehiculo.modelo }} ({{
-                  ordenTrabajo.vehiculo.patente }})
+                  <span *ngIf="ordenTrabajo.vehiculo">
+                    {{ ordenTrabajo.vehiculo?.marca }} {{
+                    ordenTrabajo.vehiculo?.modelo }} ({{
+                    ordenTrabajo.vehiculo?.patente }})
+                  </span>
+                  <span *ngIf="!ordenTrabajo.vehiculo">
+                    Vehículo no especificado
+                  </span>
                 </p>
               </ion-label>
             </ion-item>

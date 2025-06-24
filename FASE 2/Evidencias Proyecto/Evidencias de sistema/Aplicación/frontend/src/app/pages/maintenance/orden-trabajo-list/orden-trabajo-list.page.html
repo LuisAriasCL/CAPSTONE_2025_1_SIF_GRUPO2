@@ -122,8 +122,11 @@
                   class="align-middle orden-icon-bold"
                   [color]="getColorForStatus(ot.estado_ot)"
                 ></ion-icon>
-                OT #{{ ot.id_ot }} - {{ ot.vehiculo.marca }} {{
-                ot.vehiculo.modelo }}
+                OT #{{ ot.id_ot }}
+                <span *ngIf="ot.vehiculo">
+                  - {{ ot.vehiculo?.marca }} {{ ot.vehiculo?.modelo }}</span
+                >
+                <span *ngIf="!ot.vehiculo"> - Vehículo no especificado</span>
               </h2>
               <p>
                 <ion-icon
@@ -131,7 +134,9 @@
                   color="primary"
                   class="align-middle"
                 ></ion-icon>
-                <strong>Patente:</strong> {{ ot.vehiculo.patente }}
+                <strong>Patente:</strong>
+                <span *ngIf="ot.vehiculo">{{ ot.vehiculo?.patente }}</span>
+                <span *ngIf="!ot.vehiculo">No especificada</span>
               </p>
               <p>
                 <ion-icon

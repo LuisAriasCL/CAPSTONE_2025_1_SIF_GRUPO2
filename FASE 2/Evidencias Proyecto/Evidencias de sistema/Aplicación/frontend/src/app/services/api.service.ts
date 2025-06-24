@@ -179,7 +179,7 @@ export interface OrdenTrabajoResumen {
   prioridad: string;
   km_ot: number;
   descripcion_ot: string;
-  vehiculo: VehiculoResumen;
+  vehiculo?: VehiculoResumen; // Hacer opcional ya que puede venir undefined del backend
   solicitante?: UsuarioResumen;
   fec_fin_ot?: string;
 }
@@ -415,14 +415,14 @@ export class ApiService {
       id_usuario_solicitante: idUsuario,
     };
     console.log('[ApiService] Cuerpo para generar OTs en masa:', body);
-    
+
     // Llamamos a un nuevo endpoint que crearemos en el backend
-    return this.http.post<{ message: string }>(
-      `${this.apiUrl}/ordenes-trabajo/generar-bulk`, // Nuevo endpoint
-      body
-    ).pipe(
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<{ message: string }>(
+        `${this.apiUrl}/ordenes-trabajo/generar-bulk`, // Nuevo endpoint
+        body
+      )
+      .pipe(catchError(this.handleError));
   }
 
   // --- Métodos para el Módulo de Órdenes de Trabajo ---
