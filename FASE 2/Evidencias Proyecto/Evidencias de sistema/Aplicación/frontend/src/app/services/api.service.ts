@@ -9,7 +9,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import * as L from 'leaflet';
 
-// Interfaz para la respuesta de OSRM (como la definimos antes)
+// Interfaz para la respuesta de OSRM (como definimos antes)
 export interface OsrmRouteData {
   points: L.LatLngTuple[];
   distance: number;
@@ -112,6 +112,12 @@ export interface TareaPlanificacionResumen extends TareaPlanificacionData {
   planificacionMantenimientoIdPlan: number;
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
 export interface PlanificacionMantenimientoResumen {
   idPlan: number;
   descPlan: string;
@@ -172,11 +178,22 @@ export interface DetalleOtData {
   tecnico?: UsuarioResumen;
 }
 
+// Tipos para los estados de las órdenes de trabajo (sincronizado con backend)
+export type EstadoOrdenTrabajo =
+  | 'sin_iniciar'
+  | 'iniciada'
+  | 'en_progreso'
+  | 'cancelada'
+  | 'completada'
+  | 'rechazado';
+
+export type PrioridadOrdenTrabajo = 'baja' | 'media' | 'alta' | 'urgente';
+
 export interface OrdenTrabajoResumen {
   id_ot: number;
   fec_ini_ot: string;
-  estado_ot: string;
-  prioridad: string;
+  estado_ot: EstadoOrdenTrabajo;
+  prioridad: PrioridadOrdenTrabajo;
   km_ot: number;
   descripcion_ot: string;
   vehiculo?: VehiculoResumen; // Hacer opcional ya que puede venir undefined del backend
@@ -282,9 +299,21 @@ export class ApiService {
   }
   crearPlanificacion(data: PlanificacionMantenimientoData): Observable<any> {
     return this.http
-      .post<any>(`${this.apiUrl}/planificaciones`, data)
+      .post<any>(`${this.apiUrl}/planificaciones-v2`, data)
       .pipe(catchError(this.handleError));
   }
+
+  /**
+   * Crear planificación con generación automática de OTs (nuevo endpoint refactorizado)
+   */
+  crearPlanificacionConOts(
+    data: PlanificacionMantenimientoData & { idUsuarioSolicitante?: number }
+  ): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/planificaciones-v2`, data)
+      .pipe(catchError(this.handleError));
+  }
+
   deleteUser(id_usu: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
@@ -332,10 +361,13 @@ export class ApiService {
   }
   getPlanificaciones(): Observable<PlanificacionMantenimientoResumen[]> {
     return this.http
-      .get<PlanificacionMantenimientoResumen[]>(
-        `${this.apiUrl}/planificaciones`
+      .get<ApiResponse<PlanificacionMantenimientoResumen[]>>(
+        `${this.apiUrl}/planificaciones-v2`
       )
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => response.data), // Extraer el array de la propiedad 'data'
+        catchError(this.handleError)
+      );
   }
   getAllUsers(rol?: string, estado: string = 'activo'): Observable<Usuario[]> {
     let params = new HttpParams();
@@ -426,18 +458,49 @@ export class ApiService {
   }
 
   // --- Métodos para el Módulo de Órdenes de Trabajo ---
+  /**
+   * Actualiza el estado de una orden de trabajo
+   * @param id - ID de la orden de trabajo
+   * @param estado - Nuevo estado (debe ser uno de los valores válidos del enum)
+   * @param encargadoId - ID opcional del usuario encargado
+   */
   actualizarEstadoOt(
     id: number,
-    estado: string,
+    estado: EstadoOrdenTrabajo,
     encargadoId?: number
   ): Observable<any> {
-    const body: { estado_ot: string; usuario_id_usu_encargado?: number } = {
+    const body: {
+      estado_ot: EstadoOrdenTrabajo;
+      usuario_id_usu_encargado?: number;
+    } = {
       estado_ot: estado,
     };
     if (encargadoId) {
       body.usuario_id_usu_encargado = encargadoId;
     }
-    return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
+    return this.http.put(
+      `${this.apiUrl}/ordenes-trabajo/${id}/estado`,
+      body
+    );
+  }
+
+  /**
+   * Rechaza una orden de trabajo con motivo
+   * @param id - ID de la orden de trabajo
+   * @param motivoRechazo - Motivo del rechazo
+   * @param usuarioId - ID del usuario que rechaza
+   */
+  rechazarOrdenTrabajo(
+    id: number,
+    motivoRechazo: string,
+    usuarioId: number
+  ): Observable<any> {
+    return this.http
+      .put(`${this.apiUrl}/ordenes-trabajo/${id}/rechazar`, {
+        motivo_rechazo: motivoRechazo,
+        usuario_id: usuarioId,
+      })
+      .pipe(catchError(this.handleError));
   }
 
   generarOt(
@@ -466,20 +529,20 @@ export class ApiService {
 
   getOrdenesTrabajo(): Observable<OrdenTrabajoResumen[]> {
     return this.http.get<OrdenTrabajoResumen[]>(
-      `${this.apiUrl}/ordenes-trabajo`
+      `${this.apiUrl}/ordenes-trabajo-v2`
     );
   }
 
   actualizarDetallesOt(idOt: number, payload: any): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/ordenes-trabajo/${idOt}/detalles`,
+      `${this.apiUrl}/ordenes-trabajo-v2/${idOt}/detalles`,
       payload
     );
   }
 
   getOrdenTrabajoById(id: number): Observable<OrdenTrabajoDetalle> {
     return this.http.get<OrdenTrabajoDetalle>(
-      `${this.apiUrl}/ordenes-trabajo/${id}`
+      `${this.apiUrl}/ordenes-trabajo-v2/${id}`
     );
   }
 
@@ -507,10 +570,13 @@ export class ApiService {
     id: number
   ): Observable<PlanificacionMantenimientoResumen> {
     return this.http
-      .get<PlanificacionMantenimientoResumen>(
-        `${this.apiUrl}/planificaciones/${id}`
+      .get<ApiResponse<PlanificacionMantenimientoResumen>>(
+        `${this.apiUrl}/planificaciones-v2/${id}`
       )
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => response.data), // Extraer el objeto de la propiedad 'data'
+        catchError(this.handleError)
+      );
   }
 
   updatePlanificacion(
@@ -518,13 +584,13 @@ export class ApiService {
     data: Partial<PlanificacionMantenimientoData>
   ): Observable<any> {
     return this.http
-      .put<any>(`${this.apiUrl}/planificaciones/${id}`, data)
+      .put<any>(`${this.apiUrl}/planificaciones-v2/${id}`, data)
       .pipe(catchError(this.handleError));
   }
 
   deletePlanificacion(id: number): Observable<{ message: string }> {
     return this.http
-      .delete<{ message: string }>(`${this.apiUrl}/planificaciones/${id}`)
+      .delete<{ message: string }>(`${this.apiUrl}/planificaciones-v2/${id}`)
       .pipe(catchError(this.handleError));
   }
 

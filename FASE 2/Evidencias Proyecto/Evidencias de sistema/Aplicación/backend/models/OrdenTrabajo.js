@@ -1,5 +1,10 @@
 // backend/models/OrdenTrabajo.js
 const { DataTypes } = require('sequelize');
+const {
+  ESTADOS_ORDEN_TRABAJO,
+  PRIORIDADES_ORDEN_TRABAJO,
+  getEnumValues,
+} = require('../constants/enums');
 
 module.exports = sequelize => {
   const OrdenTrabajo = sequelize.define(
@@ -26,23 +31,16 @@ module.exports = sequelize => {
         comment: 'Fecha y hora del fin de la orden',
       },
       estado_ot: {
-        type: DataTypes.ENUM(
-          'sin_iniciar',
-          'iniciada',
-          'en_progreso',
-          'cancelada',
-          'completada',
-          'rechazado'
-        ),
+        type: DataTypes.ENUM(...getEnumValues(ESTADOS_ORDEN_TRABAJO)),
         allowNull: false,
-        defaultValue: 'solicitado',
+        defaultValue: ESTADOS_ORDEN_TRABAJO.SIN_INICIAR,
         field: 'estado_ot',
         comment: 'Estado de la orden de trabajo',
       },
       prioridad: {
-        type: DataTypes.ENUM('baja', 'media', 'alta', 'urgente'),
+        type: DataTypes.ENUM(...getEnumValues(PRIORIDADES_ORDEN_TRABAJO)),
         allowNull: false,
-        defaultValue: 'media',
+        defaultValue: PRIORIDADES_ORDEN_TRABAJO.MEDIA,
         field: 'prioridad',
         comment: 'Prioridad de la orden de trabajo',
       },

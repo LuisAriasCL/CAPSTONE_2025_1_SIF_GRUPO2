@@ -57,10 +57,22 @@ export abstract class BaseListPageComponent<T> implements OnDestroy {
       });
       await loadingIndicator.present();
     }
-
     try {
       const data = await this.loadData();
-      this.baseListService.setItems(data);
+
+      // Verificar que data sea un array válido antes de proceder
+      if (!Array.isArray(data)) {
+        console.warn(
+          'loadData() no retornó un array válido. Tipo recibido:',
+          typeof data,
+          'Valor:',
+          data
+        );
+        this.baseListService.setItems([]);
+      } else {
+        this.baseListService.setItems(data);
+      }
+
       this.baseListService.applyFilters(this.getFilterConfig());
 
       this.isLoading = false;
@@ -114,7 +126,10 @@ export abstract class BaseListPageComponent<T> implements OnDestroy {
 
   // Métodos de filtros
   applyFilters() {
-    this.baseListService.applyFilters(this.getFilterConfig());
+    // Verificar que el servicio base tenga datos válidos antes de aplicar filtros
+    if (Array.isArray(this.baseListService.items)) {
+      this.baseListService.applyFilters(this.getFilterConfig());
+    }
   }
 
   setFilter(key: string, value: any) {
@@ -162,11 +177,23 @@ export abstract class BaseListPageComponent<T> implements OnDestroy {
   // Métodos para actualizar datos
   updateItem(predicate: (item: T) => boolean, updatedItem: T) {
     this.baseListService.updateItem(predicate, updatedItem);
-    this.applyFilters();
+    // Solo aplicar filtros si hay datos válidos
+    if (
+      Array.isArray(this.baseListService.items) &&
+      this.baseListService.items.length >= 0
+    ) {
+      this.applyFilters();
+    }
   }
 
   removeItem(predicate: (item: T) => boolean) {
     this.baseListService.removeItem(predicate);
-    this.applyFilters();
+    // Solo aplicar filtros si hay datos válidos
+    if (
+      Array.isArray(this.baseListService.items) &&
+      this.baseListService.items.length >= 0
+    ) {
+      this.applyFilters();
+    }
   }
 }
