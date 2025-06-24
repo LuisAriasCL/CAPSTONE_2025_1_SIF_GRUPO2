@@ -91,7 +91,7 @@ export class AppComponent implements OnInit {
       '/dashboard': 'Dashboard - Gestión de Flota',
       '/vehiculos': 'Gestión de Vehículos',
       '/asignacion-list': 'Gestión de Asignaciones',
-      '/route-list': 'Gestión de Rutas',
+      '/rutas': 'Gestión de Rutas',
       '/planificacion-list': 'Planificación de Mantenimiento',
       '/orden-trabajo-list': 'Órdenes de Trabajo',
       '/gestion-usuarios': 'Gestión de Usuarios',

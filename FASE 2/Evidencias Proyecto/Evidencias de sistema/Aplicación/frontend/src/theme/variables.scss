@@ -92,6 +92,12 @@
     --border-radius: 1rem; /* 16px = 1rem */
   }
 
+  ion-modal.usuario-form-modal {
+    --width: 40rem;
+    --height: 42rem;
+    --border-radius: 1rem; /* 16px = 1rem */
+  }
+
   // Añadir nuevos estilos para el modal expandido
   // Variables para el modal expandido
   $expanded-modal-z-index: 10000;
