@@ -29,6 +29,10 @@ module.exports = (sequelize, SequelizeDataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
         field: 'km_ruta',
+        get() {
+          const rawValue = this.getDataValue('kilometrosRuta');
+          return rawValue !== null ? parseFloat(rawValue) : null;
+        },
       },
       duracionEstimada: {
         type: DataTypes.INTEGER,

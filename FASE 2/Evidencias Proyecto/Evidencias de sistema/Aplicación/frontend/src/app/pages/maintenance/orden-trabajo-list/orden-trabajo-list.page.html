@@ -1,14 +1,4 @@
 <ion-content [fullscreen]="true" class="ion-padding">
-  <!-- FAB para nueva orden de trabajo -->
-  <ion-fab slot="fixed" vertical="top" horizontal="end" class="custom-fab">
-    <ion-fab-button
-      (click)="abrirFormularioNuevaOrden()"
-      style="--background: #008000; --color: white"
-      size="small"
-    >
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
   <ion-refresher slot="fixed" (ionRefresh)="loadItems($event)">
     <ion-refresher-content
       pullingIcon="chevron-down-circle-outline"

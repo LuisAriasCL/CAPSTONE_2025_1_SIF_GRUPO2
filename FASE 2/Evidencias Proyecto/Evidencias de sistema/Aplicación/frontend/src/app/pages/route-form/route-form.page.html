@@ -181,6 +181,23 @@
 
       <ion-item>
         <ion-icon
+          name="speedometer-outline"
+          slot="start"
+          [color]="calculatedDistance ? 'primary' : 'medium'"
+        ></ion-icon>
+        <ion-label style="font-weight: 600; font-size: 1rem"
+          >Distancia</ion-label
+        >
+        <ion-note slot="end" class="location-info">
+          <div class="location-name">
+            {{ calculatedDistance ? formatDistance(calculatedDistance) : 'Define
+            los puntos para obtener la distancia' }}
+          </div>
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon
           name="time-outline"
           slot="start"
           [color]="calculatedDuration ? 'warning' : 'medium'"

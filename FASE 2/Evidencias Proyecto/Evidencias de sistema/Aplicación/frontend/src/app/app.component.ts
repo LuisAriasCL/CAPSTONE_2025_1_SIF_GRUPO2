@@ -89,7 +89,7 @@ export class AppComponent implements OnInit {
   public setTitleForRoute(url: string) {
     const routeTitles: { [key: string]: string } = {
       '/dashboard': 'Dashboard - Gestión de Flota',
-      '/vehicle-list': 'Gestión de Vehículos',
+      '/vehiculos': 'Gestión de Vehículos',
       '/asignacion-list': 'Gestión de Asignaciones',
       '/route-list': 'Gestión de Rutas',
       '/planificacion-list': 'Planificación de Mantenimiento',
@@ -101,6 +101,7 @@ export class AppComponent implements OnInit {
       '/siniestro-detalle': 'Detalle de Incidente',
       '/login': 'Iniciar Sesión',
       '/register': 'Registrarse',
+      '/reporte-mantenimiento': 'Reportes y Estadísticas',
     };
 
     const title = routeTitles[url] || 'SIF - Sistema Integral de Flota';

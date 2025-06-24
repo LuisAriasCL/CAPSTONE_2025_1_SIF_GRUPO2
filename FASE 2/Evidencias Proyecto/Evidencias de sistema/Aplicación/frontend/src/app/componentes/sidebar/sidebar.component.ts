@@ -48,7 +48,7 @@ export class SidebarComponent {
    * Opciones de navegación para la aplicación.
    */ public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
-     { title: 'Reportes', url: '/reporte-mantenimiento', icon: 'newspaperOutline' },
+    { title: 'Reportes', url: '/reporte-mantenimiento', icon: 'newspaper' },
     // { title: 'Reportes', url: '/reportes', icon: 'newspaper' }, // Página no existe aún
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
     // { title: 'Combustible', url: '/combustible', icon: 'flame' }, // Página no existe aún

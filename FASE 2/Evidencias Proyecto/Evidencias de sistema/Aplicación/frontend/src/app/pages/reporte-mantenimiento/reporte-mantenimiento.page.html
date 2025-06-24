@@ -1,34 +1,64 @@
 <!-- frontend/src/app/pages/reporte-mantenimiento/reporte-mantenimiento.page.html -->
 
-
 <ion-content [fullscreen]="true">
   <ion-grid>
     <!-- SECCIÓN DE FILTROS -->
     <ion-row>
       <ion-col>
-        <ion-card class="filtros-card">
+        <ion-card class="filters-card">
+          <ion-card-header>
+            <ion-card-title class="filters-title-neutral">
+              <ion-icon name="funnel-outline"></ion-icon>
+              Filtros
+            </ion-card-title>
+          </ion-card-header>
+
           <ion-card-content>
             <ion-row class="ion-align-items-end">
               <ion-col size="12" size-md="3">
                 <ion-item>
-                  <ion-label position="stacked">Fecha Desde</ion-label>
-                  <ion-input type="date" [(ngModel)]="filtros.fechaDesde"></ion-input>
+                  <ion-label
+                    position="stacked"
+                    style="margin-bottom: 0.5rem; font-weight: 600"
+                    >Fecha Desde</ion-label
+                  >
+                  <ion-input
+                    type="date"
+                    [(ngModel)]="filtros.fechaDesde"
+                  ></ion-input>
                 </ion-item>
               </ion-col>
               <ion-col size="12" size-md="3">
                 <ion-item>
-                  <ion-label position="stacked">Fecha Hasta</ion-label>
-                  <ion-input type="date" [(ngModel)]="filtros.fechaHasta"></ion-input>
+                  <ion-label
+                    position="stacked"
+                    style="margin-bottom: 0.5rem; font-weight: 600"
+                    >Fecha Hasta</ion-label
+                  >
+                  <ion-input
+                    type="date"
+                    [(ngModel)]="filtros.fechaHasta"
+                  ></ion-input>
                 </ion-item>
               </ion-col>
               <ion-col size="12" size-md="3">
                 <ion-item>
-                  <ion-label position="stacked">Vehículo</ion-label>
-                  <ion-select [(ngModel)]="filtros.vehiculoId" interface="popover">
+                  <ion-label
+                    position="stacked"
+                    style="margin-bottom: 0.5rem; font-weight: 600"
+                    >Vehículo</ion-label
+                  >
+                  <ion-select
+                    [(ngModel)]="filtros.vehiculoId"
+                    interface="popover"
+                  >
                     <ion-select-option [value]="null">Todos</ion-select-option>
-            <ion-select-option *ngFor="let vehiculo of vehiculos" [value]="vehiculo.idVehi">
-
-                      {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+                    <ion-select-option
+                      *ngFor="let vehiculo of vehiculos"
+                      [value]="vehiculo.idVehi"
+                    >
+                      {{ vehiculo.patente }} - {{ vehiculo.marca }} {{
+                      vehiculo.modelo }}
                     </ion-select-option>
                   </ion-select>
                 </ion-item>
@@ -38,8 +68,12 @@
                   <ion-icon name="filter-outline" slot="start"></ion-icon>
                   Aplicar
                 </ion-button>
-                <ion-button expand="block" fill="clear" (click)="limpiarFiltros()">
-                   Limpiar
+                <ion-button
+                  expand="block"
+                  fill="clear"
+                  (click)="limpiarFiltros()"
+                >
+                  Limpiar
                 </ion-button>
               </ion-col>
             </ion-row>
@@ -76,27 +110,41 @@
               <!-- Estado de Carga -->
               <ng-container *ngIf="isLoading">
                 <tr *ngFor="let i of [1,2,3,4,5]">
-                  <td colspan="7"><ion-skeleton-text animated></ion-skeleton-text></td>
+                  <td colspan="7">
+                    <ion-skeleton-text animated></ion-skeleton-text>
+                  </td>
                 </tr>
               </ng-container>
               <!-- Datos Reales -->
               <ng-container *ngIf="!isLoading && reporteData.length > 0">
                 <tr *ngFor="let ot of reporteData">
                   <td data-label="# OT">{{ ot.id_ot }}</td>
-                  <td data-label="Vehículo">{{ ot.vehiculo?.patente || 'N/A' }}</td>
+                  <td data-label="Vehículo">
+                    {{ ot.vehiculo?.patente || 'N/A' }}
+                  </td>
                   <td data-label="Descripción">{{ ot.descripcion_ot }}</td>
-                  <td data-label="Encargado">{{ ot.encargado?.pri_nom_usu || 'No asignado' }}</td>
-                  <td data-label="Fecha Inicio">{{ ot.fec_ini_ot | date:'dd/MM/yyyy' }}</td>
-                  <td data-label="Fecha Fin">{{ ot.fec_fin_ot | date:'dd/MM/yyyy' }}</td>
+                  <td data-label="Encargado">
+                    {{ ot.encargado?.pri_nom_usu || 'No asignado' }}
+                  </td>
+                  <td data-label="Fecha Inicio">
+                    {{ ot.fec_ini_ot | date:'dd/MM/yyyy' }}
+                  </td>
+                  <td data-label="Fecha Fin">
+                    {{ ot.fec_fin_ot | date:'dd/MM/yyyy' }}
+                  </td>
                   <td data-label="Estado">
-                    <ion-chip [ngClass]="'status-' + ot.estado_ot">{{ ot.estado_ot | titlecase }}</ion-chip>
+                    <ion-chip [ngClass]="'status-' + ot.estado_ot"
+                      >{{ ot.estado_ot | titlecase }}</ion-chip
+                    >
                   </td>
                 </tr>
               </ng-container>
               <!-- Sin Datos -->
               <ng-container *ngIf="!isLoading && reporteData.length === 0">
                 <tr>
-                  <td colspan="7" class="ion-text-center">No se encontraron registros con los filtros seleccionados.</td>
+                  <td colspan="7" class="ion-text-center">
+                    No se encontraron registros con los filtros seleccionados.
+                  </td>
                 </tr>
               </ng-container>
             </tbody>

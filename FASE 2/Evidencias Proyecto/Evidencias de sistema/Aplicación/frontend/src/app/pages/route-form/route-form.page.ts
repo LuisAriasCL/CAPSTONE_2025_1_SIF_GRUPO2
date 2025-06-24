@@ -487,10 +487,14 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
         });
 
         // Procesar puntos de la ruta
-        this.processRoutePoints(data); // Cargar duración guardada si existe
-        if (data.duracionEstimada) {
-          // La duración viene como número (INT) de la base de datos
+        this.processRoutePoints(data);
+        this.cargarDistanciaGuardada(data);
+        console.log('Datos de ruta cargados:', data);
+        // Mapear duración y distancia guardadas si existen
+        if (typeof data.duracionEstimada === 'number') {
           this.calculatedDuration = data.duracionEstimada;
+        } else {
+          this.calculatedDuration = null;
         }
       },
       error: async (err) => {
@@ -695,6 +699,22 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
     this.changeDetectorRef.detectChanges();
   }
 
+  public formatDistance(distanceKm: number): string {
+    if (distanceKm < 1) {
+      return `${(distanceKm * 1000).toFixed(0)} metros`;
+    } else {
+      return `${distanceKm.toFixed(2)} km`;
+    }
+  }
+
+  private cargarDistanciaGuardada(data: Route) {
+    if (typeof data.kilometrosRuta === 'number') {
+      this.calculatedDistance = data.kilometrosRuta;
+    } else {
+      this.calculatedDistance = null;
+    }
+  }
+
   // Nuevo método: procesar puntos de ruta al cargar datos
   private processRoutePoints(data: Route): void {
     let puntosDeserializados: any = data.puntosRuta;
@@ -716,18 +736,19 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
 
       // Obtener nombres de ubicaciones
       this.loadLocationNames();
-
       // Cargar distancia si existe
-      if (typeof data.kilometrosRuta === 'number') {
-        this.calculatedDistance = data.kilometrosRuta;
-      }
 
       // Mostrar en mapa si está listo
       if (this.routeMap) {
         this.displayLoadedRouteOnMap();
+        console.log(
+          'Puntos de ruta cargados y mostrados en el mapa:',
+          this.calculatedPoints
+        );
       }
     } else {
       this.handleInvalidRoutePoints(puntosDeserializados);
+      console.log('Puntos de ruta inválidos o vacíos:', puntosDeserializados);
     }
 
     this.changeDetectorRef.detectChanges();
@@ -1018,44 +1039,6 @@ export class RouteFormPage implements OnInit, AfterViewInit, OnDestroy {
       const concepcionCoords: L.LatLngTuple = [-36.7953, -73.0626];
       const zoomLevel = this.isMapExpanded ? 13 : 11;
       this.routeMap.setView(concepcionCoords, zoomLevel);
-    }
-  }
-
-  // Método para convertir una duración en formato string a segundos
-  private parseDurationToSeconds(durationString: string): number | null {
-    try {
-      // Formato esperado: "X horas Y minutos" o "Y minutos" o "X horas"
-      const hoursMatch = durationString.match(/(\d+)\s*horas?/i);
-      const minutesMatch = durationString.match(/(\d+)\s*minutos?/i);
-
-      let totalSeconds = 0;
-
-      if (hoursMatch) {
-        totalSeconds += parseInt(hoursMatch[1]) * 3600;
-      }
-
-      if (minutesMatch) {
-        totalSeconds += parseInt(minutesMatch[1]) * 60;
-      }
-
-      return totalSeconds > 0 ? totalSeconds : null;
-    } catch (error) {
-      console.error('Error al parsear duración:', error);
-      return null;
-    }
-  }
-
-  // Método para convertir segundos a formato string para guardar
-  private secondsToStringDuration(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0 && minutes > 0) {
-      return `${hours} horas ${minutes} minutos`;
-    } else if (hours > 0) {
-      return `${hours} horas`;
-    } else {
-      return `${minutes} minutos`;
     }
   }
 }
