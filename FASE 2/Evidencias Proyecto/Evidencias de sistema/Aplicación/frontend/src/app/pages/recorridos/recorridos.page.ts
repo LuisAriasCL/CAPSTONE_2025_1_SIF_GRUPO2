@@ -78,8 +78,6 @@ export class HomePage implements OnInit, OnDestroy {
 
   private map!: L.Map;
   private vehicleMarkers: { [vehicleId: number]: L.Marker } = {};
-  private vehicleTrail: { [vehicleId: number]: L.LatLng[] } = {};
-  private trailPolyline: { [vehicleId: number]: L.Polyline } = {};
   private subscriptions = new Subscription();
   private queryParamsSubscription: Subscription | undefined;
   private navigationSubscription: Subscription | undefined;
@@ -762,8 +760,7 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     const { idVehi, latitud, longitud } = vehiculoData;
-
-    // Validación de coordenadas
+    // Validación más estricta de coordenadas
     if (
       idVehi === undefined ||
       latitud == null ||
@@ -774,53 +771,71 @@ export class HomePage implements OnInit, OnDestroy {
       longitud === 0
     ) {
       console.warn(
-        '[Recorridos] updateMarker: Coordenadas inválidas para vehículo',
-        vehiculoData
+        '[Recorridos] updateMarker: Datos de vehículo incompletos o coordenadas inválidas',
+        {
+          idVehi,
+          latitud,
+          longitud,
+          isLatNaN:
+            typeof latitud === 'number' ? isNaN(latitud) : 'not a number',
+          isLonNaN:
+            typeof longitud === 'number' ? isNaN(longitud) : 'not a number',
+        }
       );
       return;
     }
 
-    const position: L.LatLng = L.latLng(latitud, longitud);
-
-    // Actualizar marcador
-    if (this.vehicleMarkers[idVehi]) {
-      this.vehicleMarkers[idVehi].setLatLng(position);
-    } else {
-      const marker = L.marker(position).addTo(this.map);
-      this.vehicleMarkers[idVehi] = marker;
+    // Verificar si estamos siguiendo un vehículo específico
+    if (
+      this.vehiculoIdParaSeguir !== null &&
+      idVehi !== this.vehiculoIdParaSeguir
+    ) {
+      return;
     }
 
-    // Actualizar rastro
-    if (!this.vehicleTrail[idVehi]) {
-      this.vehicleTrail[idVehi] = [];
-    }
-    this.vehicleTrail[idVehi].push(position);
+    const position: L.LatLngTuple = [latitud, longitud];
+    console.log(
+      `[Recorridos] updateMarker: Actualizando marcador para vehículo ${idVehi}`,
+      position
+    );
 
-    if (!this.trailPolyline[idVehi]) {
-      this.trailPolyline[idVehi] = L.polyline(this.vehicleTrail[idVehi], {
-        color: 'blue',
-        weight: 3,
-      }).addTo(this.map);
-    } else {
-      this.trailPolyline[idVehi].setLatLngs(this.vehicleTrail[idVehi]);
-    }
+    try {
+      if (this.vehicleMarkers[idVehi]) {
+        // Actualizar marcador existente
+        const marker = this.vehicleMarkers[idVehi];
+        marker.setLatLng(position);
+        marker.setPopupContent(this.createPopupContent(vehiculoData));
+        console.log(
+          `[Recorridos] updateMarker: Marcador actualizado para vehículo ${idVehi}`
+        );
+      } else {
+        // Crear nuevo marcador
+        const newMarker = L.marker(position)
+          .addTo(this.map)
+          .bindPopup(this.createPopupContent(vehiculoData));
 
-    console.log(`[Recorridos] updateMarker: Rastro actualizado para vehículo ${idVehi}`);
-  }
+        this.vehicleMarkers[idVehi] = newMarker;
+        console.log(
+          `[Recorridos] updateMarker: Nuevo marcador creado para vehículo ${idVehi}`
+        );
 
-  private clearTrail(vehicleId?: number): void {
-    if (vehicleId) {
-      if (this.trailPolyline[vehicleId]) {
-        this.map.removeLayer(this.trailPolyline[vehicleId]);
-        delete this.trailPolyline[vehicleId];
+        // Agregar evento click al marcador
+        newMarker.on('click', () => {
+          console.log(
+            `[Recorridos] Marcador clickeado para vehículo ${idVehi}`
+          );
+        });
       }
-      delete this.vehicleTrail[vehicleId];
-    } else {
-      Object.keys(this.trailPolyline).forEach((id) => {
-        this.map.removeLayer(this.trailPolyline[parseInt(id, 10)]);
-      });
-      this.trailPolyline = {};
-      this.vehicleTrail = {};
+
+      // Si estamos siguiendo este vehículo, actualizar también la lista
+      if (this.vehiculoIdParaSeguir === idVehi) {
+        this.actualizarVehiculoEnLista(vehiculoData);
+      }
+    } catch (error) {
+      console.error(
+        `[Recorridos] updateMarker: Error actualizando marcador para vehículo ${idVehi}`,
+        error
+      );
     }
   }
 
