@@ -84,8 +84,8 @@ export class RegisterPage implements OnInit {
         pri_ape_usu: ['', [Validators.required]], // Campo requerido
         seg_ape_usu: [''], // Campo opcional
         email: ['', [Validators.required, Validators.email]], // Campo requerido con validación de formato
-        rut_usu: ['', [this.rutValidator]], // Campo opcional con validación de formato
-        celular: ['', [this.phoneValidator]], // Campo opcional con validación de formato
+        rut_usu: ['', [Validators.required, this.rutValidator]], // Campo requerido con validación de formato
+        celular: ['', [Validators.required, this.phoneValidator]], // Campo requerido con validación de formato
         rol: ['conductor', [Validators.required]], // Campo requerido
         clave: ['', [Validators.required, Validators.minLength(6)]], // Campo requerido con longitud mínima
         confirmarClave: ['', [Validators.required]], // Campo requerido

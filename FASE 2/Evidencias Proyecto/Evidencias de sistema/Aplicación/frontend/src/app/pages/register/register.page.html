@@ -102,16 +102,23 @@
           <ion-text color="danger"><small>Introduce un email válido.</small></ion-text>
         </div>
 
-        <!-- RUT (Opcional) -->
+        <!-- RUT -->
         <ion-item lines="full">
           <ion-icon slot="start" name="card-outline"></ion-icon>
-          <ion-label position="stacked">RUT (Opcional)</ion-label>
+          <ion-label position="stacked">RUT</ion-label>
           <ion-input
             type="text"
             formControlName="rut_usu"
+            required
             placeholder="Ej: 12.345.678-9"
           ></ion-input>
         </ion-item>
+        <div
+          *ngIf="isSubmitted && registerForm.controls['rut_usu']?.errors?.['required']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>El RUT es requerido.</small></ion-text>
+        </div>
         <div
           *ngIf="isSubmitted && registerForm.controls['rut_usu']?.errors?.['invalidRut']"
           class="error-message ion-padding-start"
@@ -122,19 +129,26 @@
         <!-- Número de Teléfono -->
         <ion-item lines="full">
           <ion-icon slot="start" name="call-outline"></ion-icon>
-          <ion-label position="stacked">Celular (Opcional)</ion-label>
+          <ion-label position="stacked">Celular</ion-label>
           <ion-input
             type="tel"
             formControlName="celular"
+            required
             inputmode="tel"
             placeholder="Ej: +56912345678"
           ></ion-input>
         </ion-item>
         <div
+          *ngIf="isSubmitted && registerForm.controls['celular']?.errors?.['required']"
+          class="error-message ion-padding-start"
+        >
+          <ion-text color="danger"><small>El número de celular es requerido.</small></ion-text>
+        </div>
+        <div
           *ngIf="isSubmitted && registerForm.controls['celular']?.errors?.['invalidPhone']"
           class="error-message ion-padding-start"
         >
-          <ion-text color="danger"><small>Introduce un número de teléfono válido.</small></ion-text>
+          <ion-text color="danger"><small>Introduce un número de celular válido.</small></ion-text>
         </div>
 
         <!-- Rol -->
