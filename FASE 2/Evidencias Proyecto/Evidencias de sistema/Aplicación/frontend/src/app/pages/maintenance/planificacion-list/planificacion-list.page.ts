@@ -147,7 +147,7 @@ export class PlanificacionListPage
     await this.loadItems(event);
   }
 
-  async generarOt(plan: PlanificacionMantenimientoResumen) {
+ async generarOt(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
 
     if (!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0) {
@@ -158,8 +158,6 @@ export class PlanificacionListPage
       return;
     }
 
-    const vehiculo = plan.vehiculosEnPlan[0];
-    // --- ¡LÓGICA CORREGIDA! ---
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       this.mostrarToast(
@@ -168,14 +166,22 @@ export class PlanificacionListPage
       );
       return;
     }
-    const idUsuario = currentUser.idUsu; // Ahora se obtiene el ID real
+    const idUsuario = currentUser.idUsu;
 
-    // Mostrar confirmación de generación con modal personalizado
+    // ---- INICIO DE LA LÓGICA CORREGIDA ----
+
+    // 1. Crear un mensaje dinámico para la confirmación
+    const numVehiculos = plan.vehiculosEnPlan.length;
+    const message = numVehiculos === 1
+      ? `Se creará una OT para el vehículo <strong>${plan.vehiculosEnPlan[0].patente}</strong> a partir del plan "${plan.descPlan}". ¿Continuar?`
+      : `Se generarán <strong>${numVehiculos} Órdenes de Trabajo</strong>, una para cada vehículo asociado al plan "${plan.descPlan}". ¿Continuar?`;
+
+    // 2. Mostrar el modal de confirmación con el nuevo mensaje
     const modal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
-        title: 'Generar Orden de Trabajo',
-        message: `Se creará una OT para el vehículo <strong>${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})</strong> a partir del plan "${plan.descPlan}". ¿Continuar?`,
+        title: 'Generar Órdenes de Trabajo',
+        message: message,
         icon: 'help',
         buttons: [
           { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
@@ -186,27 +192,36 @@ export class PlanificacionListPage
       cssClass: 'custom-alert-modal',
     });
     await modal.present();
+
     const { data } = await modal.onDidDismiss();
+
     if (data === 'confirm') {
       const loading = await this.loadingCtrl.create({
-        message: 'Generando OT...',
+        message: 'Generando OTs...',
       });
       await loading.present();
+
+      // 3. Extraer TODOS los IDs de los vehículos
+      const vehiculosIds = plan.vehiculosEnPlan.map(v => v.idVehi);
+
+      // 4. Llamar a un NUEVO método en el ApiService (que crearemos en el siguiente paso)
       this.apiService
-        .generarOt(plan.idPlan, vehiculo.idVehi, idUsuario)
+        .generarOtsParaPlan(plan.idPlan, vehiculosIds, idUsuario)
         .subscribe({
           next: async (res) => {
             await loading.dismiss();
             this.mostrarToast(
-              `¡Orden de Trabajo #${res.id_ot} generada con éxito!`,
+              res.message || `${numVehiculos} OT(s) generada(s) con éxito.`,
               'success'
             );
+            // Opcional: podrías querer recargar los datos o navegar a otra página
           },
           error: async (err) => {
             await loading.dismiss();
-            console.error('Error al generar la OT:', err);
+            console.error('Error al generar las OTs:', err);
+            // Este manejo de error puede mejorarse para mostrar detalles
             this.mostrarToast(
-              err.error?.error || 'No se pudo generar la OT.',
+              err.error?.msg || 'No se pudieron generar las OTs.',
               'danger'
             );
           },
