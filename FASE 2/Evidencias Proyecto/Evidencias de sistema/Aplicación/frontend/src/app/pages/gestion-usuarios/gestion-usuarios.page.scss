@@ -268,3 +268,13 @@ ion-fab-button {
     }
   }
 }
+
+ion-segment {
+  background-color: var(--ion-color-light);
+
+  ion-segment-button {
+    color: var(--ion-color-dark);
+    font-size: 1rem; /* 16px */
+    font-weight: 600;
+  }
+}

@@ -4,13 +4,21 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { HeaderComponent } from 'src/app/componentes/header/header.component';
+import {
+  DataTableComponent,
+  Column,
+  ActionButton,
+} from 'src/app/componentes/data-table/data-table.component';
 import { ApiService, Vehiculo } from 'src/app/services/api.service';
 import { addIcons } from 'ionicons';
 import {
   downloadOutline,
   filterOutline,
   closeCircleOutline,
+  documentOutline,
+  documentTextOutline,
+  refreshOutline,
+  searchOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -18,25 +26,96 @@ import {
   templateUrl: './reporte-mantenimiento.page.html',
   styleUrls: ['./reporte-mantenimiento.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HeaderComponent, DatePipe],
+  imports: [IonicModule, CommonModule, FormsModule, DataTableComponent],
 })
 export class ReporteMantenimientoPage implements OnInit {
   public reporteData: any[] = [];
+  public filteredReporteData: any[] = [];
+  public paginatedReporteData: any[] = [];
   public vehiculos: Vehiculo[] = [];
   public isLoading = true;
+  public searchTerm = '';
+  public pageSize = 10;
+  public currentPage = 1;
+
   public filtros = {
     fechaDesde: '',
     fechaHasta: '',
     vehiculoId: null,
   };
 
+  // Configuración de columnas para el data-table
+  public tableColumns: Column[] = [
+    { header: '# OT', field: 'id_ot', sortable: true, width: '80px' },
+    {
+      header: 'Vehículo',
+      field: 'vehiculo',
+      sortable: false,
+      width: '150px',
+      cell: (data: any) => data.vehiculo?.patente || 'N/A',
+    },
+    {
+      header: 'Descripción',
+      field: 'descripcion_ot',
+      sortable: true,
+      width: '200px',
+    },
+    {
+      header: 'Encargado',
+      field: 'encargado',
+      sortable: false,
+      width: '150px',
+      cell: (data: any) =>
+        data.encargado
+          ? `${data.encargado.pri_nom_usu} ${data.encargado.pri_ape_usu}`
+          : 'No asignado',
+    },
+    {
+      header: 'Fecha Inicio',
+      field: 'fec_ini_ot',
+      sortable: true,
+      width: '120px',
+      cell: (data: any) =>
+        data.fec_ini_ot
+          ? new Date(data.fec_ini_ot).toLocaleDateString()
+          : 'N/A',
+    },
+    {
+      header: 'Fecha Fin',
+      field: 'fec_fin_ot',
+      sortable: true,
+      width: '120px',
+      cell: (data: any) =>
+        data.fec_fin_ot
+          ? new Date(data.fec_fin_ot).toLocaleDateString()
+          : 'N/A',
+    },
+    {
+      header: 'Estado',
+      field: 'estado_ot',
+      sortable: true,
+      width: '120px',
+      cell: (data: any) =>
+        `<ion-chip class="status-${data.estado_ot}">${
+          data.estado_ot?.charAt(0).toUpperCase() + data.estado_ot?.slice(1)
+        }</ion-chip>`,
+    },
+  ];
+
   constructor(
     private apiService: ApiService,
     private toastController: ToastController
   ) {
-    addIcons({ downloadOutline, filterOutline, closeCircleOutline });
+    addIcons({
+      downloadOutline,
+      filterOutline,
+      closeCircleOutline,
+      documentOutline,
+      documentTextOutline,
+      refreshOutline,
+      searchOutline,
+    });
   }
-
   ngOnInit() {
     this.cargarVehiculos();
     this.cargarReporte();
@@ -54,6 +133,7 @@ export class ReporteMantenimientoPage implements OnInit {
     this.apiService.getMantenimientoReport(this.filtros).subscribe({
       next: (data) => {
         this.reporteData = data;
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (err) => {
@@ -62,6 +142,44 @@ export class ReporteMantenimientoPage implements OnInit {
         this.mostrarToast('Error al cargar el reporte.', 'danger');
       },
     });
+  }
+
+  applyFilters() {
+    if (!this.searchTerm.trim()) {
+      this.filteredReporteData = [...this.reporteData];
+    } else {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      this.filteredReporteData = this.reporteData.filter(
+        (item) =>
+          item.id_ot?.toString().includes(searchLower) ||
+          item.vehiculo?.patente?.toLowerCase().includes(searchLower) ||
+          item.descripcion_ot?.toLowerCase().includes(searchLower) ||
+          item.encargado?.pri_nom_usu?.toLowerCase().includes(searchLower) ||
+          item.encargado?.pri_ape_usu?.toLowerCase().includes(searchLower) ||
+          item.estado_ot?.toLowerCase().includes(searchLower)
+      );
+    }
+    this.updatePagination();
+  }
+
+  updatePagination() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedReporteData = this.filteredReporteData.slice(
+      startIndex,
+      endIndex
+    );
+  }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page;
+    this.pageSize = event.pageSize;
+    this.updatePagination();
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   aplicarFiltros() {
@@ -74,11 +192,11 @@ export class ReporteMantenimientoPage implements OnInit {
       fechaHasta: '',
       vehiculoId: null,
     };
+    this.searchTerm = '';
     this.cargarReporte();
   }
-
   exportarCSV() {
-    if (this.reporteData.length === 0) {
+    if (this.filteredReporteData.length === 0) {
       this.mostrarToast('No hay datos para exportar.', 'warning');
       return;
     }
@@ -97,7 +215,7 @@ export class ReporteMantenimientoPage implements OnInit {
 
     let csvContent = cabeceras.join(',') + '\r\n';
 
-    this.reporteData.forEach((row) => {
+    this.filteredReporteData.forEach((row) => {
       const encargado = row.encargado
         ? `${row.encargado.pri_nom_usu} ${row.encargado.pri_ape_usu}`
         : 'No asignado';
@@ -131,6 +249,105 @@ export class ReporteMantenimientoPage implements OnInit {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    this.mostrarToast('Archivo CSV exportado exitosamente', 'success');
+  }
+
+  exportarPDF() {
+    if (this.filteredReporteData.length === 0) {
+      this.mostrarToast('No hay datos para exportar.', 'warning');
+      return;
+    }
+
+    // Crear contenido HTML para el PDF
+    let htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Reporte de Mantenimientos</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .status-completada { color: #28a745; font-weight: bold; }
+            .status-en_progreso { color: #ffc107; font-weight: bold; }
+            .status-pendiente, .status-asignada { color: #007bff; font-weight: bold; }
+            .status-cancelada { color: #dc3545; font-weight: bold; }
+            .fecha { font-size: 12px; color: #666; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Mantenimientos</h1>
+          <div class="fecha">Generado el: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
+          <table>
+            <thead>
+              <tr>
+                <th># OT</th>
+                <th>Vehículo</th>
+                <th>Descripción</th>
+                <th>Encargado</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    this.filteredReporteData.forEach((row) => {
+      const encargado = row.encargado
+        ? `${row.encargado.pri_nom_usu} ${row.encargado.pri_ape_usu}`
+        : 'No asignado';
+      const fechaInicio = row.fec_ini_ot
+        ? new Date(row.fec_ini_ot).toLocaleDateString()
+        : 'N/A';
+      const fechaFin = row.fec_fin_ot
+        ? new Date(row.fec_fin_ot).toLocaleDateString()
+        : 'N/A';
+
+      htmlContent += `
+        <tr>
+          <td>${row.id_ot}</td>
+          <td>${row.vehiculo?.patente || 'N/A'}</td>
+          <td>${row.descripcion_ot}</td>
+          <td>${encargado}</td>
+          <td>${fechaInicio}</td>
+          <td>${fechaFin}</td>
+          <td><span class="status-${row.estado_ot}">${
+        row.estado_ot?.charAt(0).toUpperCase() + row.estado_ot?.slice(1)
+      }</span></td>
+        </tr>
+      `;
+    });
+
+    htmlContent += `
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Crear y descargar el PDF usando la función de impresión del navegador
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+
+      // Esperar a que se cargue el contenido antes de imprimir
+      printWindow.onload = () => {
+        printWindow.print();
+        // Cerrar la ventana después de un breve delay
+        setTimeout(() => printWindow.close(), 1000);
+      };
+
+      this.mostrarToast(
+        'PDF generado. Use Ctrl+P para guardar como PDF',
+        'success'
+      );
     }
   }
 

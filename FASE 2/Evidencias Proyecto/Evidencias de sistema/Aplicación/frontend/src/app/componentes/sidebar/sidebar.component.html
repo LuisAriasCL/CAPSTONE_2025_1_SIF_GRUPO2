@@ -1,6 +1,9 @@
 <ion-list id="menu-list">
   <!-- Menú principal -->
-  <ion-menu-toggle auto-hide="false" *ngFor="let page of appPages; let i = index">
+  <ion-menu-toggle
+    auto-hide="false"
+    *ngFor="let page of appPages; let i = index"
+  >
     <ion-item
       button
       [routerLink]="page.url"
@@ -21,11 +24,10 @@
 
   <!-- Menú para gestores y administradores -->
   <ng-container *ngIf="esRol('gestor') || esRol('admin')">
-    <ion-item-divider>
-      <ion-label>Menú Gestor</ion-label>
-    </ion-item-divider>
-
-    <ion-menu-toggle auto-hide="false" *ngFor="let page of adminPages; let i = index">
+    <ion-menu-toggle
+      auto-hide="false"
+      *ngFor="let page of adminPages; let i = index"
+    >
       <ion-item
         button
         [routerLink]="page.url"

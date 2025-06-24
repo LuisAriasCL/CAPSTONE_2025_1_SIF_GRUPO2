@@ -1,14 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  IonicModule,
-  ToastController,
-  AlertController,
-  ModalController,
-} from '@ionic/angular';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Usuario } from '../../services/api.service';
 import { UsuarioFormComponent } from 'src/app/componentes/usuario-form/usuario-form.component';
+import { AlertaPersonalizadaComponent } from 'src/app/componentes/alerta-personalizada/alerta-personalizada.component';
 import { addIcons } from 'ionicons';
 import {
   createOutline,
@@ -53,11 +49,9 @@ export class GestionUsuariosPage implements OnInit {
   ];
   public selectedRole: string = 'todos';
   public selectedStatus: 'activo' | 'inactivo' = 'activo';
-
   constructor(
     private apiService: ApiService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
     private modalCtrl: ModalController
   ) {
     addIcons({
@@ -136,99 +130,156 @@ export class GestionUsuariosPage implements OnInit {
       return nombreCompleto.includes(searchTerm) || email.includes(searchTerm);
     });
   }
+  // Método simplificado para abrir formulario (como en route-list)
+  async presentUserForm(usuario: Usuario | null = null) {
+    this.openUserForm(usuario, false);
+  }
 
-  async openUserForm(usuario: Usuario | null) {
+  // Método principal para manejar modales de usuario (siguiendo patrón de route-list)
+  async openUserForm(usuario: Usuario | null, isViewMode: boolean = false) {
+    console.log('Abriendo modal de usuario:', { usuario, isViewMode });
+
     const modal = await this.modalCtrl.create({
       component: UsuarioFormComponent,
-      componentProps: { usuario: usuario ? { ...usuario } : null },
+      componentProps: {
+        usuario: usuario ? { ...usuario } : null,
+      },
+      cssClass: 'usuario-form-modal',
+      backdropDismiss: false,
+      showBackdrop: true,
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.role === 'confirm') {
+        const data = result.data;
+        if (usuario) {
+          // Modo Edición
+          this.apiService.updateUser(usuario.id_usu, data).subscribe({
+            next: () => {
+              this.mostrarToast('Usuario actualizado con éxito', 'success');
+              this.cargarUsuarios();
+            },
+            error: (err) =>
+              this.mostrarToast(
+                err.error?.message || 'Error al actualizar',
+                'danger'
+              ),
+          });
+        } else {
+          // Modo Creación
+          this.apiService.createUser(data).subscribe({
+            next: () => {
+              this.mostrarToast('Usuario creado con éxito', 'success');
+              this.selectedRole = data.rol;
+              this.cargarUsuarios();
+            },
+            error: (err) =>
+              this.mostrarToast(
+                err.error?.message || 'Error al crear',
+                'danger'
+              ),
+          });
+        }
+      }
+    });
+
+    return await modal.present();
+  }
+
+  // Método para ver detalles del usuario (modal de solo lectura)
+  async viewUserDetail(usuario: Usuario) {
+    console.log('Abriendo modal para ver detalle usuario:', usuario.id_usu);
+
+    const modal = await this.modalCtrl.create({
+      component: UsuarioFormComponent,
+      componentProps: {
+        usuario: { ...usuario },
+        isViewMode: true,
+        isEditMode: false,
+      },
+      cssClass: 'usuario-form-modal',
+      backdropDismiss: false,
+      showBackdrop: true,
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data && result.role === 'confirm') {
+        console.log('Usuario actualizado desde vista detalle');
+        this.cargarUsuarios();
+      }
+    });
+
+    return await modal.present();
+  }
+  async onDeactivate(usuario: Usuario) {
+    const modal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Confirmar Desactivación',
+        message: `¿Estás seguro de que quieres desactivar a <strong>${usuario.pri_nom_usu} ${usuario.pri_ape_usu}</strong>?<br><br>
+                  <small>El usuario no podrá acceder al sistema hasta que sea reactivado.</small>`,
+        icon: 'warning',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-secondary' },
+          { text: 'Desactivar', role: 'confirm', cssClass: 'button-danger' },
+        ],
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal',
     });
 
     await modal.present();
+    const { data } = await modal.onDidDismiss();
 
-    const { data, role } = await modal.onWillDismiss();
-
-    if (role === 'confirm') {
-      if (usuario) {
-        // Modo Edición
-        this.apiService.updateUser(usuario.id_usu, data).subscribe({
-          next: () => {
-            this.mostrarToast('Usuario actualizado con éxito', 'success');
-            this.cargarUsuarios();
-          },
-          error: (err) =>
-            this.mostrarToast(
-              err.error?.message || 'Error al actualizar',
-              'danger'
-            ),
-        });
-      } else {
-        // Modo Creación
-        this.apiService.createUser(data).subscribe({
-          next: () => {
-            this.mostrarToast('Usuario creado con éxito', 'success');
-            this.selectedRole = data.rol; // Opcional: filtra por el rol recién creado
-            this.cargarUsuarios();
-          },
-          error: (err) =>
-            this.mostrarToast(err.error?.message || 'Error al crear', 'danger'),
-        });
-      }
+    if (data === 'confirm') {
+      this.apiService.deleteUser(usuario.id_usu).subscribe({
+        next: (res) => {
+          this.mostrarToast(res.message, 'success');
+          this.cargarUsuarios();
+        },
+        error: (err) => {
+          const mensaje = err?.message || 'Error al desactivar';
+          this.mostrarToast(mensaje, 'danger');
+        },
+      });
     }
   }
-
-  async onDeactivate(usuario: Usuario) {
-    const alert = await this.alertCtrl.create({
-      header: 'Confirmar Desactivación',
-      message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Desactivar',
-          role: 'confirm',
-          cssClass: 'ion-color-danger',
-          handler: () => {
-            this.apiService.deleteUser(usuario.id_usu).subscribe({
-              next: (res) => {
-                this.mostrarToast(res.message, 'success');
-                this.cargarUsuarios();
-              },
-              error: (err) => {
-                const mensaje = err?.message || 'Error al desactivar';
-                this.mostrarToast(mensaje, 'danger');
-              },
-            });
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
   async onReactivate(usuario: Usuario) {
-    const alert = await this.alertCtrl.create({
-      header: 'Confirmar Reactivación',
-      message: `¿Estás seguro de que quieres reactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Reactivar',
-          role: 'confirm',
-          handler: () => {
-            this.apiService.reactivateUser(usuario.id_usu).subscribe({
-              next: (res) => {
-                this.mostrarToast(res.message, 'success');
-                this.cargarUsuarios();
-              },
-              error: (err) => {
-                const mensaje = err?.message || 'Error al reactivar';
-                this.mostrarToast(mensaje, 'danger');
-              },
-            });
-          },
-        },
-      ],
+    const modal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Confirmar Reactivación',
+        message: `¿Estás seguro de que quieres reactivar a <strong>${usuario.pri_nom_usu} ${usuario.pri_ape_usu}</strong>?<br><br>
+                  <small>El usuario podrá volver a acceder al sistema con sus credenciales.</small>`,
+        icon: 'success',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-secondary' },
+          { text: 'Reactivar', role: 'confirm', cssClass: 'button-success' },
+        ],
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal',
     });
-    await alert.present();
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+
+    if (data === 'confirm') {
+      this.apiService.reactivateUser(usuario.id_usu).subscribe({
+        next: (res) => {
+          this.mostrarToast(res.message, 'success');
+          this.cargarUsuarios();
+        },
+        error: (err) => {
+          const mensaje = err?.message || 'Error al reactivar';
+          this.mostrarToast(mensaje, 'danger');
+        },
+      });
+    }
+  } // Método para mostrar información detallada del usuario (usa el modal personalizado)
+  async showUserDetails(usuario: Usuario) {
+    // Usar el modal de vista de detalles existente
+    await this.viewUserDetail(usuario);
   }
 
   getIconForRole(rol: string): string {

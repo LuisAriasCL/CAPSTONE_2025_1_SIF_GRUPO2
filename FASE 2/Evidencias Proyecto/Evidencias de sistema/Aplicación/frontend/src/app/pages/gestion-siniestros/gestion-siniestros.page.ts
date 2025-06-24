@@ -5,69 +5,51 @@ import {
   TitleCasePipe,
   SlicePipe,
 } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonicModule, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { ApiService, Siniestro } from '../../services/api.service';
-import { addIcons } from 'ionicons';
-import {
-  calendar,
-  calendarOutline,
-  chevronForwardOutline,
-  funnelOutline,
-  peopleCircleOutline,
-  refresh,
-  refreshOutline,
-  searchOutline,
-} from 'ionicons/icons';
+import { HeaderComponent } from 'src/app/componentes/header/header.component';
+import { SiniestroDetallePage } from '../siniestro-detalle/siniestro-detalle.page';
 
 @Component({
   selector: 'app-gestion-siniestros',
   templateUrl: './gestion-siniestros.page.html',
   styleUrls: ['./gestion-siniestros.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, DatePipe, SlicePipe],
+
+  imports: [
+    IonicModule,
+    CommonModule,
+    HeaderComponent,
+    DatePipe,
+    TitleCasePipe,
+    SlicePipe,
+  ],
 })
 export class GestionSiniestrosPage implements OnInit {
   public siniestros: Siniestro[] = [];
-  public siniestrosFiltrados: Siniestro[] = [];
   public cargando = true;
   public skeletonItems = Array(5);
 
-  // Propiedades para filtros
-  public searchTerm: string = '';
-  public filterEstado: string = '';
-  public filterVehiculo: string = '';
-  public vehiculosUnicos: string[] = [];
-
   private apiService = inject(ApiService);
-  private router = inject(Router);
+  private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
 
-  constructor() {
-    // Registrar iconos personalizados
-    addIcons({
-      chevronForward: chevronForwardOutline,
-      funnelOutline,
-      refreshOutline,
-      searchOutline,
-      calendarOutline,
-      peopleCircleOutline,
-    });
-  }
+  constructor() {}
 
   ngOnInit() {}
 
   ionViewWillEnter() {
     this.cargarSiniestros();
   }
+
   cargarSiniestros() {
+    this.cargando = true;
+    console.log('[Gestión Siniestros] Iniciando carga de datos...');
+
     this.apiService.getSiniestros().subscribe({
       next: (data) => {
         console.log('[Gestión Siniestros] Datos recibidos del backend:', data);
         this.siniestros = data;
-        this.siniestrosFiltrados = [...data];
-        this.extraerVehiculosUnicos();
         this.cargando = false;
         console.log(
           `[Gestión Siniestros] Carga finalizada. Se recibieron ${data.length} registros.`
@@ -84,21 +66,35 @@ export class GestionSiniestrosPage implements OnInit {
     });
   }
 
-  verDetalles(id: number | undefined) {
+  async verDetalles(id: number | undefined) {
     if (!id) {
-      console.error('No se puede navegar, el ID del siniestro es indefinido.');
+      console.error(
+        'No se puede abrir el modal, el ID del siniestro es indefinido.'
+      );
       return;
     }
-    this.router.navigate(['/siniestro-detalle', id]);
+
+    const modal = await this.modalCtrl.create({
+      component: SiniestroDetallePage,
+      componentProps: {
+        siniestroId: id,
+      },
+      cssClass: 'siniestro-detalle-modal',
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    // Si es necesario, recargar la lista después de cerrar el modal
+    if (data && data.refresh) {
+      this.cargarSiniestros();
+    }
   }
+
   getColorForStatus(estado: string): string {
     switch (estado) {
-      case 'pendiente':
-        return 'warning';
       case 'reportado':
         return 'warning';
-      case 'en_progreso':
-        return 'primary';
       case 'en_revision':
         return 'primary';
       case 'resuelto':
@@ -108,85 +104,6 @@ export class GestionSiniestrosPage implements OnInit {
       default:
         return 'light';
     }
-  }
-
-  getStatusDisplayName(estado: string): string {
-    switch (estado) {
-      case 'pendiente':
-        return 'Pendiente';
-      case 'reportado':
-        return 'Reportado';
-      case 'en_progreso':
-        return 'En Progreso';
-      case 'en_revision':
-        return 'En Revisión';
-      case 'resuelto':
-        return 'Resuelto';
-      case 'cancelado':
-        return 'Cancelado';
-      default:
-        return estado
-          .replace('_', ' ')
-          .replace(/\b\w/g, (l) => l.toUpperCase());
-    }
-  }
-
-  // Extraer vehículos únicos para el filtro
-  extraerVehiculosUnicos() {
-    const vehiculos = new Set<string>();
-    this.siniestros.forEach((siniestro) => {
-      if (siniestro.vehiculo?.patente) {
-        vehiculos.add(siniestro.vehiculo.patente);
-      }
-    });
-    this.vehiculosUnicos = Array.from(vehiculos).sort();
-  }
-
-  // Aplicar filtros
-  applyFilters() {
-    let resultados = [...this.siniestros]; // Filtro por término de búsqueda
-    if (this.searchTerm.trim()) {
-      const termino = this.searchTerm.toLowerCase().trim();
-      resultados = resultados.filter(
-        (siniestro) =>
-          siniestro.descripcion?.toLowerCase().includes(termino) ||
-          siniestro.conductor?.pri_nom_usu?.toLowerCase().includes(termino) ||
-          siniestro.conductor?.pri_ape_usu?.toLowerCase().includes(termino) ||
-          siniestro.vehiculo?.patente?.toLowerCase().includes(termino)
-      );
-    }
-
-    // Filtro por estado
-    if (this.filterEstado) {
-      resultados = resultados.filter(
-        (siniestro) => siniestro.estado === this.filterEstado
-      );
-    }
-
-    // Filtro por vehículo
-    if (this.filterVehiculo) {
-      resultados = resultados.filter(
-        (siniestro) => siniestro.vehiculo?.patente === this.filterVehiculo
-      );
-    }
-
-    this.siniestrosFiltrados = resultados;
-  }
-
-  // Limpiar filtros
-  clearFilters() {
-    this.searchTerm = '';
-    this.filterEstado = '';
-    this.filterVehiculo = '';
-    this.siniestrosFiltrados = [...this.siniestros];
-  }
-
-  // Manejar refresh
-  handleRefresh(event: any) {
-    this.cargarSiniestros();
-    setTimeout(() => {
-      event.target.complete();
-    }, 1000);
   }
 
   async mostrarToast(mensaje: string, color: string) {

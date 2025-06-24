@@ -1,156 +1,134 @@
 <!-- frontend/src/app/pages/reporte-mantenimiento/reporte-mantenimiento.page.html -->
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
-    <!-- SECCIÓN DE FILTROS -->
-    <ion-row>
-      <ion-col>
-        <ion-card class="filters-card">
-          <ion-card-header>
-            <ion-card-title class="filters-title-neutral">
-              <ion-icon name="funnel-outline"></ion-icon>
-              Filtros
-            </ion-card-title>
-          </ion-card-header>
+  <ion-refresher
+    slot="fixed"
+    (ionRefresh)="cargarReporte(); $event.target.complete()"
+  >
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-          <ion-card-content>
-            <ion-row class="ion-align-items-end">
-              <ion-col size="12" size-md="3">
-                <ion-item>
-                  <ion-label
-                    position="stacked"
-                    style="margin-bottom: 0.5rem; font-weight: 600"
-                    >Fecha Desde</ion-label
-                  >
-                  <ion-input
-                    type="date"
-                    [(ngModel)]="filtros.fechaDesde"
-                  ></ion-input>
-                </ion-item>
-              </ion-col>
-              <ion-col size="12" size-md="3">
-                <ion-item>
-                  <ion-label
-                    position="stacked"
-                    style="margin-bottom: 0.5rem; font-weight: 600"
-                    >Fecha Hasta</ion-label
-                  >
-                  <ion-input
-                    type="date"
-                    [(ngModel)]="filtros.fechaHasta"
-                  ></ion-input>
-                </ion-item>
-              </ion-col>
-              <ion-col size="12" size-md="3">
-                <ion-item>
-                  <ion-label
-                    position="stacked"
-                    style="margin-bottom: 0.5rem; font-weight: 600"
-                    >Vehículo</ion-label
-                  >
-                  <ion-select
-                    [(ngModel)]="filtros.vehiculoId"
-                    interface="popover"
-                  >
-                    <ion-select-option [value]="null">Todos</ion-select-option>
-                    <ion-select-option
-                      *ngFor="let vehiculo of vehiculos"
-                      [value]="vehiculo.idVehi"
-                    >
-                      {{ vehiculo.patente }} - {{ vehiculo.marca }} {{
-                      vehiculo.modelo }}
-                    </ion-select-option>
-                  </ion-select>
-                </ion-item>
-              </ion-col>
-              <ion-col size="12" size-md="3" class="ion-align-self-end">
-                <ion-button expand="block" (click)="aplicarFiltros()">
-                  <ion-icon name="filter-outline" slot="start"></ion-icon>
-                  Aplicar
-                </ion-button>
-                <ion-button
-                  expand="block"
-                  fill="clear"
-                  (click)="limpiarFiltros()"
+  <!-- Card de Filtros -->
+  <ion-card class="filters-card" *ngIf="!isLoading">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="funnel-outline"></ion-icon>
+        Filtros de Reporte
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="3">
+            <ion-item>
+              <ion-label position="stacked">Fecha Desde</ion-label>
+              <ion-input
+                type="date"
+                [(ngModel)]="filtros.fechaDesde"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="3">
+            <ion-item>
+              <ion-label position="stacked">Fecha Hasta</ion-label>
+              <ion-input
+                type="date"
+                [(ngModel)]="filtros.fechaHasta"
+              ></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="3">
+            <ion-item>
+              <ion-label position="stacked">Vehículo</ion-label>
+              <ion-select [(ngModel)]="filtros.vehiculoId" interface="popover">
+                <ion-select-option [value]="null">Todos</ion-select-option>
+                <ion-select-option
+                  *ngFor="let vehiculo of vehiculos"
+                  [value]="vehiculo.idVehi"
                 >
-                  Limpiar
-                </ion-button>
-              </ion-col>
-            </ion-row>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
+                  {{ vehiculo.patente }} - {{ vehiculo.marca }} {{
+                  vehiculo.modelo }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="3">
+            <ion-button expand="block" (click)="aplicarFiltros()">
+              <ion-icon name="filter-outline" slot="start"></ion-icon>
+              Aplicar
+            </ion-button>
+            <ion-button expand="block" fill="clear" (click)="limpiarFiltros()">
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Limpiar
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
 
-    <!-- SECCIÓN DE LA TABLA DE DATOS -->
-    <ion-row>
-      <ion-col>
-        <div class="header-tabla">
-          <h2>Resultados del Reporte</h2>
-          <ion-button (click)="exportarCSV()">
-            <ion-icon name="download-outline" slot="start"></ion-icon>
-            Exportar a CSV
-          </ion-button>
-        </div>
+  <!-- Estado de Carga -->
+  <div *ngIf="isLoading" class="ion-text-center ion-padding-top">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando reporte de mantenimientos...</p>
+  </div>
 
-        <div class="table-container">
-          <table class="responsive-table">
-            <thead>
-              <tr>
-                <th># OT</th>
-                <th>Vehículo</th>
-                <th>Descripción</th>
-                <th>Encargado</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Estado de Carga -->
-              <ng-container *ngIf="isLoading">
-                <tr *ngFor="let i of [1,2,3,4,5]">
-                  <td colspan="7">
-                    <ion-skeleton-text animated></ion-skeleton-text>
-                  </td>
-                </tr>
-              </ng-container>
-              <!-- Datos Reales -->
-              <ng-container *ngIf="!isLoading && reporteData.length > 0">
-                <tr *ngFor="let ot of reporteData">
-                  <td data-label="# OT">{{ ot.id_ot }}</td>
-                  <td data-label="Vehículo">
-                    {{ ot.vehiculo?.patente || 'N/A' }}
-                  </td>
-                  <td data-label="Descripción">{{ ot.descripcion_ot }}</td>
-                  <td data-label="Encargado">
-                    {{ ot.encargado?.pri_nom_usu || 'No asignado' }}
-                  </td>
-                  <td data-label="Fecha Inicio">
-                    {{ ot.fec_ini_ot | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td data-label="Fecha Fin">
-                    {{ ot.fec_fin_ot | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td data-label="Estado">
-                    <ion-chip [ngClass]="'status-' + ot.estado_ot"
-                      >{{ ot.estado_ot | titlecase }}</ion-chip
-                    >
-                  </td>
-                </tr>
-              </ng-container>
-              <!-- Sin Datos -->
-              <ng-container *ngIf="!isLoading && reporteData.length === 0">
-                <tr>
-                  <td colspan="7" class="ion-text-center">
-                    No se encontraron registros con los filtros seleccionados.
-                  </td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <!-- Estado Vacío -->
+  <div
+    *ngIf="!isLoading && reporteData.length === 0"
+    class="ion-text-center ion-padding-top"
+  >
+    <ion-icon
+      name="document-text-outline"
+      style="font-size: 4em"
+      color="medium"
+    ></ion-icon>
+    <p>No hay registros de mantenimiento.</p>
+    <ion-button
+      expand="block"
+      (click)="limpiarFiltros()"
+      class="ion-margin-top"
+    >
+      <ion-icon slot="start" name="refresh-outline"></ion-icon>
+      Actualizar Filtros
+    </ion-button>
+  </div>
+
+  <!-- Tabla de datos -->
+  <div
+    class="data-table-container"
+    *ngIf="!isLoading && reporteData.length > 0"
+  >
+    <app-data-table
+      [columns]="tableColumns"
+      [data]="paginatedReporteData"
+      [pageSize]="pageSize"
+      [totalItems]="filteredReporteData.length"
+      [showPagination]="true"
+      [showExport]="true"
+      [showImport]="true"
+      (page)="onPageChange($event)"
+    >
+      <!-- Mensaje si no hay resultados filtrados -->
+      <div
+        *ngIf="filteredReporteData.length === 0"
+        class="ion-text-center ion-padding"
+      >
+        <ion-icon
+          name="search-outline"
+          style="font-size: 3em"
+          color="medium"
+        ></ion-icon>
+        <p>
+          <strong
+            >No se encontraron registros que coincidan con la búsqueda</strong
+          >
+        </p>
+        <ion-button fill="clear" (click)="clearFilters()">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Limpiar búsqueda
+        </ion-button>
+      </div>
+    </app-data-table>
+  </div>
 </ion-content>

@@ -1,6 +1,12 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ isEditMode ? "Editar Usuario" : "Nuevo Usuario" }}</ion-title>
+    <ion-title>{{
+      isViewMode
+        ? "Información del Usuario"
+        : isEditMode
+        ? "Editar Usuario"
+        : "Nuevo Usuario"
+    }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()" fill="clear" color="light">
         <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -21,6 +27,7 @@
               formControlName="rut_usu"
               required
               placeholder="Ej: 12345678-9"
+              [readonly]="isViewMode"
             ></ion-input>
             <div class="error-container">
               <div
@@ -46,6 +53,7 @@
               formControlName="pri_nom_usu"
               required
               placeholder="Ej: Juan"
+              [readonly]="isViewMode"
             ></ion-input>
             <div class="error-container">
               <div
@@ -77,6 +85,7 @@
               formControlName="pri_ape_usu"
               required
               placeholder="Ej: Pérez"
+              [readonly]="isViewMode"
             ></ion-input>
             <div class="error-container">
               <div
@@ -104,6 +113,7 @@
               formControlName="email"
               required
               placeholder="Ej: usuario@correo.com"
+              [readonly]="isViewMode"
             ></ion-input>
             <div class="error-container">
               <div
@@ -134,6 +144,7 @@
               interface="popover"
               required
               placeholder="Seleccionar rol"
+              [disabled]="isViewMode"
             >
               <ion-select-option *ngFor="let rol of roles" [value]="rol">
                 {{ rol | titlecase }}
@@ -165,6 +176,7 @@
               formControlName="clave"
               required
               placeholder="Mínimo 6 caracteres"
+              [readonly]="isViewMode"
             ></ion-input>
             <div class="error-container">
               <div
@@ -189,15 +201,27 @@
 <!-- Botones de acción -->
 <div class="ion-text-center">
   <ion-button
+    *ngIf="!isViewMode"
     type="submit"
     expand="block"
     (click)="confirm()"
     style="--background: #008000; --background-hover: #006600"
+    [disabled]="form.invalid"
   >
     <ion-icon
       [name]="isEditMode ? 'save-outline' : 'person-add-outline'"
       slot="start"
     ></ion-icon>
     {{ isEditMode ? "Actualizar Usuario" : "Crear Usuario" }}
+  </ion-button>
+
+  <ion-button
+    *ngIf="isViewMode"
+    expand="block"
+    (click)="closeModal()"
+    color="medium"
+  >
+    <ion-icon name="close-outline" slot="start"></ion-icon>
+    Cerrar
   </ion-button>
 </div>

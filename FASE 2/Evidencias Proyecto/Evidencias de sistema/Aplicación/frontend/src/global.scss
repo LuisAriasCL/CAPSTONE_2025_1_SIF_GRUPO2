@@ -302,3 +302,49 @@ ion-router-outlet {
     transition: all 0.2s ease;
   }
 }
+
+/* ===== ELIMINACIÓN GLOBAL DE BORDES ===== */
+
+/* Eliminar bordes del split-pane globalmente */
+ion-split-pane {
+  --border: none !important;
+  border: none !important;
+
+  /* Eliminar borde del menú */
+  ion-menu {
+    --border: none !important;
+    border: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Eliminar bordes de items globalmente */
+ion-item {
+  --border-color: transparent !important;
+  --border-style: none !important;
+  --border-width: 0 !important;
+  border: none !important;
+}
+
+/* Eliminar bordes de listas */
+ion-list {
+  --border: none !important;
+  border: none !important;
+}
+
+/* Eliminar bordes de contenedores */
+ion-content {
+  --border: none !important;
+  border: none !important;
+}
+
+/* Regla host global para cualquier componente */
+* {
+  &:host {
+    --border: none !important;
+    border: none !important;
+  }
+}
+
+/* ===== FIN ELIMINACIÓN GLOBAL DE BORDES ===== */

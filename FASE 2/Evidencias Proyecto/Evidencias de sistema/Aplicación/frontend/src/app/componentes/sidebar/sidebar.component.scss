@@ -4,6 +4,15 @@
   background: transparent;
 }
 
+:host {
+  menu-inner {
+    --background: var(--ion-color-light);
+    --color: var(--ion-color-dark);
+    --border-radius: 8px;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
 /* Encabezado del menú */
 .menu-header {
   display: flex;
@@ -11,13 +20,13 @@
   padding: 20px 16px;
   border-bottom: 1px solid var(--ion-color-light);
   margin-bottom: 8px;
-  
+
   .app-icon {
     font-size: 32px;
     color: var(--ion-color-primary);
     margin-right: 12px;
   }
-  
+
   .app-info {
     h3 {
       margin: 0;
@@ -25,7 +34,7 @@
       font-weight: 700;
       color: var(--ion-color-dark);
     }
-    
+
     p {
       margin: 0;
       font-size: 14px; /* Aumentado de 12px a 14px */
@@ -42,11 +51,11 @@ ion-item.selected {
   border-radius: 8px;
   margin: 2px 12px;
   --border-radius: 8px;
-  
+
   ion-icon {
     color: var(--ion-color-primary);
   }
-  
+
   ion-label {
     font-weight: 700; /* Aumentado de 600 a 700 */
     font-size: 18px; /* Añadido tamaño específico para seleccionado */
@@ -65,7 +74,7 @@ ion-item {
   --border-radius: 8px;
   transition: all 0.2s ease-in-out;
   --min-height: 52px; /* Aumentado para acomodar texto más grande */
-  
+
   &:hover {
     --background: rgba(var(--ion-color-primary-rgb), 0.08);
     transform: translateX(2px);
@@ -92,10 +101,9 @@ ion-item ion-label {
 /* Separador visual entre grupos de menú */
 ion-item:nth-child(4)::after,
 ion-item:nth-child(7)::after {
-  content: '';
+  content: "";
   display: block;
   height: 1px;
   background: var(--ion-color-light);
   margin: 8px 16px;
 }
-

@@ -97,7 +97,7 @@ export class AppComponent implements OnInit {
       '/gestion-usuarios': 'Gestión de Usuarios',
       '/gestion-siniestros': 'Gestión de Incidentes',
       '/recorridos': 'Mapa y Recorridos',
-      '/historial-vehiculo': 'Historial de Vehículo',
+      '/historial-vehiculo/:id': 'Historial de Vehículo',
       '/siniestro-detalle': 'Detalle de Incidente',
       '/login': 'Iniciar Sesión',
       '/register': 'Registrarse',

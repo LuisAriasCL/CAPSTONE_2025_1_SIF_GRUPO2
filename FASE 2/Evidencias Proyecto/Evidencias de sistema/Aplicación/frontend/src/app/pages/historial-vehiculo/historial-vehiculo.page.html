@@ -1,4 +1,5 @@
 <ion-content [fullscreen]="true">
+  <!-- Botón de navegación y información del vehículo -->
   <div
     class="page-navigation"
     style="
@@ -9,6 +10,7 @@
   >
     <ion-button
       fill="clear"
+      routerLink="/vehicle-list"
       style="--color: var(--ion-color-primary)"
       (click)="volver()"
     >
@@ -38,6 +40,7 @@
       </div>
     </div>
   </div>
+  <!-- Barra de búsqueda -->
   <div style="padding: 8px 16px; background: var(--ion-color-light)">
     <ion-searchbar
       placeholder="Buscar en historial..."

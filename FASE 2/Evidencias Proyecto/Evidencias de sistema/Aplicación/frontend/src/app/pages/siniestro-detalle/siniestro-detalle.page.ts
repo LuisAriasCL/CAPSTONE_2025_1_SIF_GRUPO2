@@ -1,30 +1,33 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+  Input,
+} from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
-import { IonicModule, ToastController, AlertController, NavController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { ApiService, Siniestro } from '../../services/api.service';
-import { HeaderComponent } from 'src/app/componentes/header/header.component';
-import { Location } from '@angular/common'; // Importar Location
+import { AlertaPersonalizadaComponent } from '../../componentes/alerta-personalizada/alerta-personalizada.component';
 
 @Component({
   selector: 'app-siniestro-detalle',
   templateUrl: './siniestro-detalle.page.html',
   styleUrls: ['./siniestro-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, HeaderComponent, DatePipe, TitleCasePipe]
+  imports: [IonicModule, CommonModule, DatePipe, TitleCasePipe],
 })
 export class SiniestroDetallePage implements OnInit {
+  @Input() siniestroId!: number;
+
   public siniestro: Siniestro | null = null;
   public cargando = true;
   public readonly apiUrl = 'http://localhost:8101';
 
-  private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
   private toastCtrl = inject(ToastController);
-  private alertCtrl = inject(AlertController);
-  private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
   private cdr = inject(ChangeDetectorRef);
-  private location = inject(Location); // Inyectar Location
 
   constructor() {}
 
@@ -34,64 +37,92 @@ export class SiniestroDetallePage implements OnInit {
 
   cargarDetalleSiniestro() {
     this.cargando = true;
-    const siniestroId = this.route.snapshot.paramMap.get('id');
 
-    if (!siniestroId) {
-      this.goBack(); // Usar la nueva función de navegación
+    if (!this.siniestroId) {
+      this.closeModal();
       return;
     }
 
-    this.apiService.getSiniestroById(+siniestroId).subscribe({
+    this.apiService.getSiniestroById(this.siniestroId).subscribe({
       next: (data) => {
         this.siniestro = data;
         this.cargando = false;
-        this.cdr.detectChanges(); // Forzar actualización visual
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.cargando = false;
-        this.mostrarToast('No se pudo cargar la información del incidente.', 'danger');
-        this.goBack(); // Usar la nueva función de navegación
-      }
+        this.mostrarToast(
+          'No se pudo cargar la información del incidente.',
+          'danger'
+        );
+        this.closeModal();
+      },
     });
   }
-
   async actualizarEstado() {
     if (!this.siniestro) return;
 
     const estadosPosibles = ['en_revision', 'resuelto', 'cancelado'];
 
-    const alert = await this.alertCtrl.create({
-      header: 'Actualizar Estado',
-      message: 'Selecciona el nuevo estado para este incidente.',
-      inputs: estadosPosibles.map((estado) => ({
-        type: 'radio',
-        label: estado.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-        value: estado,
-        checked: this.siniestro?.estado === estado
-      })),
-      buttons: [
-        { text: 'Cancelar' },
-        {
-          text: 'Actualizar',
-          handler: (nuevoEstado) => {
-            if (nuevoEstado && this.siniestro) {
-              this.apiService.updateSiniestroStatus(this.siniestro.id, nuevoEstado).subscribe({
-                next: () => {
-                  this.mostrarToast('Estado actualizado con éxito.', 'success');
-                  if (this.siniestro) {
-                    this.siniestro.estado = nuevoEstado;
-                    this.cdr.detectChanges(); // Forzar actualización visual
-                  }
-                },
-                error: (err) => this.mostrarToast('Error al actualizar el estado.', 'danger')
-              });
-            }
-          }
-        }
-      ]
+    // Crear mensaje con opciones de estado
+    const opcionesHtml = estadosPosibles
+      .map(
+        (estado, index) =>
+          `<div style="margin: 8px 0;">
+        <label style="display: flex; align-items: center; cursor: pointer;">
+          <input type="radio" name="estado" value="${estado}" ${
+            this.siniestro?.estado === estado ? 'checked' : ''
+          } style="margin-right: 8px;">
+          ${estado
+            .replace('_', ' ')
+            .replace(/\b\w/g, (l: string) => l.toUpperCase())}
+        </label>
+      </div>`
+      )
+      .join('');
+
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Actualizar Estado',
+        message: `Selecciona el nuevo estado para este incidente:<div style="margin-top: 16px;">${opcionesHtml}</div>`,
+        icon: 'settings',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          { text: 'Actualizar', role: 'confirm', cssClass: 'confirm-button' },
+        ],
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal',
     });
 
-    await alert.present();
+    await confirmModal.present();
+    const { data } = await confirmModal.onDidDismiss();
+
+    if (data === 'confirm') {
+      // Obtener el valor seleccionado del DOM
+      const modalElement = document.querySelector('app-alerta-personalizada');
+      const selectedRadio = modalElement?.querySelector(
+        'input[name="estado"]:checked'
+      ) as HTMLInputElement;
+      const nuevoEstado = selectedRadio?.value;
+
+      if (nuevoEstado && this.siniestro) {
+        this.apiService
+          .updateSiniestroStatus(this.siniestro.id, nuevoEstado)
+          .subscribe({
+            next: () => {
+              this.mostrarToast('Estado actualizado con éxito.', 'success');
+              if (this.siniestro) {
+                this.siniestro.estado = nuevoEstado;
+                this.cdr.detectChanges();
+              }
+            },
+            error: (err) =>
+              this.mostrarToast('Error al actualizar el estado.', 'danger'),
+          });
+      }
+    }
   }
 
   getColorForStatus(estado: string | undefined): string {
@@ -114,16 +145,12 @@ export class SiniestroDetallePage implements OnInit {
     const toast = await this.toastCtrl.create({
       message: mensaje,
       duration: 3000,
-      color: color
+      color: color,
     });
     toast.present();
   }
 
-  goBack() {
-    if (window.history.length > 1) {
-      this.location.back(); // Navegar hacia atrás en el historial
-    } else {
-      this.navCtrl.navigateBack('/gestion-siniestros'); // Navegar a la página por defecto
-    }
+  async closeModal(data?: any) {
+    await this.modalCtrl.dismiss(data);
   }
 }

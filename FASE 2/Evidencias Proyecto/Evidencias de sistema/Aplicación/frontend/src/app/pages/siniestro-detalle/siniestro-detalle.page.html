@@ -1,23 +1,16 @@
-<ion-content [fullscreen]="true">
-  <!-- Botón de navegación -->
-  <div
-    class="page-navigation"
-    style="
-      padding: 16px;
-      background: var(--ion-color-light);
-      border-bottom: 1px solid var(--ion-color-medium);
-    "
-  >
-    <ion-button
-      fill="clear"
-      (click)="goBack()"
-      style="--color: var(--ion-color-primary)"
-    >
-      <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
-      Volver a Incidentes
-    </ion-button>
-  </div>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Detalle del Siniestro</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
+<ion-content [fullscreen]="true">
+  <!-- Loading State -->
   <div *ngIf="cargando" class="ion-padding">
     <ion-skeleton-text
       animated="true"
@@ -35,12 +28,14 @@
     <ion-skeleton-text animated="true" style="width: 80%"></ion-skeleton-text>
   </div>
 
-  <div *ngIf="!cargando && siniestro">
+  <!-- Siniestro Details -->
+  <div *ngIf="!cargando && siniestro" class="siniestro-details">
     <ion-card class="details-card">
       <img
         *ngIf="siniestro.archivoUrl"
         [src]="apiUrl + siniestro.archivoUrl"
         alt="Foto del incidente"
+        class="incident-image"
       />
       <div *ngIf="!siniestro.archivoUrl" class="no-image">
         <ion-icon name="camera-reverse-outline"></ion-icon>
@@ -48,62 +43,93 @@
       </div>
 
       <ion-card-header>
-        <ion-card-title>Incidente #{{ siniestro.id }}</ion-card-title>
-        <ion-card-subtitle
-          >{{ siniestro.fecha | date:'full' }}</ion-card-subtitle
-        >
+        <ion-card-subtitle>
+          <ion-icon name="time-outline" class="inline-icon"></ion-icon>
+          {{ siniestro.fecha | date:'dd/MM/yyyy HH:mm' }}
+        </ion-card-subtitle>
+        <ion-card-title> Incidente Reportado </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
-        <ion-list lines="none">
-          <ion-item>
-            <ion-label>
-              <h3>Estado</h3>
-              <ion-chip
-                [color]="getColorForStatus(siniestro.estado)"
-                outline="true"
-                class="ion-margin-top"
-              >
-                <ion-label>
-                  {{ (siniestro.estado || 'Sin Estado').replace('_', ' ') |
-                  titlecase }}</ion-label
-                >
-              </ion-chip>
-            </ion-label>
-            <ion-button fill="outline" size="small" (click)="actualizarEstado()"
-              >Cambiar</ion-button
-            >
-          </ion-item>
+        <!-- Info Grid -->
+        <ion-grid class="info-grid">
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <ion-icon name="person-outline" class="info-icon"></ion-icon>
+                <div class="info-content">
+                  <p class="info-label">Reportado por:</p>
+                  <p class="info-value">
+                    {{ siniestro.conductor?.pri_nom_usu || 'Usuario' }} {{
+                    siniestro.conductor?.pri_ape_usu || 'Desconocido' }}
+                  </p>
+                </div>
+              </div>
+            </ion-col>
 
-          <ion-item>
-            <ion-label>
-              <h3>Reportado por</h3>
-              <p>
-                {{ siniestro.conductor?.pri_nom_usu }} {{
-                siniestro.conductor?.pri_ape_usu }}
-              </p>
-            </ion-label>
-          </ion-item>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <ion-icon name="car-outline" class="info-icon"></ion-icon>
+                <div class="info-content">
+                  <p class="info-label">Vehículo:</p>
+                  <p class="info-value">
+                    {{ siniestro.vehiculo?.patente || 'N/A' }}
+                  </p>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
 
-          <ion-item>
-            <ion-label>
-              <h3>Vehículo</h3>
-              <p>
-                {{ siniestro.vehiculo?.marca }} {{ siniestro.vehiculo?.modelo }}
-                ({{ siniestro.vehiculo?.patente }})
-              </p>
-            </ion-label>
-          </ion-item>
+          <ion-row>
+            <ion-col size="12">
+              <div class="info-item">
+                <ion-icon name="flag-outline" class="info-icon"></ion-icon>
+                <div class="info-content">
+                  <p class="info-label">Estado actual:</p>
+                  <ion-chip
+                    [color]="getColorForStatus(siniestro.estado)"
+                    class="status-chip"
+                  >
+                    <ion-label
+                      >{{ siniestro.estado.replace('_', ' ') | titlecase
+                      }}</ion-label
+                    >
+                  </ion-chip>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
 
-          <ion-item>
-            <ion-label class="ion-text-wrap">
-              <h3>Descripción del Incidente</h3>
-              <p>
-                {{ siniestro.descripcion || 'No se proporcionó descripción.' }}
-              </p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
+          <ion-row *ngIf="siniestro.descripcion">
+            <ion-col size="12">
+              <div class="info-item description-item">
+                <ion-icon
+                  name="document-text-outline"
+                  class="info-icon"
+                ></ion-icon>
+                <div class="info-content">
+                  <p class="info-label">Descripción:</p>
+                  <p class="info-value description-text">
+                    {{ siniestro.descripcion }}
+                  </p>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Action Button -->
+        <div class="action-section">
+          <ion-button
+            expand="block"
+            color="primary"
+            (click)="actualizarEstado()"
+            class="update-button"
+          >
+            <ion-icon name="create-outline" slot="start"></ion-icon>
+            Actualizar Estado
+          </ion-button>
+        </div>
       </ion-card-content>
     </ion-card>
   </div>

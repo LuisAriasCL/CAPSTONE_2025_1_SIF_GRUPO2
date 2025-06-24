@@ -23,6 +23,8 @@ import {
   mapOutline,
   businessOutline,
   clipboardOutline,
+  person,
+  personCircleOutline,
 } from 'ionicons/icons';
 
 import { AuthService } from '../../services/auth.service';
@@ -72,7 +74,7 @@ export class SidebarComponent implements OnInit {
     {
       title: 'Gestión de Usuarios',
       url: '/gestion-usuarios',
-      icon: 'people-circle',
+      icon: 'person-circle',
     },
   ];
 
@@ -92,6 +94,7 @@ export class SidebarComponent implements OnInit {
       mapOutline,
       businessOutline,
       clipboardOutline,
+      person,
     });
   }
 

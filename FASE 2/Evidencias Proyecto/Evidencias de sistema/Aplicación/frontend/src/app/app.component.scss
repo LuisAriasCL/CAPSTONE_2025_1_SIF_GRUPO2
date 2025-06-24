@@ -44,7 +44,6 @@ ion-split-pane {
 ion-menu {
   --background: var(--ion-color-light);
   --color: var(--ion-color-dark);
-  border-right: 1px solid var(--ion-color-medium);
   margin-top: var(--header-height);
   height: calc(100vh - var(--header-height));
   transition: all 0.3s ease;
@@ -191,7 +190,6 @@ ion-menu,
   ion-menu {
     --background: var(--ion-color-dark);
     --color: var(--ion-color-light);
-    border-right-color: var(--ion-color-medium-tint);
   }
 
   #main-content {
@@ -217,3 +215,49 @@ ion-menu {
   will-change: transform;
   transform: translateZ(0);
 }
+
+/* ===== ELIMINACIÓN DE BORDES ===== */
+
+/* Regla específica para eliminar todos los bordes del host y split-pane */
+:host {
+  --border: none !important;
+  --side-min-width: 270px;
+  --side-max-width: 28%;
+  border: none !important;
+}
+
+/* Eliminar bordes del split-pane */
+ion-split-pane {
+  --border: none !important;
+  border: none !important;
+
+  /* Eliminar borde derecho del menú */
+  ion-menu {
+    --border: none !important;
+    border: none !important;
+    border-right: none !important;
+    box-shadow: none;
+  }
+}
+
+/* Eliminar bordes de items en general */
+ion-item {
+  --border-color: transparent !important;
+  --border-style: none !important;
+  --border-width: 0 !important;
+  border: none !important;
+}
+
+/* Eliminar bordes de contenedores */
+ion-content {
+  --border: none !important;
+  border: none !important;
+}
+
+/* Eliminar bordes de cards si es necesario */
+ion-card {
+  --border: none;
+  border: none;
+}
+
+/* ===== FIN ELIMINACIÓN DE BORDES ===== */

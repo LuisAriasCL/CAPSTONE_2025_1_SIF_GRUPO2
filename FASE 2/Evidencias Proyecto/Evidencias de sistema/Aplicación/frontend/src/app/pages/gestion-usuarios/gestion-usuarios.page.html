@@ -78,6 +78,7 @@
     <ion-card
       *ngFor="let usuario of resultadosFiltrados"
       class="user-card clickable"
+      (click)="viewUserDetail(usuario)"
     >
       <ion-item lines="none" class="user-item">
         <ion-icon
@@ -109,7 +110,7 @@
           <ion-button
             fill="clear"
             color="primary"
-            (click)="openUserForm(usuario)"
+            (click)="$event.stopPropagation(); openUserForm(usuario)"
             class="action-btn"
           >
             <ion-icon slot="icon-only" name="create-outline"></ion-icon>
@@ -119,7 +120,7 @@
             *ngIf="selectedStatus === 'activo'"
             fill="clear"
             color="danger"
-            (click)="onDeactivate(usuario)"
+            (click)="$event.stopPropagation(); onDeactivate(usuario)"
             class="action-btn"
           >
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
@@ -129,7 +130,7 @@
             *ngIf="selectedStatus === 'inactivo'"
             fill="clear"
             color="success"
-            (click)="onReactivate(usuario)"
+            (click)="$event.stopPropagation(); onReactivate(usuario)"
             class="action-btn"
           >
             <ion-icon
@@ -153,7 +154,7 @@
   </div>
   <!-- Botón flotante para agregar usuario -->
   <ion-fab slot="fixed" vertical="top" horizontal="end" class="custom-fab">
-    <ion-fab-button (click)="openUserForm(null)">
+    <ion-fab-button (click)="presentUserForm(null)">
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
