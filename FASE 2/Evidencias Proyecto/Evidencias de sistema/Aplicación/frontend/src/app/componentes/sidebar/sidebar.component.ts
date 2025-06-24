@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonList,
@@ -8,6 +8,7 @@ import {
   IonLabel,
   IonItemDivider,
 } from '@ionic/angular/standalone';
+import { Router, NavigationEnd } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
@@ -42,23 +43,18 @@ import { AuthService } from '../../services/auth.service';
     IonItemDivider,
   ],
 })
-export class SidebarComponent {
-  public selectedIndex = 0;
-  /**
-   * Opciones de navegación para la aplicación.
-   */ public appPages = [
+export class SidebarComponent implements OnInit {
+  public selectedIndex = 0; // Índice del elemento seleccionado
+  public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
     { title: 'Reportes', url: '/reporte-mantenimiento', icon: 'newspaper' },
-    // { title: 'Reportes', url: '/reportes', icon: 'newspaper' }, // Página no existe aún
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
-    // { title: 'Combustible', url: '/combustible', icon: 'flame' }, // Página no existe aún
     { title: 'Vehículos', url: '/vehiculos', icon: 'car' },
     {
       title: 'Asignación de recorridos',
       url: '/asignacion-list',
       icon: 'navigate',
     },
-    // { title: 'Incidentes', url: '/siniestros', icon: 'warning' }, // Página no existe aún
     {
       title: 'Órdenes de Trabajo',
       url: '/orden-trabajo-list',
@@ -79,7 +75,9 @@ export class SidebarComponent {
       icon: 'people-circle',
     },
   ];
+
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   constructor() {
     addIcons({
@@ -96,6 +94,24 @@ export class SidebarComponent {
       clipboardOutline,
     });
   }
+
+  ngOnInit() {
+    // Actualizar el índice seleccionado basado en la ruta actual
+    this.updateSelectedIndex(this.router.url);
+
+    // Escuchar cambios en la navegación para actualizar el índice
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.updateSelectedIndex(event.urlAfterRedirects);
+      }
+    });
+  }
+
+  private updateSelectedIndex(url: string) {
+    const index = this.appPages.findIndex((page) => url.startsWith(page.url));
+    this.selectedIndex = index !== -1 ? index : 0; // Si no se encuentra, marcar Dashboard
+  }
+
   esRol(
     rol: 'admin' | 'gestor' | 'conductor' | 'mantenimiento' | 'tecnico'
   ): boolean {

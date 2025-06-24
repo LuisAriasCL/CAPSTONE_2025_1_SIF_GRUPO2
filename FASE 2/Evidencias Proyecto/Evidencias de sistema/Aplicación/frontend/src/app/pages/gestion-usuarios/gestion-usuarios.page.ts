@@ -1,14 +1,34 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController, ModalController } from '@ionic/angular';
+import {
+  IonicModule,
+  ToastController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Usuario } from '../../services/api.service';
-import { HeaderComponent } from 'src/app/componentes/header/header.component';
 import { UsuarioFormComponent } from 'src/app/componentes/usuario-form/usuario-form.component';
 import { addIcons } from 'ionicons';
-import { 
-  createOutline, trashOutline, add, refreshOutline, happyOutline, 
-  shieldCheckmarkOutline, briefcaseOutline, carSportOutline, buildOutline, constructOutline, personOutline, peopleCircleOutline
+import {
+  createOutline,
+  trashOutline,
+  add,
+  refreshOutline,
+  happyOutline,
+  shieldCheckmarkOutline,
+  briefcaseOutline,
+  carSportOutline,
+  buildOutline,
+  constructOutline,
+  personOutline,
+  peopleCircleOutline,
+  peopleOutline,
+  checkmarkCircleOutline,
+  personAddOutline,
+  cloudOfflineOutline,
+  arrowBack,
+  arrowBackOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -16,32 +36,56 @@ import {
   templateUrl: './gestion-usuarios.page.html',
   styleUrls: ['./gestion-usuarios.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, HeaderComponent, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class GestionUsuariosPage implements OnInit {
-
   public usuarios: Usuario[] = [];
-  public resultadosFiltrados: Usuario[] = []; 
+  public resultadosFiltrados: Usuario[] = [];
   public cargando = true;
   public error = false;
   public skeletonItems = Array(5);
-  public rolesParaFiltrar = ['conductor', 'tecnico', 'gestor', 'admin', 'mantenimiento'];
-  public selectedRole: string = 'todos'; 
+  public rolesParaFiltrar = [
+    'conductor',
+    'tecnico',
+    'gestor',
+    'admin',
+    'mantenimiento',
+  ];
+  public selectedRole: string = 'todos';
   public selectedStatus: 'activo' | 'inactivo' = 'activo';
 
   constructor(
     private apiService: ApiService,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private modalCtrl: ModalController 
+    private modalCtrl: ModalController
   ) {
-    addIcons({ 
-      createOutline, trashOutline, add, refreshOutline, happyOutline, shieldCheckmarkOutline, 
-      briefcaseOutline, carSportOutline, buildOutline, constructOutline, personOutline, peopleCircleOutline
+    addIcons({
+      createOutline,
+      trashOutline,
+      add,
+      refreshOutline,
+      happyOutline,
+      shieldCheckmarkOutline,
+      briefcaseOutline,
+      carSportOutline,
+      buildOutline,
+      constructOutline,
+      personOutline,
+      peopleCircleOutline,
+      peopleOutline,
+      checkmarkCircleOutline,
+      personAddOutline,
+      cloudOfflineOutline,
+      arrowBackOutline,
     });
   }
 
-  ngOnInit() { }
+  ngOnInit() {}
+
+  volver() {
+    window.history.back();
+  }
 
   ionViewWillEnter() {
     this.cargarUsuarios();
@@ -50,8 +94,9 @@ export class GestionUsuariosPage implements OnInit {
   cargarUsuarios() {
     this.cargando = true;
     this.error = false;
-    
-    const rolToFetch = this.selectedRole === 'todos' ? undefined : this.selectedRole;
+
+    const rolToFetch =
+      this.selectedRole === 'todos' ? undefined : this.selectedRole;
 
     this.apiService.getAllUsers(rolToFetch, this.selectedStatus).subscribe({
       next: (data) => {
@@ -64,7 +109,7 @@ export class GestionUsuariosPage implements OnInit {
         this.cargando = false;
         this.error = true;
         this.mostrarToast('Error al cargar la lista de usuarios.', 'danger');
-      }
+      },
     });
   }
 
@@ -84,8 +129,9 @@ export class GestionUsuariosPage implements OnInit {
       this.resultadosFiltrados = [...this.usuarios];
       return;
     }
-    this.resultadosFiltrados = this.usuarios.filter(usuario => {
-      const nombreCompleto = `${usuario.pri_nom_usu} ${usuario.pri_ape_usu}`.toLowerCase();
+    this.resultadosFiltrados = this.usuarios.filter((usuario) => {
+      const nombreCompleto =
+        `${usuario.pri_nom_usu} ${usuario.pri_ape_usu}`.toLowerCase();
       const email = usuario.email.toLowerCase();
       return nombreCompleto.includes(searchTerm) || email.includes(searchTerm);
     });
@@ -94,7 +140,7 @@ export class GestionUsuariosPage implements OnInit {
   async openUserForm(usuario: Usuario | null) {
     const modal = await this.modalCtrl.create({
       component: UsuarioFormComponent,
-      componentProps: { usuario: usuario ? { ...usuario } : null }
+      componentProps: { usuario: usuario ? { ...usuario } : null },
     });
 
     await modal.present();
@@ -102,28 +148,35 @@ export class GestionUsuariosPage implements OnInit {
     const { data, role } = await modal.onWillDismiss();
 
     if (role === 'confirm') {
-      if (usuario) { // Modo Edición
+      if (usuario) {
+        // Modo Edición
         this.apiService.updateUser(usuario.id_usu, data).subscribe({
           next: () => {
             this.mostrarToast('Usuario actualizado con éxito', 'success');
             this.cargarUsuarios();
           },
-          error: (err) => this.mostrarToast(err.error?.message || 'Error al actualizar', 'danger')
+          error: (err) =>
+            this.mostrarToast(
+              err.error?.message || 'Error al actualizar',
+              'danger'
+            ),
         });
-      } else { // Modo Creación
+      } else {
+        // Modo Creación
         this.apiService.createUser(data).subscribe({
           next: () => {
             this.mostrarToast('Usuario creado con éxito', 'success');
             this.selectedRole = data.rol; // Opcional: filtra por el rol recién creado
             this.cargarUsuarios();
           },
-          error: (err) => this.mostrarToast(err.error?.message || 'Error al crear', 'danger')
+          error: (err) =>
+            this.mostrarToast(err.error?.message || 'Error al crear', 'danger'),
         });
       }
     }
   }
 
-   async onDeactivate(usuario: Usuario) {
+  async onDeactivate(usuario: Usuario) {
     const alert = await this.alertCtrl.create({
       header: 'Confirmar Desactivación',
       message: `¿Estás seguro de que quieres desactivar a ${usuario.pri_nom_usu} ${usuario.pri_ape_usu}?`,
@@ -135,18 +188,18 @@ export class GestionUsuariosPage implements OnInit {
           cssClass: 'ion-color-danger',
           handler: () => {
             this.apiService.deleteUser(usuario.id_usu).subscribe({
-              next: (res) => { 
-                this.mostrarToast(res.message, 'success'); 
-                this.cargarUsuarios(); 
+              next: (res) => {
+                this.mostrarToast(res.message, 'success');
+                this.cargarUsuarios();
               },
               error: (err) => {
                 const mensaje = err?.message || 'Error al desactivar';
                 this.mostrarToast(mensaje, 'danger');
-              }
+              },
             });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }
@@ -169,11 +222,11 @@ export class GestionUsuariosPage implements OnInit {
               error: (err) => {
                 const mensaje = err?.message || 'Error al reactivar';
                 this.mostrarToast(mensaje, 'danger');
-              }
+              },
             });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }
@@ -184,9 +237,44 @@ export class GestionUsuariosPage implements OnInit {
       gestor: 'briefcase-outline',
       conductor: 'car-sport-outline',
       mantenimiento: 'build-outline',
-      tecnico: 'construct-outline'
+      tecnico: 'construct-outline',
     };
     return iconMap[rol] || 'person-outline';
+  }
+
+  // Métodos para obtener colores e iconos
+  getColorForRole(rol: string): string {
+    switch (rol) {
+      case 'admin':
+        return 'danger';
+      case 'gestor':
+        return 'warning';
+      case 'tecnico':
+        return 'secondary';
+      case 'conductor':
+        return 'tertiary';
+      case 'mantenimiento':
+        return 'success';
+      default:
+        return 'medium';
+    }
+  }
+
+  getRoleChipColor(rol: string): string {
+    switch (rol) {
+      case 'admin':
+        return 'danger';
+      case 'gestor':
+        return 'warning';
+      case 'tecnico':
+        return 'secondary';
+      case 'conductor':
+        return 'tertiary';
+      case 'mantenimiento':
+        return 'success';
+      default:
+        return 'medium';
+    }
   }
 
   async mostrarToast(mensaje: string, color: string) {
@@ -194,7 +282,7 @@ export class GestionUsuariosPage implements OnInit {
       message: mensaje,
       duration: 3000,
       position: 'top',
-      color: color
+      color: color,
     });
     toast.present();
   }

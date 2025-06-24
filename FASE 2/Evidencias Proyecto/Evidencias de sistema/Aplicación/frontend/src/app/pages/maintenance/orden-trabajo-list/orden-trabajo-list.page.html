@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true">
   <ion-refresher slot="fixed" (ionRefresh)="loadItems($event)">
     <ion-refresher-content
       pullingIcon="chevron-down-circle-outline"
@@ -10,7 +10,7 @@
   <!-- Filtros -->
   <ion-card class="filters-card">
     <ion-card-header>
-      <ion-card-title class="filters-title-neutral">
+      <ion-card-title style="color: black">
         <ion-icon name="funnel-outline"></ion-icon>
         Filtros
       </ion-card-title>

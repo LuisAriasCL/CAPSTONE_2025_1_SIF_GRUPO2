@@ -1,7 +1,12 @@
 // Fichero: src/app/pages/combustible-detalle/combustible-detalle.page.ts
 
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
+import {
+  CommonModule,
+  CurrencyPipe,
+  DatePipe,
+  TitleCasePipe,
+} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
@@ -13,13 +18,21 @@ import { HeaderComponent } from 'src/app/componentes/header/header.component';
   templateUrl: './combustible-detalle.page.html',
   styleUrls: ['./combustible-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HeaderComponent, DatePipe, CurrencyPipe, TitleCasePipe]
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    HeaderComponent,
+    DatePipe,
+    CurrencyPipe,
+    TitleCasePipe,
+  ],
 })
 export class CombustibleDetallePage implements OnInit {
   registro: any = null;
   isLoading = true;
   // CAMBIO: Añadir la propiedad apiUrl, igual que en siniestro-detalle
-  public readonly apiUrl = 'http://localhost:8101'; 
+  public readonly apiUrl = 'http://localhost:8101';
 
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiService);
@@ -35,7 +48,7 @@ export class CombustibleDetallePage implements OnInit {
         error: (err) => {
           console.error(err);
           this.isLoading = false;
-        }
+        },
       });
     }
   }

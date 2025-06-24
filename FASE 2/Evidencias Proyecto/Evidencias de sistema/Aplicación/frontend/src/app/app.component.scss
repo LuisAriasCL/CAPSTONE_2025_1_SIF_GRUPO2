@@ -48,7 +48,7 @@ ion-menu {
   margin-top: var(--header-height);
   height: calc(100vh - var(--header-height));
   transition: all 0.3s ease;
-  
+
   ion-content {
     --background: var(--ion-color-light);
     --padding-top: 0;
@@ -63,7 +63,7 @@ ion-menu {
   height: calc(100vh - var(--header-height));
   background: var(--ion-color-light-shade);
   overflow: hidden;
-  
+
   /* Clase para cuando no hay header (login/register) */
   &.no-header {
     height: 100vh;
@@ -84,12 +84,12 @@ ion-router-outlet {
   :root {
     --header-height: var(--header-height-tablet);
   }
-  
+
   ion-split-pane {
     --side-min-width: var(--menu-width-tablet);
     --side-max-width: var(--menu-width-tablet);
   }
-  
+
   ion-menu {
     --width: var(--menu-width-tablet);
   }
@@ -100,25 +100,25 @@ ion-router-outlet {
   :root {
     --header-height: var(--header-height-mobile);
   }
-  
+
   /* En móviles, el split-pane se comporta como overlay */
   ion-split-pane {
     --side-min-width: var(--menu-width-mobile);
     --side-max-width: var(--menu-width-mobile);
   }
-  
+
   ion-menu {
     --width: 280px;
     /* Menú overlay en móviles */
     margin-top: var(--header-height-mobile);
     height: calc(100vh - var(--header-height-mobile));
-    
+
     /* Sombra cuando el menú está abierto */
     &.menu-enabled {
       box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
     }
   }
-  
+
   /* El contenido principal ocupa toda la pantalla en móviles */
   #main-content {
     width: 100%;
@@ -131,13 +131,13 @@ ion-router-outlet {
   :root {
     --header-height: 40px; /* Header más pequeño en landscape */
   }
-  
+
   ion-menu {
     --width: 260px; /* Menú más estrecho en landscape */
     margin-top: 40px;
     height: calc(100vh - 40px);
   }
-  
+
   #main-content {
     height: calc(100vh - 40px);
   }
@@ -155,9 +155,9 @@ ion-router-outlet {
   /* Estilos específicos para dispositivos táctiles */
   ion-split-pane {
     /* Mejora la transición en dispositivos táctiles */
-    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   ion-menu {
     /* Mejor respuesta táctil */
     --ripple-color: rgba(var(--ion-color-primary-rgb), 0.16);
@@ -193,7 +193,7 @@ ion-menu,
     --color: var(--ion-color-light);
     border-right-color: var(--ion-color-medium-tint);
   }
-  
+
   #main-content {
     background: var(--ion-color-dark-shade);
   }
