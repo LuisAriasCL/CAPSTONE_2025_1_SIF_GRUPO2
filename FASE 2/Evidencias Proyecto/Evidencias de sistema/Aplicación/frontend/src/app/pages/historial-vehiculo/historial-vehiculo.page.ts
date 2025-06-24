@@ -132,9 +132,7 @@ export class HistorialVehiculoPage implements OnInit {
     }
   }
 
-  volver() {
-    this.router.navigate(['/vehiculos']);
-  }
+
 
   cargarHistorial(vehiculoId: number) {
     this.isLoading = true;
