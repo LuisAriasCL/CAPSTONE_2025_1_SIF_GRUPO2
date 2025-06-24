@@ -57,6 +57,8 @@ export class VehicleListPage implements OnInit {
   private titleService = inject(TitleService);
 
   vehiculos: Vehiculo[] = [];
+  filteredVehiculos: Vehiculo[] = [];
+  searchTerm: string = '';
   isLoading = false;
 
   pageTitle = 'Listado de Vehículos';
@@ -155,7 +157,10 @@ export class VehicleListPage implements OnInit {
     this.apiService.getVehicles().subscribe({
       next: (data: Vehiculo[]) => {
         this.vehiculos = data;
-        this.totalPages = Math.ceil(this.vehiculos.length / this.pageSize);
+        this.applyFilters(); // Aplicar filtro al cargar
+        this.totalPages = Math.ceil(
+          this.filteredVehiculos.length / this.pageSize
+        );
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
@@ -358,34 +363,36 @@ export class VehicleListPage implements OnInit {
     toast.present();
   }
 
-  // CAMBIO 4: Añadir implementación a los métodos que necesita la tabla para no dar error
+  get paginatedVehiculos(): Vehiculo[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.filteredVehiculos.slice(start, end);
+  }
+
   onPageChange(event: PageEvent) {
-    console.log('Cambio de página:', event);
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
   }
 
-  onRowClick(row: Vehiculo) {
-    console.log('Fila seleccionada:', row);
+  applyFilters() {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      this.filteredVehiculos = [...this.vehiculos];
+    } else {
+      this.filteredVehiculos = this.vehiculos.filter(
+        (v) =>
+          (v.patente && v.patente.toLowerCase().includes(term)) ||
+          (v.marca && v.marca.toLowerCase().includes(term)) ||
+          (v.modelo && v.modelo.toLowerCase().includes(term))
+      );
+    }
+    this.totalPages =
+      Math.ceil(this.filteredVehiculos.length / this.pageSize) || 1;
+    this.currentPage = 1; // Reiniciar a la primera página al filtrar
   }
 
-  onSortColumn(event: { column: string; direction: 'asc' | 'desc' }) {
-    console.log('Ordenar por:', event);
-  }
-
-  onExport(format: string) {
-    console.log('Exportar en formato:', format);
-    this.presentToast(
-      `Funcionalidad de exportar a ${format} no implementada.`,
-      'warning'
-    );
-  }
-
-  onImport(format: string) {
-    console.log('Importar desde formato:', format);
-    this.presentToast(
-      `Funcionalidad de importar desde ${format} no implementada.`,
-      'warning'
-    );
+  clearFilters() {
+    this.searchTerm = '';
+    this.applyFilters();
   }
 }

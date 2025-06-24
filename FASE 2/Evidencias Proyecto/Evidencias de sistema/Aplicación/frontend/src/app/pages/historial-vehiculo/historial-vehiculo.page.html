@@ -17,24 +17,26 @@
       Volver
     </ion-button>
 
-    <div *ngIf="vehiculoActual" style="margin-top: 8px">
-      <h2 style="margin: 0; color: var(--ion-color-dark)">
-        {{ vehiculoActual.patente }}
-      </h2>
-      <p
-        style="
-          margin: 4px 0 0 0;
-          color: var(--ion-color-medium);
-          font-size: 0.9rem;
-        "
-      >
-        {{ vehiculoActual.marca }} {{ vehiculoActual.modelo }}
-      </p>
+    <div
+      *ngIf="vehiculoActual"
+      style="margin-top: 8px; display: flex; flex-direction: row; gap: 8px"
+    >
+      <div>
+        <h2 style="margin: 0; color: var(--ion-color-dark); font-weight: 600">
+          <ion-icon name="car" style="margin-bottom: 0.893 rem"></ion-icon>
+          {{ vehiculoActual.patente }}
+        </h2>
+        <h3 style="margin: 0; color: var(--ion-color-dark); font-weight: 500">
+          {{ vehiculoActual.marca }} {{ vehiculoActual.modelo }}
+        </h3>
+      </div>
 
-      <ion-chip style="margin-top: 8px">
-        <ion-icon name="speedometer-outline"></ion-icon>
-        <ion-label>{{ vehiculoActual.kmVehi | number }} km</ion-label>
-      </ion-chip>
+      <div>
+        <ion-chip style="margin-top: 8px">
+          <ion-icon name="speedometer-outline"></ion-icon>
+          <ion-label>{{ vehiculoActual.kmVehi | number }} km</ion-label>
+        </ion-chip>
+      </div>
     </div>
   </div>
   <!-- Barra de búsqueda -->
@@ -50,24 +52,73 @@
 
   <ion-grid class="ion-no-padding">
     <ion-row>
-      <ion-col size="12" size-md="4">
+      <ion-col size="12" size-md="2.5">
         <ion-card class="kpi-card">
           <ion-card-content>
-            <ion-label>Costo Combustible</ion-label>
-            <h2 *ngIf="!isLoading; else skeleton">
-              {{ kpis.costoCombustible | currency:'CLP':'symbol':'1.0-0' }}
-            </h2>
+            <div
+              style="
+                margin-top: 8px;
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                justify-content: center;
+              "
+            >
+              <div>
+                <ion-icon
+                  slot="icon-only"
+                  name="flash"
+                  style="font-size: 34px"
+                  color="primary"
+                ></ion-icon>
+              </div>
+
+              <div>
+                <ion-label
+                  style="font-weight: 600; font-size: large"
+                  color="primary"
+                  >Costo Combustible</ion-label
+                >
+                <h2 style="font-weight: 600" *ngIf="!isLoading; else skeleton">
+                  {{ kpis.costoCombustible | currency:'CLP':'symbol':'1.0-0' }}
+                </h2>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
       </ion-col>
-      <ion-col size="12" size-md="4">
+      <ion-col size="12" size-md="2.5">
         <ion-card class="kpi-card">
           <ion-card-content>
-            <ion-label>Rendimiento</ion-label>
-            <h2 *ngIf="!isLoading; else skeleton">
-              {{ kpis.rendimientoPromedio | number:'1.1-1' }}
-              <span class="unit">km/L</span>
-            </h2>
+            <div
+              style="
+                margin-top: 8px;
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                justify-content: center;
+              "
+            >
+              <div>
+                <ion-icon
+                  slot="icon-only"
+                  name="stats-chart"
+                  color="danger"
+                  style="font-size: 34px"
+                ></ion-icon>
+              </div>
+              <div>
+                <ion-label
+                  style="font-weight: 600; font-size: large"
+                  color="danger"
+                  >Rendimiento Promedio</ion-label
+                >
+                <h2 style="font-weight: 600" *ngIf="!isLoading; else skeleton">
+                  {{ kpis.rendimientoPromedio | number:'1.1-1' }}
+                  <span class="unit">km/L</span>
+                </h2>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -107,7 +158,7 @@
   </div>
 
   <div *ngIf="!isLoading && historialFiltrado.length === 0" class="empty-state">
-    <ion-icon name="archive-outline"></ion-icon>
+    <ion-icon name="archive"></ion-icon>
     <p>No se encontraron registros que coincidan con los filtros.</p>
   </div>
 
@@ -125,16 +176,18 @@
           class="ion-icon-big"
         ></ion-icon>
         <ion-label>
-          <h2 class="ion-text-wrap"><strong>{{ item.titulo }}</strong></h2>
-          <p>{{ item.subtitulo }}</p>
+          <h2 class="ion-text-wrap">
+            <strong style="font-size: large">{{ item.titulo }}</strong>
+          </h2>
+          <p style="font-size: medium">{{ item.subtitulo }}</p>
         </ion-label>
-        <ion-note slot="end" color="medium"
+        <ion-note slot="end" color="medium" style="font-size: large"
           >{{ item.fecha | date:'dd/MM/yy' }}</ion-note
         >
       </ion-item>
       <div class="costo-chip" *ngIf="item.costo">
         <ion-chip
-          ><ion-label
+          ><ion-label style="font-size: large"
             >{{ item.costo | currency:'CLP':'symbol-narrow':'1.0-0'
             }}</ion-label
           ></ion-chip

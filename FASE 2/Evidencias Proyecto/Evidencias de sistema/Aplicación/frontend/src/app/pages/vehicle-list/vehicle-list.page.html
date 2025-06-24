@@ -3,6 +3,40 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+  <!-- Card de Filtros -->
+  <ion-card class="filters-card" *ngIf="!isLoading">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="funnel-outline"></ion-icon>
+        Filtros
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="10">
+            <ion-item>
+              <ion-input
+                [(ngModel)]="searchTerm"
+                placeholder="Buscar por patente, marca o modelo..."
+                (ionInput)="applyFilters()"
+                clear-input="true"
+              >
+                <ion-icon name="search-outline" slot="start"></ion-icon>
+              </ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="2">
+            <ion-button expand="block" fill="outline" (click)="clearFilters()">
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Limpiar
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
   <!-- Estado de Carga -->
   <div *ngIf="isLoading" class="ion-text-center ion-padding-top">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
@@ -29,23 +63,31 @@
       Registrar Primer Vehículo
     </ion-button>
   </div>
-  <!-- Tabla de datos (solo se muestra si no está cargando y hay vehículos) -->
+  <!-- Tabla de datos (si hay vehículos cargados, aunque el filtro no devuelva resultados) -->
   <div class="data-table-container" *ngIf="!isLoading && vehiculos.length > 0">
     <app-data-table
       [columns]="tableColumns"
-      [data]="vehiculos"
+      [data]="paginatedVehiculos"
       [pageSize]="pageSize"
       [actionButtons]="actionButtons"
-      [totalItems]="vehiculos.length"
+      [totalItems]="filteredVehiculos.length"
       [showPagination]="true"
       [showExport]="true"
       [showImport]="true"
       (page)="onPageChange($event)"
-      (rowClick)="onRowClick($event)"
-      (sort)="onSortColumn($event)"
-      (export)="onExport($event)"
-      (import)="onImport($event)"
     >
+      <!-- Mensaje si no hay resultados filtrados -->
+      <div
+        *ngIf="filteredVehiculos.length === 0"
+        class="ion-text-center ion-padding"
+      >
+        <ion-icon
+          name="car-sport-outline"
+          style="font-size: 3em"
+          color="medium"
+        ></ion-icon>
+        <p><strong>Ningún Vehículo cumple con la condición</strong></p>
+      </div>
     </app-data-table>
   </div>
   <!-- Botón flotante para agregar vehículo -->

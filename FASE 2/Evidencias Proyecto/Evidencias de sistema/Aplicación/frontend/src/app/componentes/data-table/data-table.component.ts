@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -29,7 +37,7 @@ export interface PageEvent {
   templateUrl: './data-table.component.html',
   styleUrls: ['./data-table.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule],
 })
 export class DataTableComponent implements OnInit, OnChanges {
   @Input() columns: Column[] = [];
@@ -45,7 +53,10 @@ export class DataTableComponent implements OnInit, OnChanges {
   @Input() showImport = false; // Nueva propiedad para mostrar botón de importación
   @Input() idField = 'id'; // Campo que contiene el ID de cada fila, usado para acciones
   @Output() page = new EventEmitter<PageEvent>();
-  @Output() sort = new EventEmitter<{column: string, direction: 'asc' | 'desc'}>();
+  @Output() sort = new EventEmitter<{
+    column: string;
+    direction: 'asc' | 'desc';
+  }>();
   @Output() rowClick = new EventEmitter<any>();
   @Output() export = new EventEmitter<string>(); // csv, excel, pdf
   @Output() import = new EventEmitter<string>(); // Nuevo evento para importación
@@ -56,7 +67,7 @@ export class DataTableComponent implements OnInit, OnChanges {
   totalPages = 0;
   Math = Math; // Para usar Math en el template
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     this.updateDisplayData();
@@ -76,8 +87,10 @@ export class DataTableComponent implements OnInit, OnChanges {
     }
 
     // Calcular el total de páginas
-    this.totalPages = Math.ceil(this.totalItems > 0 ? this.totalItems : this.data.length / this.pageSize);
-    
+    this.totalPages = Math.ceil(
+      this.totalItems > 0 ? this.totalItems : this.data.length / this.pageSize
+    );
+
     // Si los datos ya vienen paginados del servidor, mostramos todos
     if (this.totalItems > 0) {
       this.displayData = this.data;
@@ -96,10 +109,10 @@ export class DataTableComponent implements OnInit, OnChanges {
 
     this.currentPage = page;
     this.updateDisplayData();
-    
+
     this.page.emit({
       pageIndex: this.currentPage - 1, // Para compatibilidad con sistemas basados en 0
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
     });
   }
 
@@ -108,26 +121,32 @@ export class DataTableComponent implements OnInit, OnChanges {
     this.pageSize = Number(select.value);
     this.currentPage = 1; // Volver a la primera página al cambiar el tamaño
     this.updateDisplayData();
-    
+
     this.page.emit({
       pageIndex: 0,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
     });
   }
 
   getPaginationRange(): number[] {
     const range: number[] = [];
     const maxVisiblePages = 5;
-    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    if (this.totalPages < 1) {
+      return [1];
+    }
+    let startPage = Math.max(
+      1,
+      this.currentPage - Math.floor(maxVisiblePages / 2)
+    );
     const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
-    // Ajustar startPage si estamos cerca del final
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    
     for (let i = startPage; i <= endPage; i++) {
       range.push(i);
     }
-    
+    // Si no hay páginas, aseguramos que al menos esté la página 1
+    if (range.length === 0) {
+      range.push(1);
+    }
     return range;
   }
 
@@ -139,15 +158,16 @@ export class DataTableComponent implements OnInit, OnChanges {
     if (!column.sortable) {
       return;
     }
-    
+
     // Implementación básica, en un caso real podría ser más compleja
     this.sort.emit({
       column: column.field,
-      direction: 'asc' // Simplificado, normalmente alternaría entre asc/desc
+      direction: 'asc', // Simplificado, normalmente alternaría entre asc/desc
     });
-  }  onImport(format: string): void {
-     // Emitir evento de importación, el componente padre manejará la lógica
-     this.import.emit(format);
+  }
+  onImport(format: string): void {
+    // Emitir evento de importación, el componente padre manejará la lógica
+    this.import.emit(format);
   }
 
   onExport(format: string): void {
@@ -163,16 +183,16 @@ export class DataTableComponent implements OnInit, OnChanges {
     if (column.isAction) {
       return ''; // Las celdas de acción se manejan de forma especial en el template
     }
-    
+
     if (column.cell) {
       return column.cell(row);
     }
-    
+
     const value = this.getPropertyValue(row, column.field);
     if (value === null || value === undefined) {
       return '';
     }
-    
+
     return value.toString();
   }
 
@@ -183,7 +203,4 @@ export class DataTableComponent implements OnInit, OnChanges {
     }
     return '';
   }
-
-  
-
 }

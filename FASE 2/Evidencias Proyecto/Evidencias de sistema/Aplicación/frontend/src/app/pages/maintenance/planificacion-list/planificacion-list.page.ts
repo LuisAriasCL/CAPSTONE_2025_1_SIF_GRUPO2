@@ -26,6 +26,7 @@ import {
   carOutline,
   calendarNumberOutline,
   settingsOutline,
+  add,
 } from 'ionicons/icons';
 
 import {
@@ -80,6 +81,7 @@ export class PlanificacionListPage
       carOutline,
       calendarNumberOutline,
       settingsOutline,
+      add,
     });
   }
 
