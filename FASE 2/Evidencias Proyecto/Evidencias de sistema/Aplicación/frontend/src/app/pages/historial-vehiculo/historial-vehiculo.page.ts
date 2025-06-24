@@ -1,5 +1,3 @@
-// Fichero: src/app/pages/historial-vehiculo/historial-vehiculo.page.ts
-
 import { Component, OnInit, inject } from '@angular/core';
 import {
   CommonModule,
@@ -135,7 +133,6 @@ export class HistorialVehiculoPage implements OnInit {
     this.isLoading = true;
     this.apiService.getHistorialVehiculo(vehiculoId).subscribe({
       next: (data) => {
-        // CAMBIO: Extraer los KPIs y el historial de la nueva respuesta
         this.kpis = data.kpis;
         this.todoElHistorial = data.historial;
         this.historialFiltrado = data.historial;
@@ -151,6 +148,11 @@ export class HistorialVehiculoPage implements OnInit {
         toast.present();
       },
     });
+  }
+
+
+  volver() {
+    this.router.navigate(['/vehiculos']);
   }
 
   cargarDetallesVehiculo(vehiculoId: number) {
@@ -202,13 +204,12 @@ export class HistorialVehiculoPage implements OnInit {
         this.router.navigate(['/siniestro-detalle', item.id]);
         break;
 
-      // CAMBIO: Ahora navega a la nueva página de detalle
       case 'Combustible':
         this.router.navigate(['/combustible-detalle', item.id]);
         break;
     }
   }
-  // Helper para abrir el modal
+
   async abrirModalImagen(titulo: string, url: string) {
     const modal = await this.modalController.create({
       component: VerImagenModal,
@@ -216,12 +217,11 @@ export class HistorialVehiculoPage implements OnInit {
         titulo: titulo,
         imageUrl: `http://localhost:8101${url}`,
       },
-      cssClass: 'imagen-modal', // Puedes usar esta clase para estilizar el modal
+      cssClass: 'imagen-modal',
     });
     await modal.present();
   }
 
-  // Helper para mostrar mensajes
   async mostrarToast(
     mensaje: string,
     color: 'warning' | 'danger' | 'success' | 'primary' = 'warning'
