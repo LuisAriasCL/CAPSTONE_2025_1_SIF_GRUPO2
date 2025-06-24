@@ -11,7 +11,6 @@ import {
 } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-// CAMBIO 1: Añadir el nuevo icono 'newspaperOutline' y 'eyeOutline'
 import {
   pencilOutline,
   trashOutline,
@@ -22,6 +21,8 @@ import {
   eyeOutline,
   newspaperOutline,
   add,
+  downloadOutline, // Importa el icono de descarga
+  documentOutline, // Importa el icono de documento para PDF
 } from 'ionicons/icons';
 
 import {
@@ -86,12 +87,11 @@ export class VehicleListPage implements OnInit {
     {
       header: 'Acciones',
       field: 'actions',
-      width: '150px', // Aumentamos un poco el ancho para el nuevo botón
+      width: '150px', 
       isAction: true,
     },
   ];
 
-  // CAMBIO 2: Añadir el nuevo botón de historial al array de acciones
   actionButtons: ActionButton[] = [
     {
       icon: 'eye-outline',
@@ -101,7 +101,7 @@ export class VehicleListPage implements OnInit {
     },
     {
       icon: 'newspaper-outline',
-      color: 'success', // Un color distintivo
+      color: 'success', 
       tooltip: 'Ver historial',
       onClick: (row: Vehiculo) => this.verHistorial(row.idVehi),
     },
@@ -131,6 +131,8 @@ export class VehicleListPage implements OnInit {
       eyeOutline,
       newspaperOutline,
       add,
+      downloadOutline, // Añade el icono de descarga
+      documentOutline, // Añade el icono de documento
     });
   }
 
@@ -255,7 +257,6 @@ export class VehicleListPage implements OnInit {
     }
   }
 
-  // CAMBIO 3: Añadir el método para ver el historial
   verHistorial(idVehi?: number) {
     if (idVehi !== undefined) {
       this.router.navigate(['/historial-vehiculo', idVehi]);
@@ -345,6 +346,8 @@ export class VehicleListPage implements OnInit {
         return 'warning';
       case 'taller':
         return 'danger';
+      case 'baja': // Asegúrate de manejar el estado 'baja' si existe
+        return 'dark'; 
       default:
         return 'light';
     }
@@ -363,15 +366,19 @@ export class VehicleListPage implements OnInit {
     toast.present();
   }
 
-  get paginatedVehiculos(): Vehiculo[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    return this.filteredVehiculos.slice(start, end);
-  }
+  // Ahora DataTableComponent maneja la paginación interna.
+  // Este getter ya no es necesario, puedes eliminarlo si DataTableComponent toma `filteredVehiculos` directamente.
+  // get paginatedVehiculos(): Vehiculo[] {
+  //   const start = (this.currentPage - 1) * this.pageSize;
+  //   const end = start + this.pageSize;
+  //   return this.filteredVehiculos.slice(start, end);
+  // }
 
   onPageChange(event: PageEvent) {
-    this.currentPage = event.pageIndex + 1;
-    this.pageSize = event.pageSize;
+    // Este evento es emitido por DataTableComponent, puedes usarlo si necesitas saber el estado de paginación
+    // console.log('Página cambiada en DataTableComponent:', event);
+    this.currentPage = event.pageIndex + 1; // Actualizar solo para referencia si es necesario
+    this.pageSize = event.pageSize; // Actualizar solo para referencia si es necesario
   }
 
   applyFilters() {
@@ -386,13 +393,142 @@ export class VehicleListPage implements OnInit {
           (v.modelo && v.modelo.toLowerCase().includes(term))
       );
     }
-    this.totalPages =
-      Math.ceil(this.filteredVehiculos.length / this.pageSize) || 1;
-    this.currentPage = 1; // Reiniciar a la primera página al filtrar
+    // Ya no necesitas recalcular totalPages aquí, DataTableComponent lo hace
+    // this.totalPages = Math.ceil(this.filteredVehiculos.length / this.pageSize) || 1;
+    // this.currentPage = 1; // DataTableComponent ya reinicia la página
   }
 
   clearFilters() {
     this.searchTerm = '';
     this.applyFilters();
+  }
+
+  // Nuevas funciones para exportar CSV y PDF
+  exportarCSV() {
+    if (this.filteredVehiculos.length === 0) {
+      this.presentToast('No hay datos de vehículos para exportar.', 'warning');
+      return;
+    }
+
+    const cabeceras = [
+      'Patente', 'Marca', 'Modelo', 'Año', 'Estado', 'Kilometraje', 'Tipo Vehículo', 'Tipo Combustible', 'Km Vida Útil', 'Eficiencia Combustible', 'Fecha Adquisición', 'Latitud', 'Longitud'
+    ];
+
+    let csvContent = cabeceras.join(',') + '\r\n';
+
+    this.filteredVehiculos.forEach((row) => {
+      const fila = [
+        row.patente,
+        row.marca,
+        row.modelo,
+        row.anio,
+        row.estadoVehi,
+        row.kmVehi,
+        row.tipoVehi || 'N/A',
+        row.tipoCombVehi || 'N/A',
+        row.kmVidaUtil || 'N/A',
+        row.efiComb || 'N/A',
+        row.fecAdqui ? new Date(row.fecAdqui).toLocaleDateString() : 'N/A',
+        row.latitud || 'N/A',
+        row.longitud || 'N/A',
+      ];
+      // Escapar comillas dobles en cada celda para evitar problemas con comas internas
+      csvContent += fila.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',') + '\r\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'reporte_vehiculos.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    this.presentToast('Archivo CSV de vehículos exportado exitosamente.', 'success');
+  }
+
+  exportarPDF() {
+    if (this.filteredVehiculos.length === 0) {
+      this.presentToast('No hay datos de vehículos para exportar.', 'warning');
+      return;
+    }
+
+    let htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Reporte de Vehículos</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .status-activo { color: #28a745; font-weight: bold; }
+            .status-inactivo { color: #6c757d; font-weight: bold; }
+            .status-mantenimiento { color: #ffc107; font-weight: bold; }
+            .status-taller { color: #dc3545; font-weight: bold; }
+            .status-baja { color: #343a40; font-weight: bold; }
+            .fecha { font-size: 12px; color: #666; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Vehículos</h1>
+          <div class="fecha">Generado el: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Año</th>
+                <th>Estado</th>
+                <th>Kilometraje</th>
+                <th>Tipo Combustible</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    this.filteredVehiculos.forEach((row) => {
+      htmlContent += `
+        <tr>
+          <td>${row.patente}</td>
+          <td>${row.marca}</td>
+          <td>${row.modelo}</td>
+          <td>${row.anio}</td>
+          <td><span class="status-${row.estadoVehi}">${row.estadoVehi?.charAt(0).toUpperCase() + row.estadoVehi?.slice(1)}</span></td>
+          <td>${row.kmVehi.toLocaleString('es-CL')} km</td>
+          <td>${row.tipoCombVehi || 'N/A'}</td>
+        </tr>
+      `;
+    });
+
+    htmlContent += `
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+
+      printWindow.onload = () => {
+        printWindow.print();
+        setTimeout(() => printWindow.close(), 1000);
+      };
+
+      this.presentToast(
+        'PDF de vehículos generado. Use Ctrl+P para guardar como PDF',
+        'success'
+      );
+    }
   }
 }

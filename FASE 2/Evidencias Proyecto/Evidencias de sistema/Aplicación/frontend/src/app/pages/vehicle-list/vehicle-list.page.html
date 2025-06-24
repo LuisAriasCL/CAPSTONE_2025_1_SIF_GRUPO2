@@ -63,18 +63,21 @@
       Registrar Primer Vehículo
     </ion-button>
   </div>
+  
   <!-- Tabla de datos (si hay vehículos cargados, aunque el filtro no devuelva resultados) -->
   <div class="data-table-container" *ngIf="!isLoading && vehiculos.length > 0">
     <app-data-table
       [columns]="tableColumns"
-      [data]="paginatedVehiculos"
+      [data]="filteredVehiculos"  
       [pageSize]="pageSize"
       [actionButtons]="actionButtons"
-      [totalItems]="filteredVehiculos.length"
+
       [showPagination]="true"
       [showExport]="true"
       [showImport]="true"
       (page)="onPageChange($event)"
+      (exportCsv)="exportarCSV()"  
+      (exportPdf)="exportarPDF()" 
     >
       <!-- Mensaje si no hay resultados filtrados -->
       <div
@@ -90,6 +93,7 @@
       </div>
     </app-data-table>
   </div>
+  
   <!-- Botón flotante para agregar vehículo -->
   <ion-fab
     vertical="top"
