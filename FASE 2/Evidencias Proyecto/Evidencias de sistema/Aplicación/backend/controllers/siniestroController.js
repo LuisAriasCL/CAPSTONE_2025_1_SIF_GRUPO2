@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// --- Configuración de Multer (Tu código existente) ---
+
 const uploadDir = path.join(__dirname, '..', 'uploads/siniestros');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -15,19 +15,17 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Usamos el nombre original para evitar problemas de extensión
+
     cb(null, `${Date.now()}-${file.originalname}`);
   }
 });
 
 const upload = multer({ storage: storage });
 
-// --- EXPORTS DE FUNCIONES DEL CONTROLADOR ---
 
-// Middleware para subir archivo. El frontend debe enviarlo con el nombre 'fotoIncidente'.
 exports.uploadFile = upload.single('fotoIncidente'); 
 
-// Tu función existente para crear un siniestro.
+
 exports.createSiniestro = async (req, res) => {
   try {
     const { vehiculoId, conductorId, fecha, tipo, descripcion } = req.body;
@@ -56,7 +54,7 @@ exports.createSiniestro = async (req, res) => {
   }
 };
 
-// --- NUEVAS FUNCIONES PARA EL PANEL DEL GESTOR (con formato corregido) ---
+
 
 // 1. OBTENER TODOS LOS SINIESTROS
 exports.getAllSiniestros = async (req, res) => {
@@ -65,13 +63,13 @@ exports.getAllSiniestros = async (req, res) => {
             include: [
                 {
                     model: Usuario,
-                    // --- CORRECCIÓN: Usar el alias 'conductor' definido en el modelo ---
+                   
                     as: 'conductor', 
                     attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu']
                 },
                 {
                     model: Vehiculo,
-                    // El alias para Vehiculo es 'vehiculo', ese estaba bien.
+                
                     as: 'vehiculo', 
                     attributes: ['id_vehi', 'patente', 'marca', 'modelo']
                 }
@@ -85,7 +83,7 @@ exports.getAllSiniestros = async (req, res) => {
     }
 };
 
-// 2. OBTENER UN SINIESTRO POR ID (VERSIÓN CORREGIDA)
+
 exports.getSiniestroById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -94,8 +92,7 @@ exports.getSiniestroById = async (req, res) => {
                 { 
                     model: Usuario, 
                     as: 'conductor',
-                    // --- AÑADIMOS ESTO PARA FORZAR EL FORMATO SNAKE_CASE ---
-                    // Ahora esta función devuelve los datos del conductor en el mismo formato que la lista.
+                   
                     attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email']
                 },
                 { 

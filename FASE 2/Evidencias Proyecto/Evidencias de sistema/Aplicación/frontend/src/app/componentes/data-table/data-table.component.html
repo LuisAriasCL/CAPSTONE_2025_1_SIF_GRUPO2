@@ -1,25 +1,15 @@
 <div class="data-table-container">
   <!-- Botones de exportación e importación -->
-  <div class="table-actions">
-    <div *ngIf="showImport" class="import-buttons"></div>
-    <div *ngIf="showExport" class="export-buttons">
-      <button
-        (click)="onExport('excel')"
-        class="export-btn"
-        style="background-color: rgb(13, 112, 16)"
-      >
-        <ion-icon name="grid-outline"></ion-icon> Exportar Excel
-      </button>
-      <button
-        (click)="onExport('pdf')"
-        class="export-btn"
-        style="background-color: rgb(90, 14, 14)"
-      >
-        <ion-icon name="grid-outline"></ion-icon>Exportar PDF
-      </button>
-    </div>
+  <div class="table-actions" *ngIf="showExport">
+  <div class="export-buttonss"> 
+    <ion-button (click)="onExportCsvClick()" class="csv-button"> <ion-icon slot="start" name="download-outline"></ion-icon>
+      Exportar CSV
+    </ion-button>
+    <ion-button (click)="onExportPdfClick()" class="pdf-button"> <ion-icon slot="start" name="document-outline"></ion-icon>
+      Exportar PDF
+    </ion-button>
   </div>
-
+</div>
   <!-- Tabla principal con clase data-table para aplicar estilos -->
   <table [id]="tableId" [class]="'data-table ' + (tableClass || '')">
     <thead>

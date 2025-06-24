@@ -4,30 +4,26 @@ const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize'); // <-- AÑADIR ESTA LÍNEA
 exports.getUsuarios = async (req, res) => {
     try {
-        // --- CAMBIO 1: Leer el parámetro 'estado' además del 'rol' ---
+      
         const { rol, estado } = req.query;
-        
-        // --- CAMBIO 2: Hacer el filtro de estado dinámico ---
-        // Si no se envía un 'estado', por defecto busca 'activo'.
-        // Si se envía 'inactivo', buscará los inactivos.
+ 
         let whereClause = { 
             estado_usu: estado || 'activo' 
         }; 
         
-        // Se mantiene tu lógica para el filtro de rol
-        if (rol && rol !== 'todos') { // Se añade la condición para ignorar 'todos'
+       
+        if (rol && rol !== 'todos') { 
             whereClause.rol = rol;
         }
 
         const usuarios = await Usuario.findAll({
             where: whereClause,
-            // Se mantienen los atributos que ya habías definido
+      
             attributes: ['id_usu', 'pri_nom_usu', 'pri_ape_usu', 'email', 'rol', 'estado_usu'],
             raw: true 
         });
 
-        // Tu mapeo de datos se mantiene igual, lo cual es correcto
-        // ya que los nombres de columna coinciden.
+   
         const usuariosMapeados = usuarios.map(u => ({
             id_usu: u.id_usu,
             pri_nom_usu: u.pri_nom_usu,
@@ -69,7 +65,7 @@ exports.deleteUsuario = async (req, res) => {
         }
 
 
-        // --- Verificaciones específicas por rol que ya tenías ---
+        // --- Verificaciones específicas por rol 
 
         // Validación para ROL CONDUCTOR en recorridos activos
         if (usuario.rol === 'conductor') {
@@ -179,10 +175,10 @@ exports.updateUsuario = async (req, res) => {
 
 exports.createUsuario = async (req, res) => {
     try {
-        // --- CAMBIO 1: Añadir 'rut_usu' a la desestructuración ---
+
         const { pri_nom_usu, pri_ape_usu, email, rol, clave, rut_usu } = req.body;
 
-        // --- CAMBIO 2: Añadir 'rut_usu' a la validación ---
+       
         if (!pri_nom_usu || !pri_ape_usu || !email || !rol || !clave || !rut_usu) {
             return res.status(400).json({ message: 'Todos los campos son requeridos, incluyendo el RUT.' });
         }
@@ -192,12 +188,12 @@ exports.createUsuario = async (req, res) => {
         const nuevoUsuario = await Usuario.create({
             priNomUsu: pri_nom_usu,  
             priApeUsu: pri_ape_usu, 
-            // --- CAMBIO 3: Añadir 'rutUsu' al objeto de creación ---
+          
             rutUsu: rut_usu,
             email: email,
             rol: rol,
             clave: hashedPassword
-            // No es necesario añadir 'estado_usu', se establece por defecto.
+          
         });
 
         const usuarioParaDevolver = { ...nuevoUsuario.toJSON() };
