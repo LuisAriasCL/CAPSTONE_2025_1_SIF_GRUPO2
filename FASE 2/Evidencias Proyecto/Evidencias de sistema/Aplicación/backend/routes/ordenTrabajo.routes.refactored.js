@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const ordenTrabajoController = require('../controllers/ordenTrabajoController.refactored');
-// const { authMiddleware } = require('../middleware/auth'); // Comentado hasta implementar
+const { authMiddleware } = require('../middleware/auth');
 const { validateRole } = require('../middleware/validateRole');
 const { ROLES_USUARIO } = require('../constants/enums');
 
@@ -12,7 +12,7 @@ const { ROLES_USUARIO } = require('../constants/enums');
  */
 
 // Middleware de autenticación para todas las rutas
-// router.use(authMiddleware); // TODO: Habilitar cuando se implemente
+router.use(authMiddleware);
 
 /**
  * @route   POST /api/ordenes-trabajo/generar
@@ -125,6 +125,37 @@ router.put(
     ROLES_USUARIO.TECNICO,
   ]),
   ordenTrabajoController.actualizarEstadoOt
+);
+
+/**
+ * @route   PUT /api/ordenes-trabajo/:id/rechazar
+ * @desc    Rechazar una orden de trabajo con motivo
+ * @access  Private (Admin, Gestor, Mantenimiento)
+ */
+router.put(
+  '/:id/rechazar',
+  validateRole([
+    ROLES_USUARIO.ADMIN,
+    ROLES_USUARIO.GESTOR,
+    ROLES_USUARIO.MANTENIMIENTO,
+  ]),
+  ordenTrabajoController.rechazarOrdenTrabajo
+);
+
+/**
+ * @route   PUT /api/ordenes-trabajo/:id/detalles
+ * @desc    Actualizar los detalles de una orden de trabajo
+ * @access  Private (Admin, Gestor, Mantenimiento, Técnico)
+ */
+router.put(
+  '/:id/detalles',
+  validateRole([
+    ROLES_USUARIO.ADMIN,
+    ROLES_USUARIO.GESTOR,
+    ROLES_USUARIO.MANTENIMIENTO,
+    ROLES_USUARIO.TECNICO,
+  ]),
+  ordenTrabajoController.actualizarDetallesOt
 );
 
 module.exports = router;

@@ -34,6 +34,39 @@
 </ion-segment>
 
 <ion-content class="ion-padding ultra-compact">
+  <!-- Alerta informativa para técnicos -->
+  <ion-card
+    *ngIf="currentUser?.rol === 'tecnico' && !isLoading && ordenTrabajo"
+    color="primary"
+    class="ion-margin-bottom"
+  >
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="person-circle-outline"></ion-icon>
+        Vista de Técnico
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>¡Hola {{currentUser.priNomUsu}}!</strong></p>
+      <p>Como técnico, puedes:</p>
+      <ul style="margin: 0; padding-left: 20px">
+        <li>
+          ✅ <strong>Editar y completar</strong> las tareas que se te han
+          asignado
+        </li>
+        <li>
+          👁️ <strong>Ver</strong> todas las tareas (propias y de otros técnicos)
+        </li>
+        <li>💾 <strong>Guardar progreso</strong> si tienes tareas asignadas</li>
+      </ul>
+      <p style="margin-bottom: 0">
+        <em
+          >Las tareas marcadas como "Tu tarea" son las que puedes modificar.</em
+        >
+      </p>
+    </ion-card-content>
+  </ion-card>
+
   <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Cargando información...</p>
@@ -143,7 +176,7 @@
                 placeholder="Ej: 125.000"
                 [value]="formatKilometraje(ordenTrabajo.km_ot)"
                 (ionInput)="onKilometrajeChange($event)"
-                [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+                [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode || !canEditGeneralFields()"
               >
               </ion-input>
             </ion-item>
@@ -205,7 +238,7 @@
             <ion-textarea
               placeholder="Describa el trabajo efectuado..."
               [(ngModel)]="ordenTrabajo.descripcion_ot"
-              [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+              [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode || !canEditGeneralFields()"
               rows="4"
             >
             </ion-textarea>
@@ -226,31 +259,66 @@
             <p style="font-size: 1rem; font-weight: 600; color: black">
               {{ tarea.desc_det }}
             </p>
+
+            <!-- Indicador de permisos para técnicos -->
+            <ion-chip
+              *ngIf="currentUser?.rol === 'tecnico'"
+              size="small"
+              [color]="canEditTask(tarea) ? 'success' : 'medium'"
+              outline
+            >
+              <ion-icon
+                [name]="canEditTask(tarea) ? 'checkmark-circle-outline' : 'eye-outline'"
+                slot="start"
+              ></ion-icon>
+              <ion-label>
+                {{ canEditTask(tarea) ? 'Tu tarea' : 'Solo lectura' }}
+              </ion-label>
+            </ion-chip>
           </ion-label>
           <ion-checkbox
             slot="end"
             [(ngModel)]="tarea.checklist"
-            [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode"
+            [disabled]="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode || !canEditTask(tarea)"
+            (ionChange)="onTaskCheckboxChange(tarea, $event)"
           ></ion-checkbox>
         </ion-item>
 
         <!-- Información del técnico - siempre visible -->
         <ion-item lines="full">
-          <!-- Solo mostrar botón de asignar técnico si está en progreso y no es modo vista -->
-          <ion-button
-            *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode"
-            (click)="abrirSelectorTecnicos(tarea)"
-            fill="clear"
-            size="small"
+          <!-- Dropdown de técnicos cuando la OT está en progreso y el usuario tiene permisos -->
+          <div
+            *ngIf="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode && canAssignTechnicians"
+            style="width: 100%"
           >
-            <ion-icon name="person-add-outline" slot="start"></ion-icon>
-            Asignar Técnico
-          </ion-button>
+            <ion-label position="stacked">
+              <ion-icon
+                name="person-outline"
+                style="margin-right: 8px"
+              ></ion-icon>
+              Asignar Técnico
+            </ion-label>
+            <ion-select
+              [value]="tarea.tecnico?.id_usu"
+              (ionChange)="onTecnicoChange(tarea, $event)"
+              placeholder="Seleccionar técnico"
+              interface="popover"
+              fill="outline"
+            >
+              <ion-select-option [value]="null">Sin asignar</ion-select-option>
+              <ion-select-option
+                *ngFor="let tecnico of tecnicos"
+                [value]="tecnico.id_usu"
+              >
+                {{ tecnico.pri_nom_usu }} {{ tecnico.pri_ape_usu }}
+              </ion-select-option>
+            </ion-select>
+          </div>
 
-          <!-- Información del técnico siempre visible -->
+          <!-- Información del técnico cuando no se puede editar -->
           <ion-label
-            class="ion-text-right info-col"
-            [attr.slot]="ordenTrabajo.estado_ot === 'en_progreso' && !isViewMode ? 'end' : 'start'"
+            *ngIf="ordenTrabajo.estado_ot !== 'en_progreso' || isViewMode || !canAssignTechnicians"
+            class="ion-text-wrap"
           >
             <p>
               <ion-icon
@@ -312,6 +380,7 @@
 <div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && !isViewMode">
   <div *ngIf="ordenTrabajo.estado_ot === 'sin_iniciar'" class="initial-actions">
     <ion-button
+      *ngIf="canStartWorkOrder()"
       (click)="iniciarOrdenDeTrabajo()"
       expand="block"
       style="--background: #008000; --background-hover: #006600"
@@ -320,8 +389,9 @@
       <ion-icon name="play-circle-outline" slot="start"></ion-icon>
       Iniciar Orden de Trabajo
     </ion-button>
-    
+
     <ion-button
+      *ngIf="canRejectWorkOrder()"
       (click)="rechazarOt()"
       expand="block"
       color="danger"
@@ -334,6 +404,7 @@
 
   <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
     <ion-button
+      *ngIf="canSaveProgress()"
       (click)="guardarProgresoTareas()"
       expand="block"
       style="
@@ -346,6 +417,7 @@
       Guardar Progreso
     </ion-button>
     <ion-button
+      *ngIf="canFinishWorkOrder()"
       (click)="finalizarOrdenDeTrabajo()"
       expand="block"
       style="--background: #008000; --background-hover: #006600"

@@ -247,24 +247,6 @@ export class PlanificacionListPage
     modal.onDidDismiss().then((result) => {
       if (result.data && result.data.planificacionCreated) {
         this.cargarPlanificaciones();
-
-        // Notificar a otros componentes sobre las OTs creadas
-        if (result.data.otsCreadas && result.data.otsCreadas.length > 0) {
-          this.otEventsService.notifyOtCreated({
-            otsCreadas: result.data.otsCreadas,
-            source: 'planificacion',
-            planificacionNombre: result.data.planificacionNombre,
-          });
-
-          const numOts = result.data.otsCreadas.length;
-          setTimeout(() => {
-            this.mostrarToast(
-              `✅ Se crearon ${numOts} orden(es) de trabajo automáticamente. Puedes verlas en la sección "Órdenes de Trabajo".`,
-              'success',
-              5000
-            );
-          }, 1000);
-        }
       }
     });
     return await modal.present();

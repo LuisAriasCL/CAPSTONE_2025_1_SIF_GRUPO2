@@ -168,6 +168,7 @@ export interface UsuarioResumen {
 }
 
 export interface VehiculoResumen {
+  id_vehi?: number; // Agregar ID del vehículo
   patente: string;
   marca: string;
   modelo: string;
@@ -201,6 +202,7 @@ export interface OrdenTrabajoResumen {
   prioridad: PrioridadOrdenTrabajo;
   km_ot: number;
   descripcion_ot: string;
+  vehiculo_id_vehi?: number; // ID del vehículo para operaciones
   vehiculo?: VehiculoResumen; // Hacer opcional ya que puede venir undefined del backend
   solicitante?: UsuarioResumen;
   fec_fin_ot?: string;
@@ -365,12 +367,16 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
       .pipe(catchError(this.handleError));
   }
-   checkRutExists(rut: string, userId?: number): Observable<{ exists: boolean }> {
+  checkRutExists(
+    rut: string,
+    userId?: number
+  ): Observable<{ exists: boolean }> {
     let params = new HttpParams().set('rut', rut);
     if (userId) {
       params = params.set('id', userId.toString()); // Pasa el ID del usuario actual para excluirlo en ediciones
     }
-    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-rut`, { params })
+    return this.http
+      .get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-rut`, { params })
       .pipe(
         catchError(this.handleError) // Puedes usar handleError o un handleError más simple si no quieres tostar errores aquí
       );
@@ -473,7 +479,7 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
 
   getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
     return this.http.get<OrdenTrabajoResumen[]>(
-      `${this.apiUrl}/ordenes-trabajo/tecnico/${tecnicoId}`
+      `${this.apiUrl}/ordenes-trabajo-v2/tecnico/${tecnicoId}`
     );
   }
   getHistorialCombustible(conductorId: number): Observable<any[]> {
@@ -542,10 +548,7 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
     if (encargadoId) {
       body.usuario_id_usu_encargado = encargadoId;
     }
-    return this.http.put(
-      `${this.apiUrl}/ordenes-trabajo/${id}/estado`,
-      body
-    );
+    return this.http.put(`${this.apiUrl}/ordenes-trabajo/${id}/estado`, body);
   }
 
   /**
