@@ -102,24 +102,22 @@ router.post('/login', async (req, res) => {
     // --- CORRECCIÓN EN EL PAYLOAD DEL TOKEN ---
     // Usamos los nombres camelCase del objeto 'user' de Sequelize
     const payload = {
-      id_usu: user.idUsu, // <--- CAMBIO AQUÍ
+      id_usu: user.idUsu,
       email: user.email,
       rol: user.rol,
-      nombre: user.priNomUsu // <--- CAMBIO AQUÍ
+      nombre: user.priNomUsu
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'tu_secreto_jwt_por_defecto', { expiresIn: '24h' });
 
-    // --- CORRECCIÓN EN LA RESPUESTA JSON ---
-    // Creamos el objeto 'user' para el frontend, usando los nombres que el frontend espera
-    // (en este caso, snake_case, porque tu 'mapUser' en el frontend los espera así)
+   
     res.status(200).json({
       message: 'Login exitoso!',
       token: token,
       user: {
-        id_usu: user.idUsu,          // <--- CAMBIO AQUÍ
-        pri_nom_usu: user.priNomUsu, // <--- CAMBIO AQUÍ
-        pri_ape_usu: user.priApeUsu, // <--- CAMBIO AQUÍ
+        id_usu: user.idUsu,         
+        pri_nom_usu: user.priNomUsu,
+        pri_ape_usu: user.priApeUsu,
         email: user.email,
         rol: user.rol
       }
