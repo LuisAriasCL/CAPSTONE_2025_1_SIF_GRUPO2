@@ -16,6 +16,11 @@ export const routes: Routes = [
       import('./pages/register/register.page').then((m) => m.RegisterPage),
   },
   {
+    path: 'recuperar', // Ruta para la vista de recuperación de contraseña
+    loadComponent: () =>
+      import('./pages/recuperar/recuperar.page').then((m) => m.RecuperarPage),
+  },
+  {
     path: 'home-movil',
     loadComponent: () =>
       import('./pages/vista-movil/home-movil/home-movil.page').then(
