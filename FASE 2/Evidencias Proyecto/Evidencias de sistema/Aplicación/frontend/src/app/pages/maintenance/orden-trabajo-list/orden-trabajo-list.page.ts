@@ -37,6 +37,9 @@ export class OrdenTrabajoListPage
   // Filtros específicos
   private _filterStatus: string = '';
 
+  // Nueva propiedad para manejar las pestañas por estado
+  selectedStatusTab: string = 'todas';
+
   // Filtros adicionales para fecha
   private _filterDateRange: { from?: string; to?: string } = {};
 
@@ -87,6 +90,10 @@ export class OrdenTrabajoListPage
           // Obtener el estado de forma segura
           const estado = item.estado_ot || (item as any).estadoOt;
           return !value || estado === value;
+        },
+        statusTab: (item: OrdenTrabajoResumen) => {
+          if (this.selectedStatusTab === 'todas') return true;
+          return item.estado_ot === this.selectedStatusTab;
         },
         dateRange: (orden: OrdenTrabajoResumen) => {
           if (!this._filterDateRange.from && !this._filterDateRange.to) {
@@ -162,13 +169,9 @@ export class OrdenTrabajoListPage
       case 'en_progreso':
         return 'reload-circle';
       case 'sin_iniciar':
-      case 'solicitado':
         return 'time-outline';
       case 'rechazado':
         return 'ban';
-      case 'cancelada':
-      case 'cancelado':
-        return 'close-circle';
       default:
         return 'help-circle';
     }
@@ -182,13 +185,9 @@ export class OrdenTrabajoListPage
       case 'en_progreso':
         return 'warning';
       case 'sin_iniciar':
-      case 'solicitado':
         return 'primary';
       case 'rechazado':
         return 'danger';
-      case 'cancelada':
-      case 'cancelado':
-        return 'dark';
       default:
         return 'medium';
     }
@@ -199,13 +198,10 @@ export class OrdenTrabajoListPage
 
     const estadosDisplay: { [key: string]: string } = {
       sin_iniciar: 'Sin Iniciar',
-      solicitado: 'Solicitado',
       en_progreso: 'En Progreso',
       completada: 'Completada',
       completado: 'Completada',
       rechazado: 'Deshabilitada',
-      cancelada: 'Cancelada',
-      cancelado: 'Cancelada',
     };
 
     return estadosDisplay[estado] || estado;
@@ -273,23 +269,10 @@ export class OrdenTrabajoListPage
     this.applyDateFilter();
   }
 
-  // Sobrescribir el método para aplicar filtros
-  override applyFilters() {
-    super.applyFilters();
-    this.sortOrdenesTrabajo();
-  }
-
   // Método para aplicar el filtro de fecha
   applyDateFilter() {
     this.setFilter('dateRange', true); // Usar el filtro definido en getFilterConfig
     this.applyFilters();
-  }
-
-  // Sobrescribir el método para limpiar filtros e incluir fechas
-  override clearFilters() {
-    super.clearFilters();
-    this._filterDateRange = {};
-    this.sortOrdenesTrabajo();
   }
 
   // Ordenar órdenes de trabajo por número de OT descendente
@@ -324,5 +307,100 @@ export class OrdenTrabajoListPage
   override previousPage() {
     super.previousPage();
     this.sortOrdenesTrabajo();
+  }
+
+  // Métodos para manejar las pestañas por estado
+  async onStatusTabChange(event: any) {
+    console.log('Cambiando a pestaña:', event.detail.value);
+    this.selectedStatusTab = event.detail.value;
+
+    // Reseteamos la página actual
+    this.goToPage(1);
+
+    // Limpiamos todos los filtros relacionados con estado
+    this._filterStatus = '';
+
+    // Mostrar indicador de carga
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando órdenes de trabajo...',
+    });
+    await loading.present();
+
+    try {
+      // Recargar completamente los datos desde el servidor
+      await this.loadItems();
+
+      // IMPORTANTE: Activar el filtro por pestaña de manera explícita
+      if (this.selectedStatusTab !== 'todas') {
+        // Este es el punto clave: asegurar que el filtro statusTab se aplique correctamente
+        this.baseListService.clearAllFilters(); // Limpiar filtros existentes
+        this.baseListService.setFilter('statusTab', true); // Activar solo el filtro por pestaña
+      } else {
+        this.baseListService.clearAllFilters(); // En pestaña "todas" no aplicamos filtros
+      }
+
+      // Aplicar filtros después de recargar
+      this.applyFilters();
+
+      console.log(
+        'Datos recargados y filtrados, items:',
+        this.paginatedItems.length,
+        'Estado seleccionado:',
+        this.selectedStatusTab
+      );
+    } catch (error) {
+      console.error('Error al recargar datos:', error);
+      await this.mostrarToast(
+        'Error al cargar los datos. Intente nuevamente.',
+        'danger'
+      );
+    } finally {
+      // Ocultar indicador de carga
+      await loading.dismiss();
+    }
+  }
+
+  // Método para ir a una página específica
+  goToPage(page: number) {
+    // Si el método no existe en la clase padre, implementa la lógica aquí
+    // Por ejemplo, si tienes paginación basada en un servicio:
+    if (
+      this.baseListService &&
+      typeof this.baseListService.setPage === 'function'
+    ) {
+      this.baseListService.setPage(page);
+      this.applyFilters();
+    } else {
+      // Si tienes otra lógica de paginación, agrégala aquí
+      console.warn('Método de paginación no implementado en la clase base.');
+    }
+  }
+
+  // Método para contar órdenes por estado
+  getCountByStatus(status: string): number {
+    if (status === 'todas') {
+      return this.paginatedItems.length;
+    }
+
+    return this.paginatedItems.filter((item) => item.estado_ot === status)
+      .length;
+  }
+
+  // Método sobrescrito para aplicar filtros
+  override applyFilters() {
+    // NO es necesario llamar a setFilter('statusTab', true) aquí
+    // porque el filtro depende de this.selectedStatusTab
+
+    // Llamamos al método de la clase padre
+    super.applyFilters();
+
+    // Ordenamos después de filtrar
+    this.sortOrdenesTrabajo();
+
+    // Debug
+    console.log('Filtros aplicados:', {
+      tab: this.selectedStatusTab,
+      resultados: this.paginatedItems.length,
+    });
   }
 }

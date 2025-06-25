@@ -116,6 +116,19 @@ export class BaseListService<T> {
     this.filters = {};
   }
 
+  // Método para limpiar todos los filtros activos
+  clearAllFilters() {
+    this.filters = {};
+    this.searchTerm = '';
+  }
+
+  // Método para eliminar un filtro específico
+  clearFilter(filterName: string) {
+    if (this.filters[filterName] !== undefined) {
+      delete this.filters[filterName];
+    }
+  }
+
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
@@ -157,5 +170,19 @@ export class BaseListService<T> {
 
     const items = currentItems.filter((item) => !predicate(item));
     this.itemsSubject.next(items);
+  }
+
+  setPage(page: number) {
+    // Asegurarse de que la página es válida
+    if (page < 1) page = 1;
+    if (this.totalPages > 0 && page > this.totalPages) page = this.totalPages;
+
+    // Actualizar la página actual
+    this.currentPage = page;
+
+    // Actualizar los elementos paginados
+    this.updatePaginatedData();
+
+    console.log(`Cambiando a la página ${page} de ${this.totalPages}`);
   }
 }

@@ -39,6 +39,7 @@ import {
   warningOutline,
   eyeOutline,
   playCircleOutline,
+  timeOutline,
 } from 'ionicons/icons';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
 import { RechazoOtModalComponent } from '../../../components/rechazo-ot-modal/rechazo-ot-modal.component';
@@ -97,6 +98,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
       warningOutline,
       eyeOutline,
       playCircleOutline,
+      timeOutline,
     });
   }
 
@@ -973,5 +975,27 @@ export class OrdenTrabajoDetallePage implements OnInit {
 
     // Solo usuarios de mantenimiento pueden editar campos generales
     return this.currentUser.rol === 'mantenimiento';
+  }
+
+  /**
+   * Formatea la duración en minutos a un formato legible
+   * @param minutes Duración en minutos
+   * @returns String formateado (ej: "2h 30m", "45m", "1h")
+   */
+  formatDuration(minutes: number | null | undefined): string {
+    if (!minutes || minutes <= 0) {
+      return '0m';
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (hours === 0) {
+      return `${remainingMinutes}m`;
+    } else if (remainingMinutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h ${remainingMinutes}m`;
+    }
   }
 }

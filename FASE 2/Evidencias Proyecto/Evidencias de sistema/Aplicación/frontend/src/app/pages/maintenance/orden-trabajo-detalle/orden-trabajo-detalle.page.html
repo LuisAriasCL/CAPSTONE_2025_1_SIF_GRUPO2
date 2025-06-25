@@ -355,6 +355,60 @@
                 {{ tecnico.pri_nom_usu }} {{ tecnico.pri_ape_usu }}
               </ion-select-option>
             </ion-select>
+
+            <!-- Información de fechas y duración también en modo edición -->
+            <div
+              *ngIf="tarea.fec_ini_det || tarea.fec_fin_det || tarea.duracion_real_det"
+              style="margin-top: 12px"
+            >
+              <p
+                *ngIf="tarea.fec_ini_det"
+                style="
+                  margin: 4px 0;
+                  font-size: 0.9em;
+                  color: var(--ion-color-medium);
+                "
+              >
+                <ion-icon
+                  name="play-circle-outline"
+                  color="primary"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Inicio: {{ tarea.fec_ini_det | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+
+              <p
+                *ngIf="tarea.fec_fin_det"
+                style="
+                  margin: 4px 0;
+                  font-size: 0.9em;
+                  color: var(--ion-color-medium);
+                "
+              >
+                <ion-icon
+                  name="checkmark-done-outline"
+                  color="success"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Finalización: {{ tarea.fec_fin_det | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+
+              <p
+                *ngIf="tarea.duracion_real_det"
+                style="
+                  margin: 4px 0;
+                  font-size: 0.9em;
+                  color: var(--ion-color-medium);
+                "
+              >
+                <ion-icon
+                  name="time-outline"
+                  color="warning"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Duración: {{ formatDuration(tarea.duracion_real_det) }}
+              </p>
+            </div>
           </div>
 
           <!-- Información del técnico cuando no se puede editar -->
@@ -373,6 +427,38 @@
               </span>
               <ng-template #noAsignado>Sin asignar</ng-template>
             </p>
+
+            <!-- Información de fechas y duración -->
+            <div
+              *ngIf="tarea.fec_ini_det || tarea.fec_fin_det || tarea.duracion_real_det"
+            >
+              <p *ngIf="tarea.fec_ini_det">
+                <ion-icon
+                  name="play-circle-outline"
+                  color="primary"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Inicio: {{ tarea.fec_ini_det | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+
+              <p *ngIf="tarea.fec_fin_det">
+                <ion-icon
+                  name="checkmark-done-outline"
+                  color="success"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Finalización: {{ tarea.fec_fin_det | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+
+              <p *ngIf="tarea.duracion_real_det">
+                <ion-icon
+                  name="time-outline"
+                  color="warning"
+                  style="margin-right: 8px"
+                ></ion-icon>
+                Duración: {{ formatDuration(tarea.duracion_real_det) }}
+              </p>
+            </div>
 
             <!-- Mostrar estado de la tarea si está completada -->
             <p *ngIf="ordenTrabajo.estado_ot === 'completada'">
