@@ -183,6 +183,9 @@ export interface DetalleOtData {
   es_activo_det: boolean;
   estado: 'solicitado' | 'en_progreso' | 'completado' | 'cancelado'; // Agregar esta propiedad
   tecnico?: UsuarioResumen;
+  fec_ini_det?: string | null; // Fecha de inicio de la tarea
+  fec_fin_det?: string | null; // Fecha de finalización de la tarea
+  duracion_real_det?: number | null; // Duración real en minutos
 }
 
 // Tipos para los estados de las órdenes de trabajo (sincronizado con backend)
@@ -479,12 +482,18 @@ export class ApiService {
       .get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
       .pipe(catchError(this.handleError));
   }
-  checkEmailExists(email: string, userId?: number): Observable<{ exists: boolean }> {
+  checkEmailExists(
+    email: string,
+    userId?: number
+  ): Observable<{ exists: boolean }> {
     let params = new HttpParams().set('email', email);
     if (userId) {
       params = params.set('id', userId.toString()); // Pasa el ID del usuario actual para excluirlo
     }
-    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-email`, { params })
+    return this.http
+      .get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-email`, {
+        params,
+      })
       .pipe(
         catchError(this.handleError) // Puedes usar handleError o un catchError más específico si lo prefieres
       );
@@ -494,8 +503,9 @@ export class ApiService {
       .put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
       .pipe(catchError(this.handleError));
   }
- updateSiniestro(id: number, data: Partial<Siniestro>): Observable<Siniestro> {
-    return this.http.put<Siniestro>(`${this.apiUrl}/siniestros/${id}`, data)
+  updateSiniestro(id: number, data: Partial<Siniestro>): Observable<Siniestro> {
+    return this.http
+      .put<Siniestro>(`${this.apiUrl}/siniestros/${id}`, data)
       .pipe(catchError(this.handleError));
   }
 

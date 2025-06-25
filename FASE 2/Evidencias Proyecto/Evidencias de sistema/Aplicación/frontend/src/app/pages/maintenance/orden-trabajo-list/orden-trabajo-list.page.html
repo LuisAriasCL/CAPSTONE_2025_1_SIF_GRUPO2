@@ -7,12 +7,51 @@
     >
     </ion-refresher-content>
   </ion-refresher>
-  <!-- Filtros -->
-  <ion-card class="filters-card">
+
+  <!-- Segmento de pestañas por estado -->
+  <ion-segment
+    [(ngModel)]="selectedStatusTab"
+    (ionChange)="onStatusTabChange($event)"
+    class="status-tabs"
+  >
+    <ion-segment-button value="todas">
+      <ion-label>Todas</ion-label>
+      <ion-badge *ngIf="getCountByStatus('todas') > 0" color="medium">
+        {{ getCountByStatus('todas') }}
+      </ion-badge>
+    </ion-segment-button>
+    <ion-segment-button value="sin_iniciar">
+      <ion-label>Sin Iniciar</ion-label>
+      <ion-badge *ngIf="getCountByStatus('sin_iniciar') > 0" color="primary">
+        {{ getCountByStatus('sin_iniciar') }}
+      </ion-badge>
+    </ion-segment-button>
+    <ion-segment-button value="en_progreso">
+      <ion-label>En Progreso</ion-label>
+      <ion-badge *ngIf="getCountByStatus('en_progreso') > 0" color="warning">
+        {{ getCountByStatus('en_progreso') }}
+      </ion-badge>
+    </ion-segment-button>
+    <ion-segment-button value="completada">
+      <ion-label>Completada</ion-label>
+      <ion-badge *ngIf="getCountByStatus('completada') > 0" color="success">
+        {{ getCountByStatus('completada') }}
+      </ion-badge>
+    </ion-segment-button>
+    <ion-segment-button value="rechazado">
+      <ion-label>Deshabilitada</ion-label>
+      <ion-badge *ngIf="getCountByStatus('rechazado') > 0" color="danger">
+        {{ getCountByStatus('rechazado') }}
+      </ion-badge>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Filtros (solo se muestran en la pestaña "Todas") -->
+  <ion-card class="filters-card" *ngIf="selectedStatusTab === 'todas'">
     <ion-card-header>
       <ion-card-title style="color: black">
         <ion-icon name="funnel-outline"></ion-icon>
-        Filtros
+        Filtros Avanzados
       </ion-card-title>
     </ion-card-header>
     <ion-card-content>
@@ -31,37 +70,9 @@
             </ion-item>
           </ion-col>
           <ion-col size="12" size-md="4">
-            <ion-item>
-              <ion-select
-                [(ngModel)]="filterStatus"
-                placeholder="Filtrar por estado"
-                (ionChange)="applyFilters()"
-              >
-                <ion-select-option value=""
-                  >Todos los estados</ion-select-option
-                >
-                <ion-select-option value="sin_iniciar"
-                  >Sin Iniciar</ion-select-option
-                >
-                <ion-select-option value="en_progreso"
-                  >En Progreso</ion-select-option
-                >
-                <ion-select-option value="completada"
-                  >Completada</ion-select-option
-                >
-                <ion-select-option value="rechazado"
-                  >Deshabilitada</ion-select-option
-                >
-                <ion-select-option value="cancelada"
-                  >Cancelada</ion-select-option
-                >
-              </ion-select>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" size-md="2">
             <ion-button expand="block" fill="outline" (click)="clearFilters()">
               <ion-icon name="refresh-outline" slot="start"></ion-icon>
-              Limpiar
+              Limpiar Filtros
             </ion-button>
           </ion-col>
         </ion-row>
@@ -88,6 +99,22 @@
           </ion-col>
         </ion-row>
       </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Filtro simple de búsqueda para pestañas específicas -->
+  <ion-card class="simple-search-card" *ngIf="selectedStatusTab !== 'todas'">
+    <ion-card-content>
+      <ion-item>
+        <ion-input
+          [(ngModel)]="searchTerm"
+          placeholder="Buscar en {{ getStatusDisplayName(selectedStatusTab) }}..."
+          (ionInput)="applyFilters()"
+          clear-input="true"
+        >
+          <ion-icon name="search-outline" slot="start"></ion-icon>
+        </ion-input>
+      </ion-item>
     </ion-card-content>
   </ion-card>
 
