@@ -37,6 +37,8 @@ export class ReporteMantenimientoPage implements OnInit {
   public searchTerm = '';
   public pageSize = 10;
   public currentPage = 1;
+  public isModalOpen = false; // Controla la visibilidad del modal
+  public reporteSeleccionado: any = null; // Almacena el reporte seleccionado
 
   public filtros = {
     fechaDesde: '',
@@ -359,5 +361,15 @@ export class ReporteMantenimientoPage implements OnInit {
       color: color,
     });
     toast.present();
+  }
+
+  mostrarDetalles(reporte: any) {
+    this.reporteSeleccionado = reporte;
+    this.isModalOpen = true;
+  }
+
+  cerrarModal() {
+    this.isModalOpen = false;
+    this.reporteSeleccionado = null;
   }
 }
