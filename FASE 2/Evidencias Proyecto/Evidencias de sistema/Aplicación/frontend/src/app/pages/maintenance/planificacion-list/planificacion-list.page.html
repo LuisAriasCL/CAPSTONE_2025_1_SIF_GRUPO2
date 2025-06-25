@@ -144,7 +144,22 @@
                 <strong>Tareas:</strong> {{ plan.tareas?.length || 0 }} |
                 <strong>Vehículos:</strong> {{ plan.vehiculosEnPlan?.length || 0
                 }}
-              </p>
+              <p>
+  <ion-icon
+    name="car-outline"
+    color="warning"
+    class="align-middle"
+  ></ion-icon>
+  <strong>Patentes:</strong>
+  <ng-container *ngIf="plan.vehiculosEnPlan && plan.vehiculosEnPlan.length > 0; else sinVehiculos">
+    <span *ngFor="let vehiculo of plan.vehiculosEnPlan; let i = index">
+      {{ vehiculo.patente }}
+      <span *ngIf="plan.vehiculosEnPlan && i < plan.vehiculosEnPlan.length - 1">, </span>
+    </span>
+  </ng-container>
+  <ng-template #sinVehiculos>No asignados</ng-template>
+</p>
+
             </ion-label>
           </ion-col>
 
