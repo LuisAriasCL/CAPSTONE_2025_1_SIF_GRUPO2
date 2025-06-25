@@ -181,6 +181,7 @@ export interface DetalleOtData {
   desc_det: string;
   checklist: boolean;
   es_activo_det: boolean;
+  estado: 'solicitado' | 'en_progreso' | 'completado' | 'cancelado'; // Agregar esta propiedad
   tecnico?: UsuarioResumen;
 }
 

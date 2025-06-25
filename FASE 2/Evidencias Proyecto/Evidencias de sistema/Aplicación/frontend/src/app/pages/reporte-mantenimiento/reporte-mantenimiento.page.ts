@@ -364,11 +364,36 @@ export class ReporteMantenimientoPage implements OnInit {
   }
 
   mostrarDetalles(reporte: any) {
-    this.reporteSeleccionado = {
-      ...reporte,
-      tareas: reporte.tareas || [] // Asegúrate de que las tareas estén disponibles
-    };
-    this.isModalOpen = true;
+    this.apiService.getOrdenTrabajoById(reporte.id_ot).subscribe({
+      next: (ordenTrabajo) => {
+        if (ordenTrabajo.detalles && ordenTrabajo.detalles.length > 0) {
+          this.reporteSeleccionado = {
+            ...reporte,
+            tareas: ordenTrabajo.detalles.map((detalle) => ({
+              descripcion: detalle.desc_det || 'Sin descripción',
+              estado: detalle.estado || 'Sin estado', // Estado en tiempo real
+              tecnico: detalle.tecnico
+                ? `${detalle.tecnico.pri_nom_usu} ${detalle.tecnico.pri_ape_usu}`
+                : 'Sin asignar',
+            })),
+          };
+        } else {
+          this.reporteSeleccionado = {
+            ...reporte,
+            tareas: [{ descripcion: 'No hay tareas asociadas', estado: 'N/A', tecnico: 'N/A' }],
+          };
+        }
+        this.isModalOpen = true;
+      },
+      error: (err) => {
+        console.error('Error al cargar las tareas de la OT', err);
+        this.reporteSeleccionado = {
+          ...reporte,
+          tareas: [{ descripcion: 'Error al cargar tareas', estado: 'N/A', tecnico: 'N/A' }],
+        };
+        this.isModalOpen = true;
+      },
+    });
   }
 
   cerrarModal() {
