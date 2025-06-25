@@ -196,6 +196,11 @@ export class UsuarioFormComponent implements OnInit {
     await this.modalCtrl.dismiss(null, 'cancel');
   }
 
+  async closeModal() {
+    // Utiliza el ModalController para cerrar el modal
+    await this.modalCtrl.dismiss(null, 'close');
+  }
+
   get f() {
     return this.form.controls;
   }
