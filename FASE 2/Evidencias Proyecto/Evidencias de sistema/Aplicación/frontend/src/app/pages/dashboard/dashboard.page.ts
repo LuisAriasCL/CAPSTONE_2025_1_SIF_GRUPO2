@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common'; // Asegúrate de tener CurrencyPipe y DecimalPipe importados
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { BaseChartDirective } from 'ng2-charts';
@@ -11,7 +11,7 @@ import {
   registerables,
 } from 'chart.js';
 import { ApiService } from 'src/app/services/api.service';
-import { TitleService } from 'src/app/services/title.service';
+import { TitleService } from 'src/app/services/title.service'; // Asegúrate de importar TitleService si lo usas
 import { addIcons } from 'ionicons';
 import {
   carSportOutline,
@@ -19,25 +19,45 @@ import {
   buildOutline,
   alertCircleOutline,
   timerOutline,
+  colorFillOutline,    // Icono para combustible
+  constructOutline,   // Icono para mantenimiento
+  speedometerOutline, // Icono para eficiencia
+  mapOutline,         // Icono para recorridos
+  notificationsOutline // Icono para alertas
 } from 'ionicons/icons';
+import { RouterModule } from '@angular/router';
+// Ya no necesitamos forkJoin aquí si getDashboardKpis del backend ya trae todo
+// import { forkJoin } from 'rxjs'; 
+
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective],
+  // Asegúrate de que los pipes estén en imports si los usas en el HTML
+  imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective, CurrencyPipe, DecimalPipe, RouterModule],
 })
 export class DashboardPage implements OnInit {
-  // --- NUEVAS PROPIEDADES PARA LAS TARJETAS DE KPIS ---
-  public kpis: any = null;
+  // Inicializa kpis con valores predeterminados para evitar errores de plantilla
+  public kpis: any = {
+    totalVehiculos: 0,
+    vehiculosOperativos: 0,
+    vehiculosEnTaller: 0,
+    siniestrosMes: 0,
+    costoCombustibleMes: 0, 
+    costoMantenimientoMes: 0, 
+    eficienciaCombustiblePromedio: 0, 
+    recorridosEnCurso: 0, 
+    alertasMantenimientoPendiente: 0, 
+    alertasSiniestrosPendientes: 0,
+    vehiculosProximoMantenimiento: 0 // Asegúrate de incluir este si está en el backend
+  };
   public isKpisLoading = true;
-  // ---------------------------------------------------
 
   isPieChartLoading = true;
   isBarChartLoading = true;
 
-  // --- Gráfico de Torta (Tipos de Vehículo) ---
   public pieChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     plugins: {
@@ -91,7 +111,6 @@ export class DashboardPage implements OnInit {
   };
   public pieChartType: ChartType = 'pie';
 
-  // --- Gráfico de Barras (Estado de Mantenimientos) ---
   public barChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     scales: {
@@ -131,7 +150,7 @@ export class DashboardPage implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private titleService: TitleService
+    private titleService: TitleService // Inyecta TitleService si lo utilizas
   ) {
     Chart.register(...registerables);
     addIcons({
@@ -140,90 +159,116 @@ export class DashboardPage implements OnInit {
       buildOutline,
       alertCircleOutline,
       timerOutline,
+      colorFillOutline,    
+      constructOutline,   
+      speedometerOutline, 
+      mapOutline,         
+      notificationsOutline 
     });
   }
+
   ngOnInit() {
-    // --- CAMBIO: ngOnInit ahora llama a la función principal de carga ---
-    this.titleService.setTitle('Dashboard - Gestión de Flota');
+    this.titleService.setTitle('Dashboard - Gestión de Flota'); // Asegúrate de que TitleService esté inyectado si lo usas
     this.cargarDashboard();
   }
 
-  // Usar ionViewWillEnter para recargar datos cada vez que se entra en la página
   ionViewWillEnter() {
     this.cargarDashboard();
   }
 
-  // --- FUNCIÓN MEJORADA PARA CARGAR TODOS LOS DATOS ---
   cargarDashboard() {
     this.cargarKpis();
     this.cargarPieChart();
     this.cargarBarChart();
   }
 
-  // --- NUEVA FUNCIÓN PARA CARGAR LAS TARJETAS ---
   cargarKpis() {
     this.isKpisLoading = true;
     this.apiService.getDashboardKpis().subscribe({
       next: (data) => {
-        this.kpis = data;
+        // Asigna los datos directamente, ya que getDashboardKpis del backend
+        // ya debería devolver un objeto con todas las propiedades de KPI
+        this.kpis = {
+          totalVehiculos: data.totalVehiculos || 0,
+          vehiculosOperativos: data.vehiculosOperativos || 0,
+          vehiculosEnTaller: data.vehiculosEnTaller || 0,
+          siniestrosMes: data.siniestrosMes || 0,
+          // Mapeo para los nuevos KPIs (asegúrate de que los nombres coincidan con el backend)
+          costoCombustibleMes: data.costoCombustibleMes || 0, 
+          costoMantenimientoMes: data.costoMantenimientoMes || 0, 
+          eficienciaCombustiblePromedio: data.eficienciaCombustiblePromedio || 0, 
+          recorridosEnCurso: data.recorridosEnCurso || 0, 
+          alertasMantenimientoPendiente: data.alertasMantenimientoPendiente || 0, 
+          alertasSiniestrosPendientes: data.alertasSiniestrosPendientes || 0,
+          vehiculosProximoMantenimiento: data.vehiculosProximoMantenimiento || 0 // Si este KPI está en el backend
+        };
         this.isKpisLoading = false;
+        console.log('KPIs cargados:', this.kpis); // LOG para verificar los valores cargados
       },
       error: (err) => {
         console.error('Error al cargar KPIs del dashboard', err);
         this.isKpisLoading = false;
-      },
+        // Reinicia kpis a 0 en caso de error para evitar NaN o datos incorrectos
+        this.kpis = {
+          totalVehiculos: 0,
+          vehiculosOperativos: 0,
+          vehiculosEnTaller: 0,
+          siniestrosMes: 0,
+          costoCombustibleMes: 0,
+          costoMantenimientoMes: 0,
+          eficienciaCombustiblePromedio: 0,
+          recorridosEnCurso: 0,
+          alertasMantenimientoPendiente: 0,
+          alertasSiniestrosPendientes: 0,
+          vehiculosProximoMantenimiento: 0
+        };
+      }
     });
   }
 
-  cargarPieChart() {
-    this.isPieChartLoading = true;
-    this.apiService.getStatsVehiculosPorTipo().subscribe({
-      next: (data) => {
-        if (data?.labels?.length) {
-          this.pieChartData.labels = data.labels;
-          this.pieChartData.datasets[0].data = data.data;
-        }
-        this.isPieChartLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar datos del pie chart', err);
-        this.isPieChartLoading = false;
-      },
-    });
-  }
+  cargarPieChart() { 
+    this.isPieChartLoading = true; 
+    this.apiService.getStatsVehiculosPorTipo().subscribe({ 
+      next: (data) => { 
+        if (data?.labels?.length) { 
+          this.pieChartData.labels = data.labels; 
+          this.pieChartData.datasets[0].data = data.data; 
+        } 
+        this.isPieChartLoading = false; 
+      }, 
+      error: (err) => { 
+        console.error('Error al cargar datos del pie chart', err); 
+        this.isPieChartLoading = false; 
+      } 
+    }); 
+  } 
 
-  cargarBarChart() {
-    this.isBarChartLoading = true;
-    this.apiService.getStatsMantenimientosPorEstado().subscribe({
-      next: (data) => {
-        if (data?.labels?.length) {
-          this.barChartData.labels = data.labels;
-          this.barChartData.datasets[0].data = data.data;
+  cargarBarChart() { 
+    this.isBarChartLoading = true; 
+    this.apiService.getStatsMantenimientosPorEstado().subscribe({ 
+      next: (data) => { 
+        if (data?.labels?.length) { 
+          this.barChartData.labels = data.labels; 
+          this.barChartData.datasets[0].data = data.data; 
+          
+          const backgroundColors = data.labels.map((label: string) => { 
+            if (label.toLowerCase().includes('en progreso')) return 'rgba(255, 196, 9, 0.7)';
+            if (label.toLowerCase().includes('completada')) return 'rgba(45, 211, 111, 0.7)';
+            if (label.toLowerCase().includes('asignada')) return 'rgba(113, 73, 255, 0.7)'; 
+            if (label.toLowerCase().includes('pendiente')) return 'rgba(56, 128, 255, 0.7)';
+            return 'rgba(150, 150, 150, 0.7)'; 
+          }); 
 
-          const backgroundColors = data.labels.map((label: string) => {
-            if (label.toLowerCase().includes('en progreso'))
-              return 'rgba(255, 196, 9, 0.7)';
-            if (label.toLowerCase().includes('completada'))
-              return 'rgba(45, 211, 111, 0.7)';
-            if (label.toLowerCase().includes('asignada'))
-              return 'rgba(113, 73, 255, 0.7)'; // Violeta para asignado
-            if (label.toLowerCase().includes('pendiente'))
-              return 'rgba(56, 128, 255, 0.7)';
-            return 'rgba(150, 150, 150, 0.7)';
-          });
-
-          const borderColors = backgroundColors.map((color: string) =>
-            color.replace('0.7', '1')
-          );
-          this.barChartData.datasets[0].backgroundColor = backgroundColors;
-          this.barChartData.datasets[0].borderColor = borderColors;
-        }
-        this.isBarChartLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar datos del bar chart', err);
-        this.isBarChartLoading = false;
-      },
-    });
-  }
+          const borderColors = backgroundColors.map((color: string) => color.replace('0.7', '1')); 
+          this.barChartData.datasets[0].backgroundColor = backgroundColors; 
+          this.barChartData.datasets[0].borderColor = borderColors; 
+        } 
+        this.isBarChartLoading = false; 
+      }, 
+      error: (err) => { 
+        console.error('Error al cargar datos del bar chart', err); 
+        this.isBarChartLoading = false; 
+      } 
+    }); 
+  } 
 }

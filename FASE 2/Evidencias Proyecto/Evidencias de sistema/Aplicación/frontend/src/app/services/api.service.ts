@@ -320,7 +320,48 @@ export class ApiService {
       .post<any>(`${this.apiUrl}/planificaciones-v2`, data)
       .pipe(catchError(this.handleError));
   }
+getCostosCombustibleMes(): Observable<{ total: number }> {
+    // Puedes pasar un parámetro de timeframe si tu backend lo soporta, ej: ?timeframe=last30days
+    return this.http.get<{ total: number }>(`${this.apiUrl}/stats/costo-combustible-mes`)
+      .pipe(catchError(this.handleError));
+  }
 
+  /**
+   * Obtiene el costo total de mantenimiento del último mes.
+   * Asume que el backend devuelve { total: number }.
+   */
+  getCostosMantenimientoMes(): Observable<{ total: number }> {
+    // Puedes pasar un parámetro de timeframe si tu backend lo soporta
+    return this.http.get<{ total: number }>(`${this.apiUrl}/stats/costo-mantenimiento-mes`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Obtiene la eficiencia promedio de combustible de la flota.
+   * Asume que el backend devuelve { promedio: number }.
+   */
+  getEficienciaCombustiblePromedio(): Observable<{ promedio: number }> {
+    return this.http.get<{ promedio: number }>(`${this.apiUrl}/stats/eficiencia-combustible-promedio`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Obtiene la cantidad de alertas de mantenimiento pendientes o críticas.
+   * Asume que el backend devuelve { cantidad: number }.
+   */
+  getAlertasMantenimientoPendiente(): Observable<{ cantidad: number }> {
+    return this.http.get<{ cantidad: number }>(`${this.apiUrl}/stats/alertas-mantenimiento-pendiente`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Obtiene la cantidad de alertas de siniestros pendientes o sin resolver.
+   * Asume que el backend devuelve { cantidad: number }.
+   */
+  getAlertasSiniestrosPendientes(): Observable<{ cantidad: number }> {
+    return this.http.get<{ cantidad: number }>(`${this.apiUrl}/stats/alertas-siniestros-pendientes`)
+      .pipe(catchError(this.handleError));
+  }
   deleteUser(id_usu: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/usuarios/${id_usu}`)
@@ -412,9 +453,13 @@ export class ApiService {
       .put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
       .pipe(catchError(this.handleError));
   }
-  getSiniestros(): Observable<Siniestro[]> {
+ getSiniestros(params?: { timeframe?: string }): Observable<Siniestro[]> {
+    let httpParams = new HttpParams();
+    if (params?.timeframe) {
+      httpParams = httpParams.set('timeframe', params.timeframe);
+    }
     return this.http
-      .get<Siniestro[]>(`${this.apiUrl}/siniestros`)
+      .get<Siniestro[]>(`${this.apiUrl}/siniestros`, { params: httpParams }) // Asegúrate de que el backend pueda filtrar por timeframe
       .pipe(catchError(this.handleError));
   }
   getSiniestroById(id: number): Observable<Siniestro> {
@@ -642,13 +687,20 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
+ // MODIFICADO: getVehicles ahora acepta un array de EstadoVehiculo para 'estado'
   getVehicles(params?: {
-    estado?: EstadoVehiculo;
+    estado?: EstadoVehiculo | EstadoVehiculo[]; // <<-- CAMBIO AQUÍ: Añade | EstadoVehiculo[]
     tipo?: string;
   }): Observable<Vehiculo[]> {
     let httpParams = new HttpParams();
     if (params?.estado) {
-      httpParams = httpParams.set('estado', params.estado);
+      if (Array.isArray(params.estado)) {
+        params.estado.forEach(s => {
+          httpParams = httpParams.append('estado[]', s); // Envía como estado[]=mantenimiento&estado[]=taller
+        });
+      } else {
+        httpParams = httpParams.set('estado', params.estado);
+      }
     }
     if (params?.tipo) {
       httpParams = httpParams.set('tipo', params.tipo);

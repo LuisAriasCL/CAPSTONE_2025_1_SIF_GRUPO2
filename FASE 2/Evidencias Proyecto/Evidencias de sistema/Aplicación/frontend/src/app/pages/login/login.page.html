@@ -9,17 +9,14 @@
       <!-- Email -->
       <ion-item lines="full">
         <ion-icon slot="start" name="mail-outline"></ion-icon>
-        <ion-label position="stacked" style="font-weight: 500px">
-          <strong>Email</strong></ion-label
-        >
+        <ion-label position="stacked">Email</ion-label>
         <ion-input
           type="email"
           formControlName="email"
           required
           inputmode="email"
           placeholder="Ej: usuario@correo.com"
-        >
-        </ion-input>
+        ></ion-input>
       </ion-item>
 
       <!-- Contraseña -->
@@ -31,8 +28,7 @@
           formControlName="clave"
           required
           placeholder="Mínimo 6 caracteres"
-        >
-        </ion-input>
+        ></ion-input>
       </ion-item>
 
       <!-- Botón de Iniciar Sesión -->
@@ -50,6 +46,13 @@
       <div class="ion-text-center ion-margin-top">
         <ion-button fill="clear" size="small" routerLink="/register">
           ¿No tienes cuenta? Regístrate
+        </ion-button>
+      </div>
+
+      <!-- Botón de Recuperar Contraseña -->
+      <div class="ion-text-center ion-margin-top">
+        <ion-button fill="clear" size="small" (click)="goToRecuperar()">
+          Recuperar contraseña
         </ion-button>
       </div>
     </form>

@@ -100,4 +100,9 @@ export class LoginPage implements OnInit {
       },
     });
   }
+
+  // Método para redirigir a la vista de recuperación de contraseña
+  goToRecuperar() {
+    this.router.navigate(['/recuperar']);
+  }
 }
