@@ -16,10 +16,9 @@ interface HistorialGroup {
   templateUrl: './historial-combustible.page.html',
   styleUrls: ['./historial-combustible.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class HistorialCombustiblePage implements ViewWillEnter {
-
   // Usaremos un nuevo array para los datos agrupados
   historialAgrupado: HistorialGroup[] = [];
   isLoading = true;
@@ -27,7 +26,7 @@ export class HistorialCombustiblePage implements ViewWillEnter {
   constructor(
     private apiService: ApiService,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ionViewWillEnter() {
     this.cargarHistorial();
@@ -36,21 +35,39 @@ export class HistorialCombustiblePage implements ViewWillEnter {
   cargarHistorial(event?: any) {
     this.isLoading = true;
     const usuario = this.authService.getCurrentUser();
-    if (usuario) {
-      this.apiService.getHistorialCombustible(usuario.idUsu).subscribe({
-        next: (data) => {
-          // Llamamos a la función para agrupar los datos
-          this.historialAgrupado = this.agruparPorFecha(data);
-          this.isLoading = false;
-          event?.target.complete(); // Finaliza la animación del refresher
-        },
-        error: (err) => {
-          console.error("Error al cargar historial", err);
-          this.isLoading = false;
-          event?.target.complete();
-        }
-      });
+
+    if (!usuario) {
+      console.error('No hay usuario autenticado');
+      this.isLoading = false;
+      event?.target.complete();
+      return;
     }
+
+    // Usar cualquiera de los dos formatos disponibles
+    const usuarioId = usuario.id_usu || usuario.idUsu;
+
+    if (!usuarioId) {
+      console.error('No se pudo determinar el ID del usuario', usuario);
+      this.isLoading = false;
+      event?.target.complete();
+      return;
+    }
+
+    console.log('Cargando historial para usuario ID:', usuarioId);
+
+    this.apiService.getHistorialCombustible(usuarioId).subscribe({
+      next: (data) => {
+        // Llamamos a la función para agrupar los datos
+        this.historialAgrupado = this.agruparPorFecha(data);
+        this.isLoading = false;
+        event?.target.complete(); // Finaliza la animación del refresher
+      },
+      error: (err) => {
+        console.error('Error al cargar historial', err);
+        this.isLoading = false;
+        event?.target.complete();
+      },
+    });
   }
 
   // Nueva función para agrupar el historial por día
@@ -61,7 +78,7 @@ export class HistorialCombustiblePage implements ViewWillEnter {
 
     const grupos = new Map<string, any[]>();
 
-    registros.forEach(registro => {
+    registros.forEach((registro) => {
       // Obtenemos la fecha en formato YYYY-MM-DD para agrupar
       const fechaKey = registro.fecha.split('T')[0];
       if (!grupos.has(fechaKey)) {
@@ -73,7 +90,7 @@ export class HistorialCombustiblePage implements ViewWillEnter {
     // Convertimos el mapa a un array de objetos
     return Array.from(grupos.entries()).map(([fecha, registrosDelDia]) => ({
       fecha: this.formatearEtiquetaFecha(fecha),
-      registros: registrosDelDia
+      registros: registrosDelDia,
     }));
   }
 
@@ -96,7 +113,7 @@ export class HistorialCombustiblePage implements ViewWillEnter {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 

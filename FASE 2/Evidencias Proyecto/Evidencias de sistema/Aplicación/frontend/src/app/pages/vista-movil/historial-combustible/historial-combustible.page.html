@@ -41,15 +41,17 @@
           </ion-col>
         </ion-row>
         <ion-row class="details-row">
-          <ion-col>
-            <p class="detail-text">
-              <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
-              {{ registro.Vehiculo?.patente }}
-            </p>
-          </ion-col>
+          <p class="detail-text">
+            <ion-icon name="car-sport-outline" class="detail-icon"></ion-icon>
+            {{ registro.vehiculo.marca }} {{ registro.vehiculo.modelo }} ({{
+            registro.vehiculo.patente }})
+          </p>
           <ion-col class="ion-text-end">
             <p class="detail-text">
-              <ion-icon name="speedometer-outline" class="detail-icon"></ion-icon>
+              <ion-icon
+                name="speedometer-outline"
+                class="detail-icon"
+              ></ion-icon>
               {{ registro.kilometraje | number:'1.0-0' }} km
             </p>
           </ion-col>
@@ -57,5 +59,4 @@
       </ion-grid>
     </ion-card>
   </div>
-
 </ion-content>
