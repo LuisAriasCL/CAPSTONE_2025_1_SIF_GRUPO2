@@ -20,9 +20,7 @@
           <ion-label>Todos ({{ vehiculosConEstado.length }})</ion-label>
         </ion-segment-button>
         <ion-segment-button value="en_recorrido">
-          <ion-label
-            >En Recorrido ({{ vehiculosEnRecorrido.length }})</ion-label
-          >
+          <ion-label>En Recorrido ({{ vehiculosEnRecorrido.length }})</ion-label>
         </ion-segment-button>
         <ion-segment-button value="disponible">
           <ion-label>Disponibles ({{ vehiculosDisponibles.length }})</ion-label>
@@ -41,9 +39,10 @@
         [class.disponible]="!vehiculo.enRecorrido"
       >
         <ion-avatar slot="start">
+          <!-- --- MODIFICADO: Usa el color y el ícono correctos --- -->
           <ion-icon
-            [name]="vehiculo.enRecorrido ? 'car-sport' : 'car-sport-outline'"
-            [color]="vehiculo.enRecorrido ? 'success' : 'medium'"
+            [name]="vehiculo.displayStatus === 'En Recorrido' ? 'car-sport' : 'car-sport-outline'"
+            [color]="vehiculo.displayColor"
             size="large"
           >
           </ion-icon>
@@ -55,47 +54,47 @@
             <ion-icon name="navigate-outline" color="primary"></ion-icon>
             Ruta: {{ vehiculo.rutaActual }}
           </p>
+
+          <!-- --- MODIFICADO: Muestra el estado real y usa el ícono y color correctos --- -->
           <p>
             <ion-icon
-              [name]="vehiculo.enRecorrido ? 'checkmark-circle' : 'pause-circle'"
-              [color]="vehiculo.enRecorrido ? 'success' : 'warning'"
-            >
-            </ion-icon>
-            {{ vehiculo.enRecorrido ? 'En Recorrido' : 'Disponible' }}
+              [name]="getIconForStatus(vehiculo.displayStatus)"
+              [color]="vehiculo.displayColor"
+            ></ion-icon>
+            {{ vehiculo.displayStatus }}
           </p>
+
           <p>
             <ion-icon
               [name]="tieneUbicacionValida(vehiculo) ? 'locate-outline' : 'location-outline'"
               [color]="tieneUbicacionValida(vehiculo) ? 'success' : 'danger'"
             ></ion-icon>
-            GPS: {{ tieneUbicacionValida(vehiculo) ? 'Válido' : 'Sin ubicación'
-            }}
+            GPS: {{ tieneUbicacionValida(vehiculo) ? 'Válido' : 'Sin ubicación' }}
           </p>
           <p *ngIf="vehiculo.ultimaActualizacion">
             <ion-icon name="time-outline" color="medium"></ion-icon>
-            Última actualización: {{ vehiculo.ultimaActualizacion |
-            date:'dd/MM/yy HH:mm:ss' }}
+            Última actualización: {{ vehiculo.ultimaActualizacion | date:'dd/MM/yy HH:mm:ss' }}
           </p>
         </ion-label>
 
+        <!-- --- MODIFICADO: El chip ahora usa el color y texto correctos --- -->
         <ion-chip
           slot="end"
-          [color]="vehiculo.enRecorrido ? 'success' : 'medium'"
+          [color]="vehiculo.displayColor"
         >
-          {{ vehiculo.enRecorrido ? 'ACTIVO' : 'PARADO' }}
+          <ion-label>{{ vehiculo.displayStatus.toUpperCase() }}</ion-label>
         </ion-chip>
+
       </ion-item>
 
       <!-- Mensaje cuando no hay vehículos -->
       <ion-item *ngIf="vehiculosFiltrados.length === 0">
         <ion-label>
           <h3>
-            No hay vehículos {{ filtroEstado === 'todos' ? '' : filtroEstado ===
-            'en_recorrido' ? 'en recorrido' : 'disponibles' }}
+            No hay vehículos {{ filtroEstado === 'todos' ? '' : filtroEstado === 'en_recorrido' ? 'en recorrido' : 'disponibles' }}
           </h3>
           <p>
-            {{ filtroEstado === 'todos' ? 'Verifique la conexión' : 'Cambie el
-            filtro para ver otros vehículos' }}
+            {{ filtroEstado === 'todos' ? 'Verifique la conexión' : 'Cambie el filtro para ver otros vehículos' }}
           </p>
         </ion-label>
       </ion-item>
