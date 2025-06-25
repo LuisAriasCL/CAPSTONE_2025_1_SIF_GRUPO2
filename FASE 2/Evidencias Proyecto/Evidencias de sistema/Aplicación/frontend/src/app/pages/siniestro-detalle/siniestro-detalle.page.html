@@ -1,3 +1,5 @@
+<!-- FASE 2/Evidencias Proyecto/Evidencias de sistema/Aplicación/frontend/src/app/pages/siniestro-detalle/siniestro-detalle.page.html -->
+
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Detalle del Siniestro</ion-title>
@@ -100,7 +102,7 @@
             </ion-col>
           </ion-row>
 
-          <ion-row *ngIf="siniestro.descripcion">
+          <ion-row>
             <ion-col size="12">
               <div class="info-item description-item">
                 <ion-icon
@@ -109,16 +111,47 @@
                 ></ion-icon>
                 <div class="info-content">
                   <p class="info-label">Descripción:</p>
-                  <p class="info-value description-text">
-                    {{ siniestro.descripcion }}
+                  <!-- CONDICIONAL: Mostrar ion-textarea si está editando -->
+                  <ion-textarea
+                    *ngIf="isEditingDescription"
+                    [(ngModel)]="editingDescription"
+                    rows="4"
+                    placeholder="Escribe la descripción del siniestro aquí..."
+                    class="editable-textarea"
+                  ></ion-textarea>
+                  <!-- CONDICIONAL: Mostrar párrafo normal si no está editando -->
+                  <p *ngIf="!isEditingDescription" class="info-value description-text">
+                    {{ siniestro.descripcion || 'Sin descripción' }}
                   </p>
                 </div>
+                <!-- Botón para editar descripción, solo si no está en modo edición -->
+                <ion-button 
+                  *ngIf="!isEditingDescription" 
+                  fill="clear" 
+                  size="small" 
+                  (click)="toggleEditDescription()"
+                  class="edit-description-btn"
+                  title="Editar Descripción"
+                >
+                  <ion-icon name="pencil-outline" color="medium"></ion-icon>
+                </ion-button>
               </div>
+
+              <!-- Botones de acción para la descripción, solo si está editando -->
+              <div *ngIf="isEditingDescription" class="description-edit-actions">
+                <ion-button expand="block" fill="solid" color="success" size="small" (click)="saveDescription()">
+                  <ion-icon name="save-outline" slot="start"></ion-icon> Guardar
+                </ion-button>
+                <ion-button expand="block" fill="outline" color="medium" size="small" (click)="toggleEditDescription()">
+                  <ion-icon name="close-outline" slot="start"></ion-icon> Cancelar
+                </ion-button>
+              </div>
+
             </ion-col>
           </ion-row>
         </ion-grid>
 
-        <!-- Action Button -->
+        <!-- Action Button para actualizar estado (EXISTENTE) -->
         <div class="action-section">
           <ion-button
             expand="block"

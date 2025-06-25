@@ -466,6 +466,10 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })
       .pipe(catchError(this.handleError));
   }
+ updateSiniestro(id: number, data: Partial<Siniestro>): Observable<Siniestro> {
+    return this.http.put<Siniestro>(`${this.apiUrl}/siniestros/${id}`, data)
+      .pipe(catchError(this.handleError));
+  }
 
   getOrdenesParaTecnico(tecnicoId: number): Observable<OrdenTrabajoResumen[]> {
     return this.http.get<OrdenTrabajoResumen[]>(
