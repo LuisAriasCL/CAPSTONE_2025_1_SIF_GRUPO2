@@ -138,15 +138,44 @@
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
+    <ion-content class="modal-content">
       <div *ngIf="reporteSeleccionado">
-        <p><strong>ID OT:</strong> {{ reporteSeleccionado.id_ot }}</p>
-        <p><strong>Vehículo:</strong> {{ reporteSeleccionado.vehiculo?.patente || 'N/A' }}</p>
-        <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion_ot }}</p>
-        <p><strong>Encargado:</strong> {{ reporteSeleccionado.encargado?.pri_nom_usu || 'No asignado' }}</p>
-        <p><strong>Fecha Inicio:</strong> {{ reporteSeleccionado.fec_ini_ot | date }}</p>
-        <p><strong>Fecha Fin:</strong> {{ reporteSeleccionado.fec_fin_ot | date }}</p>
-        <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_ot }}</p>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Información de la Orden de Trabajo</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>ID OT:</strong> {{ reporteSeleccionado.id_ot }}</p>
+            <p><strong>Vehículo:</strong> {{ reporteSeleccionado.vehiculo?.patente || 'N/A' }}</p>
+            <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion_ot }}</p>
+            <p><strong>Encargado:</strong> {{ reporteSeleccionado.encargado?.pri_nom_usu || 'No asignado' }}</p>
+            <p><strong>Fecha Inicio:</strong> {{ reporteSeleccionado.fec_ini_ot | date }}</p>
+            <p><strong>Fecha Fin:</strong> {{ reporteSeleccionado.fec_fin_ot | date }}</p>
+            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_ot }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Tareas Asociadas</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div *ngIf="reporteSeleccionado.tareas?.length > 0; else noTareas">
+              <ion-list>
+                <ion-item *ngFor="let tarea of reporteSeleccionado.tareas">
+                  <ion-label>
+                    <h3>{{ tarea.nombre }}</h3>
+                    <p><strong>Descripción:</strong> {{ tarea.descripcion }}</p>
+                    <p><strong>Estado:</strong> {{ tarea.estado }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </div>
+            <ng-template #noTareas>
+              <p>No hay tareas asociadas a esta orden de trabajo.</p>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
       </div>
     </ion-content>
   </ion-modal>

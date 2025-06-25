@@ -364,7 +364,10 @@ export class ReporteMantenimientoPage implements OnInit {
   }
 
   mostrarDetalles(reporte: any) {
-    this.reporteSeleccionado = reporte;
+    this.reporteSeleccionado = {
+      ...reporte,
+      tareas: reporte.tareas || [] // Asegúrate de que las tareas estén disponibles
+    };
     this.isModalOpen = true;
   }
 
