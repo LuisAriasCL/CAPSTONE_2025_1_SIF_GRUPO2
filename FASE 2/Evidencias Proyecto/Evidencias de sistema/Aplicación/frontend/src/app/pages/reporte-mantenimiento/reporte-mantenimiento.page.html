@@ -7,7 +7,7 @@
   >
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-<ion-row>
+  <ion-row>
     <ion-col size="12">
       <ion-card class="welcome-card glass-effect"> <!-- Reutilizamos las clases del dashboard -->
         <ion-card-content class="ion-text-center">
@@ -112,38 +112,72 @@
     class="data-table-container"
     *ngIf="!isLoading && reporteData.length > 0"
   >
- <app-data-table
-  [columns]="tableColumns"
-  [data]="paginatedReporteData"
-  [pageSize]="pageSize"
-  [totalItems]="filteredReporteData.length"
-  [showPagination]="true"
-  [showExport]="true" 
-  [showImport]="true"
-  (page)="onPageChange($event)"
-  (exportCsv)="exportarCSV()"
-  (exportPdf)="exportarPDF()"
+    <app-data-table
+      [columns]="tableColumns"
+      [data]="paginatedReporteData"
+      [pageSize]="pageSize"
+      [totalItems]="filteredReporteData.length"
+      [showPagination]="true"
+      [showExport]="true"
+      [showImport]="true"
+      (page)="onPageChange($event)"
+      (exportCsv)="exportarCSV()"
+      (exportPdf)="exportarPDF()"
+      (rowClick)="mostrarDetalles($event)"
     >
-      <!-- Mensaje si no hay resultados filtrados -->
-      <div
-        *ngIf="filteredReporteData.length === 0"
-        class="ion-text-center ion-padding"
-      >
-        <ion-icon
-          name="search-outline"
-          style="font-size: 3em"
-          color="medium"
-        ></ion-icon>
-        <p>
-          <strong
-            >No se encontraron registros que coincidan con la búsqueda</strong
-          >
-        </p>
-        <ion-button fill="clear" (click)="clearFilters()">
-          <ion-icon name="refresh-outline" slot="start"></ion-icon>
-          Limpiar búsqueda
-        </ion-button>
-      </div>
     </app-data-table>
   </div>
+
+  <!-- Modal para mostrar detalles del reporte -->
+  <ion-modal [isOpen]="isModalOpen" (ionModalDidDismiss)="cerrarModal()">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Detalles del Reporte</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="modal-content">
+      <div *ngIf="reporteSeleccionado">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Información de la Orden de Trabajo</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>ID OT:</strong> {{ reporteSeleccionado.id_ot }}</p>
+            <p><strong>Vehículo:</strong> {{ reporteSeleccionado.vehiculo?.patente || 'N/A' }}</p>
+            <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion_ot }}</p>
+            <p><strong>Encargado:</strong> {{ reporteSeleccionado.encargado?.pri_nom_usu || 'No asignado' }}</p>
+            <p><strong>Fecha Inicio:</strong> {{ reporteSeleccionado.fec_ini_ot | date }}</p>
+            <p><strong>Fecha Fin:</strong> {{ reporteSeleccionado.fec_fin_ot | date }}</p>
+            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_ot }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Tareas Asociadas</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div *ngIf="reporteSeleccionado.tareas?.length > 0; else noTareas">
+              <ion-list>
+                <ion-item *ngFor="let tarea of reporteSeleccionado.tareas">
+                  <ion-label>
+                    <h3>{{ tarea.nombre }}</h3>
+                    <p><strong>Descripción:</strong> {{ tarea.descripcion }}</p>
+                    <p><strong>Estado:</strong> {{ tarea.estado }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </div>
+            <ng-template #noTareas>
+              <p>No hay tareas asociadas a esta orden de trabajo.</p>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-content>
+  </ion-modal>
 </ion-content>
+
