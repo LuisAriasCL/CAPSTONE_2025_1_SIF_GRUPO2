@@ -40,17 +40,20 @@
                 <ion-select-option value=""
                   >Todos los estados</ion-select-option
                 >
-                <ion-select-option value="solicitado"
-                  >Solicitado</ion-select-option
+                <ion-select-option value="sin_iniciar"
+                  >Sin Iniciar</ion-select-option
                 >
                 <ion-select-option value="en_progreso"
                   >En Progreso</ion-select-option
                 >
-                <ion-select-option value="completado"
-                  >Completado</ion-select-option
+                <ion-select-option value="completada"
+                  >Completada</ion-select-option
                 >
-                <ion-select-option value="cancelado"
-                  >Cancelado</ion-select-option
+                <ion-select-option value="rechazado"
+                  >Deshabilitada</ion-select-option
+                >
+                <ion-select-option value="cancelada"
+                  >Cancelada</ion-select-option
                 >
               </ion-select>
             </ion-item>
@@ -167,8 +170,9 @@
                   color="success"
                   class="align-middle"
                 ></ion-icon>
-                <strong>Solicitante:</strong> {{ ot.solicitante?.pri_nom_usu ||
-                'N/A' }} {{ ot.solicitante?.pri_ape_usu || '' }}
+                <strong>Creador de planificación:</strong> {{
+                ot.solicitante?.pri_nom_usu || 'N/A' }} {{
+                ot.solicitante?.pri_ape_usu || '' }}
               </p>
             </ion-label>
           </ion-col>

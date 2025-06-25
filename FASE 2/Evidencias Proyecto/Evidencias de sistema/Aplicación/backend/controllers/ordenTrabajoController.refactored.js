@@ -152,7 +152,7 @@ class OrdenTrabajoController {
   async actualizarEstadoOt(req, res) {
     try {
       const { id } = req.params;
-      const { estado_ot, usuario_id_usu_encargado } = req.body;
+      const { estado_ot } = req.body;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -164,6 +164,27 @@ class OrdenTrabajoController {
         return res.status(400).json({
           error: 'El estado es requerido.',
         });
+      }
+
+      // Obtener el usuario autenticado desde el middleware
+      const usuarioAutenticado = req.usuario;
+      let usuario_id_usu_encargado = req.body.usuario_id_usu_encargado;
+
+      // Si el estado es "en_progreso" y el usuario tiene rol "mantenimiento", asignarlo como encargado
+      if (
+        estado_ot === 'en_progreso' &&
+        usuarioAutenticado &&
+        usuarioAutenticado.rol === 'mantenimiento'
+      ) {
+        // Asegurarnos de usar el ID correcto del usuario
+        usuario_id_usu_encargado = parseInt(usuarioAutenticado.id_usu, 10);
+        console.log(
+          `Asignando usuario autenticado (ID: ${usuario_id_usu_encargado}, Rol: ${usuarioAutenticado.rol}) como encargado de la OT`
+        );
+        console.log(
+          'Datos completos del usuario autenticado:',
+          usuarioAutenticado
+        );
       }
 
       const resultado = await ordenTrabajoService.actualizarEstadoOt(
@@ -265,8 +286,18 @@ class OrdenTrabajoController {
   async rechazarOrdenTrabajo(req, res) {
     try {
       const { id } = req.params;
-      const { motivo_rechazo } = req.body;
-      const usuarioId = req.usuario?.id_usu; // Obtener ID del usuario desde el token
+      const { motivo_rechazo, usuario_id } = req.body;
+      // Obtener ID del usuario desde el token o desde el cuerpo de la solicitud
+      const usuarioId = usuario_id || req.usuario?.id_usu;
+
+      console.log('📝 Datos para rechazar OT:', {
+        id_ot: id,
+        motivo_rechazo,
+        usuario_id_del_body: usuario_id,
+        usuario_id_del_token: req.usuario?.id_usu,
+        usuario_id_final: usuarioId,
+        req_usuario_completo: req.usuario,
+      });
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -277,6 +308,18 @@ class OrdenTrabajoController {
       if (!motivo_rechazo || motivo_rechazo.trim().length === 0) {
         return res.status(400).json({
           error: 'El motivo del rechazo es obligatorio.',
+        });
+      }
+
+      if (!usuarioId) {
+        console.error('❌ Error: No se pudo obtener el ID del usuario:', {
+          usuario_id_del_body: usuario_id,
+          req_usuario: req.usuario,
+          headers: req.headers.authorization ? 'Token presente' : 'Sin token',
+        });
+
+        return res.status(400).json({
+          error: 'El ID del usuario es obligatorio.',
         });
       }
 

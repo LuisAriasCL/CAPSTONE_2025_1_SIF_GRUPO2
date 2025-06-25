@@ -156,29 +156,39 @@ export class OrdenTrabajoListPage
 
   getIconForStatus(estado: string): string {
     switch (estado) {
+      case 'completada':
       case 'completado':
-        return 'checkmark-circle-outline';
+        return 'checkmark-done-circle';
       case 'en_progreso':
-        return 'sync-circle-outline';
+        return 'reload-circle';
+      case 'sin_iniciar':
       case 'solicitado':
-        return 'help-circle-outline';
+        return 'time-outline';
+      case 'rechazado':
+        return 'ban';
+      case 'cancelada':
       case 'cancelado':
-        return 'close-circle-outline';
+        return 'close-circle';
       default:
-        return 'ellipse-outline';
+        return 'help-circle';
     }
   }
 
   getColorForStatus(estado: string): string {
     switch (estado) {
+      case 'completada':
       case 'completado':
         return 'success';
       case 'en_progreso':
         return 'warning';
+      case 'sin_iniciar':
       case 'solicitado':
         return 'primary';
-      case 'cancelado':
+      case 'rechazado':
         return 'danger';
+      case 'cancelada':
+      case 'cancelado':
+        return 'dark';
       default:
         return 'medium';
     }
@@ -188,10 +198,14 @@ export class OrdenTrabajoListPage
     if (!estado) return 'Sin estado';
 
     const estadosDisplay: { [key: string]: string } = {
+      sin_iniciar: 'Sin Iniciar',
       solicitado: 'Solicitado',
       en_progreso: 'En Progreso',
-      completado: 'Completado',
-      cancelado: 'Cancelado',
+      completada: 'Completada',
+      completado: 'Completada',
+      rechazado: 'Deshabilitada',
+      cancelada: 'Cancelada',
+      cancelado: 'Cancelada',
     };
 
     return estadosDisplay[estado] || estado;

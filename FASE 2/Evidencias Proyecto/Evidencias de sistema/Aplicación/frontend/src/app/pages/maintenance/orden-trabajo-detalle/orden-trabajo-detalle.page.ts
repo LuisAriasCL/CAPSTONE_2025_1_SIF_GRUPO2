@@ -149,6 +149,18 @@ export class OrdenTrabajoDetallePage implements OnInit {
     this.apiService.getOrdenTrabajoById(this.ordenTrabajoId).subscribe({
       next: (data) => {
         this.ordenTrabajo = data;
+        // Añadir logs para depurar el encargado
+        console.log('🔍 Datos cargados de orden de trabajo:', {
+          id_ot: data.id_ot,
+          estado: data.estado_ot,
+          solicitante: data.solicitante
+            ? `${data.solicitante.pri_nom_usu} ${data.solicitante.pri_ape_usu}`
+            : 'No definido',
+          encargado: data.encargado
+            ? `${data.encargado.pri_nom_usu} ${data.encargado.pri_ape_usu}`
+            : 'No definido',
+          encargadoObj: data.encargado,
+        });
         this.isLoading = false;
         loading.dismiss();
         this.cargarTecnicos();
@@ -328,6 +340,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
               'Orden de Trabajo iniciada. El vehículo ha sido marcado como "En Mantenimiento".',
               'success'
             );
+            // Recargar datos para mostrar al encargado actualizado
             this.cargarDatosDePagina();
           },
           error: async (err) => {
@@ -559,7 +572,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
     // Verificar que el estado permita el rechazo
     if (this.ordenTrabajo.estado_ot !== 'sin_iniciar') {
       this.presentToast(
-        'Solo se pueden rechazar órdenes de trabajo que no han sido iniciadas.',
+        'Solo se pueden deshabilitar órdenes de trabajo que no han sido iniciadas.',
         'warning'
       );
       return;
@@ -577,26 +590,16 @@ export class OrdenTrabajoDetallePage implements OnInit {
     const { data } = await modal.onDidDismiss();
 
     if (data && data.rechazado) {
-      const currentUser = this.authService.getCurrentUser();
-      if (!currentUser) {
-        this.presentToast(
-          'Error: No se pudo identificar al usuario actual.',
-          'danger'
-        );
-        return;
-      }
-
       const loading = await this.loadingCtrl.create({
-        message: 'Rechazando orden de trabajo...',
+        message: 'Deshabilitando orden de trabajo...',
       });
       await loading.present();
 
+      // Usar un ID de usuario por defecto si no se puede obtener
+      const userId = this.currentUser?.idUsu || 1;
+
       this.apiService
-        .rechazarOrdenTrabajo(
-          this.ordenTrabajo.id_ot,
-          data.motivo,
-          currentUser.idUsu
-        )
+        .rechazarOrdenTrabajo(this.ordenTrabajo.id_ot, data.motivo, userId)
         .subscribe({
           next: async (response) => {
             // Si la OT se rechaza, el vehículo debe volver a estado activo
@@ -609,7 +612,8 @@ export class OrdenTrabajoDetallePage implements OnInit {
 
             await loading.dismiss();
             this.presentToast(
-              response.message || 'Orden de trabajo rechazada correctamente.',
+              response.message ||
+                'Orden de trabajo deshabilitada correctamente.',
               'success'
             );
             this.cargarDatosDePagina(); // Recargar datos para mostrar el nuevo estado
@@ -618,7 +622,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
             await loading.dismiss();
             console.error('Error al rechazar OT:', err);
             this.presentToast(
-              err.message || 'No se pudo rechazar la orden de trabajo.',
+              err.message || 'No se pudo deshabilitar la orden de trabajo.',
               'danger'
             );
           },
@@ -646,7 +650,7 @@ export class OrdenTrabajoDetallePage implements OnInit {
       en_progreso: 'En Progreso',
       completada: 'Completada',
       cancelada: 'Cancelada',
-      rechazado: 'Rechazada',
+      rechazado: 'Deshabilitada',
     };
 
     return estadosDisplay[estado] || estado;

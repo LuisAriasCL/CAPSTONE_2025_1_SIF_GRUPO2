@@ -320,7 +320,15 @@ export class PlanificacionFormPage implements OnInit {
 
     // Obtener ID del usuario actual
     const currentUser = this.authService.getCurrentUser();
-    const idUsuario = currentUser?.idUsu || 1;
+    if (!currentUser) {
+      await loading.dismiss();
+      this.mostrarToast(
+        'No se pudo identificar el usuario actual. Por favor, inicie sesión nuevamente.',
+        'danger'
+      );
+      return;
+    }
+    const idUsuario = currentUser.idUsu;
 
     const apiCall = isEditMode
       ? nuevosVehiculosIds.length > 0

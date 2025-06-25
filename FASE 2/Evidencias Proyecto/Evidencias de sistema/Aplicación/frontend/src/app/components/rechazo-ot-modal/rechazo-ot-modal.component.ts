@@ -29,26 +29,16 @@ export class RechazoOtModalComponent {
   }
 
   async confirmarRechazo() {
-    if (!this.motivoRechazo || this.motivoRechazo.trim().length === 0) {
-      this.mostrarToast('El motivo del rechazo es obligatorio', 'warning');
-      return;
-    }
-
-    if (this.motivoRechazo.trim().length < 10) {
-      this.mostrarToast('El motivo debe tener al menos 10 caracteres', 'warning');
-      return;
-    }
-
     this.isSubmitting = true;
 
     try {
       await this.modalCtrl.dismiss({
         rechazado: true,
-        motivo: this.motivoRechazo.trim(),
+        motivo: this.motivoRechazo.trim() || 'Orden deshabilitada',
       });
     } catch (error) {
       console.error('Error al confirmar rechazo:', error);
-      this.mostrarToast('Error al procesar el rechazo', 'danger');
+      this.mostrarToast('Error al procesar la deshabilitación', 'danger');
     } finally {
       this.isSubmitting = false;
     }

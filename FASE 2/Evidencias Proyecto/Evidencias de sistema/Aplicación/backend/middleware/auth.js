@@ -49,12 +49,19 @@ const authMiddleware = async (req, res, next) => {
 
     // Agregar información del usuario al request para uso en siguientes middlewares
     req.usuario = {
-      id_usu: usuario.idUsu,
+      id_usu: usuario.idUsu, // Usar el valor del campo JavaScript
       email: usuario.email,
       rol: usuario.rol,
       nombre: usuario.priNomUsu,
       apellido: usuario.priApeUsu,
     };
+
+    console.log('✅ Usuario autenticado en middleware:', {
+      id_usu: req.usuario.id_usu,
+      email: req.usuario.email,
+      rol: req.usuario.rol,
+      nombre: req.usuario.nombre,
+    });
 
     next();
   } catch (error) {
@@ -107,11 +114,11 @@ const optionalAuthMiddleware = async (req, res, next) => {
 
     if (usuario && usuario.estadoUsu === 'activo') {
       req.usuario = {
-        id_usu: usuario.idUsu,
+        id_usu: usuario.idUsu, // Usar el nombre del atributo en JavaScript
         email: usuario.email,
         rol: usuario.rol,
-        nombre: usuario.priNomUsu,
-        apellido: usuario.priApeUsu,
+        nombre: usuario.priNomUsu, // Usar el nombre del atributo en JavaScript
+        apellido: usuario.priApeUsu, // Usar el nombre del atributo en JavaScript
       };
     } else {
       req.usuario = null;

@@ -26,10 +26,19 @@ exports.crearPlanificacionConOts = async (req, res) => {
       });
     }
 
-    // Obtener ID del usuario solicitante (en un entorno real, esto vendría del token JWT)
-    // Por ahora, asumimos que se pasa en el body o usamos un valor por defecto
+    // Obtener ID del usuario solicitante del token JWT o del body
     const idUsuarioSolicitante =
-      req.body.idUsuarioSolicitante || req.user?.id_usu || 1;
+      req.body.idUsuarioSolicitante ||
+      (req.usuario ? req.usuario.id_usu : null);
+
+    // Verificar que existe un usuario solicitante
+    if (!idUsuarioSolicitante) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Usuario solicitante no proporcionado. Debe iniciar sesión para crear una planificación.',
+      });
+    }
 
     // Crear planificación con OTs automáticas
     const resultado = await planificacionService.crearPlanificacionConOts(
@@ -146,6 +155,14 @@ exports.actualizarPlanificacion = async (req, res) => {
         errors: validacion.errores,
       });
     }
+
+    // Obtener ID del usuario actual para registro de auditoría
+    const idUsuario = req.usuario ? req.usuario.id_usu : null;
+    console.log(
+      `Usuario que actualiza la planificación: ${
+        idUsuario || 'No identificado'
+      }`
+    );
 
     const planificacionActualizada =
       await planificacionService.actualizarPlanificacion(

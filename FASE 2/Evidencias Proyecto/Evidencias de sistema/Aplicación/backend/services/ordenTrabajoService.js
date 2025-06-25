@@ -161,6 +161,8 @@ class OrdenTrabajoService {
    * Obtiene una orden de trabajo por ID con todos sus detalles
    */
   async obtenerOrdenTrabajoPorId(id) {
+    console.log(`🔍 Buscando OT con ID: ${id}`);
+
     const ordenTrabajo = await OrdenTrabajo.findByPk(id, {
       include: [
         {
@@ -196,6 +198,20 @@ class OrdenTrabajoService {
       throw new Error('Orden de trabajo no encontrada');
     }
 
+    // Añadir información de depuración
+    console.log(`📋 OT ${ordenTrabajo.id_ot} encontrada:`, {
+      id_ot: ordenTrabajo.id_ot,
+      estado_ot: ordenTrabajo.estado_ot,
+      usuario_id_usu_encargado: ordenTrabajo.usuario_id_usu_encargado,
+      tieneEncargado: ordenTrabajo.encargado ? 'Sí' : 'No',
+      encargadoInfo: ordenTrabajo.encargado
+        ? {
+            id: ordenTrabajo.encargado.id_usu,
+            nombre: `${ordenTrabajo.encargado.pri_nom_usu} ${ordenTrabajo.encargado.pri_ape_usu}`,
+          }
+        : 'No hay encargado',
+    });
+
     // Agregar el vehiculo_id_vehi directamente en la respuesta para facilitar el acceso desde el frontend
     const result = ordenTrabajo.toJSON();
     if (result.vehiculo && result.vehiculo.id_vehi) {
@@ -225,6 +241,9 @@ class OrdenTrabajoService {
       throw new Error('Orden de trabajo no encontrada');
     }
 
+    // Ver todos los campos disponibles en el modelo
+    console.log('🔍 CAMPOS DEL MODELO OT:', Object.keys(otActual.dataValues));
+
     // Validar transiciones de estado permitidas
     this._validarTransicionEstado(otActual.estado_ot, nuevoEstado);
 
@@ -241,7 +260,11 @@ class OrdenTrabajoService {
       if (!encargado) {
         throw new Error('Usuario encargado no encontrado');
       }
-      updateData.usuarioIdUsuEncargado = encargadoId;
+      // Usar el campo de la base de datos (campo real)
+      updateData.usuario_id_usu_encargado = encargadoId;
+      console.log(
+        `Asignando encargado ID: ${encargadoId} a la orden de trabajo, campo: usuario_id_usu_encargado`
+      );
     }
 
     // Si se completa la OT, establecer fecha de fin
@@ -255,13 +278,46 @@ class OrdenTrabajoService {
       updateData.descripcion_ot = `${descripcionActual}\n\nRECHAZADO: ${motivoRechazo}`;
     }
 
+    // Mostrar datos antes de la actualización para depuración
+    console.log('📊 DATOS PARA ACTUALIZAR:', {
+      id_ot: id,
+      updateData,
+      encargadoId,
+    });
+
+    console.log(
+      'SQL que se ejecutará aproximadamente:',
+      `UPDATE orden_trabajo SET estado_ot = '${updateData.estado_ot}'` +
+        (updateData.usuario_id_usu_encargado
+          ? `, usuario_id_usu_encargado = ${updateData.usuario_id_usu_encargado}`
+          : '') +
+        (updateData.fec_fin_ot
+          ? `, fec_fin_ot = '${updateData.fec_fin_ot.toISOString()}'`
+          : '') +
+        (updateData.descripcion_ot
+          ? `, descripcion_ot = '${updateData.descripcion_ot}'`
+          : '') +
+        ` WHERE id_ot = ${id}`
+    );
+
     const [filasActualizadas] = await OrdenTrabajo.update(updateData, {
       where: { id_ot: id },
     });
 
+    console.log(`🔄 Filas actualizadas: ${filasActualizadas}`);
+
     if (filasActualizadas === 0) {
       throw new Error('Orden de trabajo no encontrada');
     }
+
+    // Verificar si se guardó correctamente
+    const otActualizada = await OrdenTrabajo.findByPk(id, {
+      raw: true, // Get the raw data to see all fields
+    });
+    console.log(
+      '✅ OT DESPUÉS DE ACTUALIZAR (DATOS COMPLETOS):',
+      otActualizada
+    );
 
     return {
       success: true,

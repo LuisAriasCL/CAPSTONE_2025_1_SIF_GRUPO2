@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const planificacionController = require('../controllers/planificacionController.refactored');
 const { validateRole } = require('../middleware/validateRole');
+const { authMiddleware } = require('../middleware/auth');
 const { ROLES } = require('../constants/enums');
 
 /**
@@ -17,6 +18,7 @@ const { ROLES } = require('../constants/enums');
  */
 router.post(
   '/',
+  authMiddleware,
   // validateRole([ROLES.ENCARGADO_MANTENIMIENTO, ROLES.ADMINISTRADOR]),
   planificacionController.crearPlanificacionConOts
 );
@@ -26,14 +28,18 @@ router.post(
  * @desc    Obtener todas las planificaciones
  * @access  Todos los usuarios autenticados
  */
-router.get('/', planificacionController.listarPlanificaciones);
+router.get('/', authMiddleware, planificacionController.listarPlanificaciones);
 
 /**
  * @route   GET /api/planificaciones-v2/:id
  * @desc    Obtener planificación por ID
  * @access  Todos los usuarios autenticados
  */
-router.get('/:id', planificacionController.obtenerPlanificacionPorId);
+router.get(
+  '/:id',
+  authMiddleware,
+  planificacionController.obtenerPlanificacionPorId
+);
 
 /**
  * @route   PUT /api/planificaciones-v2/:id
@@ -42,6 +48,7 @@ router.get('/:id', planificacionController.obtenerPlanificacionPorId);
  */
 router.put(
   '/:id',
+  authMiddleware,
   // validateRole([ROLES.ENCARGADO_MANTENIMIENTO, ROLES.ADMINISTRADOR]),
   planificacionController.actualizarPlanificacion
 );

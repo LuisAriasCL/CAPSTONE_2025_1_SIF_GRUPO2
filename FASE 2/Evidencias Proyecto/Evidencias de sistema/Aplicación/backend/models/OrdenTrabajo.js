@@ -56,6 +56,18 @@ module.exports = sequelize => {
         field: 'descripcion_ot',
         comment: 'Descripción general del trabajo o problema reportado',
       },
+      usuario_id_usu_solicitante: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'usuario_id_usu_solicitante',
+        comment: 'FK al usuario que solicitó o creó la OT',
+      },
+      usuario_id_usu_encargado: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'usuario_id_usu_encargado',
+        comment: 'FK al usuario técnico o encargado de la OT',
+      },
       // Las FKs (vehiculo_id_vehi, etc.) se gestionarán a través de las asociaciones en index.js
     },
     {
