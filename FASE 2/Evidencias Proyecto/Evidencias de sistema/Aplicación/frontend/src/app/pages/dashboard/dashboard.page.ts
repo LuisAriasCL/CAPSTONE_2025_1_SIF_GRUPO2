@@ -25,6 +25,7 @@ import {
   mapOutline,         // Icono para recorridos
   notificationsOutline // Icono para alertas
 } from 'ionicons/icons';
+import { RouterModule } from '@angular/router';
 // Ya no necesitamos forkJoin aquí si getDashboardKpis del backend ya trae todo
 // import { forkJoin } from 'rxjs'; 
 
@@ -35,7 +36,7 @@ import {
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
   // Asegúrate de que los pipes estén en imports si los usas en el HTML
-  imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective, CurrencyPipe, DecimalPipe],
+  imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective, CurrencyPipe, DecimalPipe, RouterModule],
 })
 export class DashboardPage implements OnInit {
   // Inicializa kpis con valores predeterminados para evitar errores de plantilla
