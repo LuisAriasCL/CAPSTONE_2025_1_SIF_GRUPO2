@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { IonicModule, NavController, ToastController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -10,15 +16,14 @@ import { AuthService } from 'src/app/services/auth.service';
   templateUrl: './incidente-movil.page.html',
   styleUrls: ['./incidente-movil.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class IncidenteMovilPage implements OnInit {
-
   incidenteForm: FormGroup;
   vehiculoAsignado: any = null;
   fotoFile: File | null = null;
   imageSrc: string | ArrayBuffer | null = null;
-  
+
   isVehicleLoading = true;
 
   constructor(
@@ -30,11 +35,11 @@ export class IncidenteMovilPage implements OnInit {
   ) {
     const ahora = new Date();
     this.incidenteForm = this.fb.group({
-      vehiculoDisplay: [{ value: null, disabled: true }], 
+      vehiculoDisplay: [{ value: null, disabled: true }],
       vehiculoId: [null, Validators.required],
       fecha: [ahora.toISOString(), Validators.required],
       tipo: [null, Validators.required],
-      descripcion: ['', Validators.required]
+      descripcion: ['', Validators.required],
     });
   }
 
@@ -43,34 +48,34 @@ export class IncidenteMovilPage implements OnInit {
   }
 
   cargarVehiculoAsignado() {
-    this.isVehicleLoading = true; 
+    this.isVehicleLoading = true;
     const usuario = this.authService.getCurrentUser();
     if (!usuario) {
       this.presentToast('No se pudo identificar al conductor.');
-      this.isVehicleLoading = false; 
+      this.isVehicleLoading = false;
       return;
     }
 
-    this.apiService.getVehiculoActivo(usuario.idUsu).subscribe({
+    this.apiService.getVehiculoActivo(usuario.id_usu).subscribe({
       next: (vehiculo) => {
         if (vehiculo) {
           this.vehiculoAsignado = vehiculo;
-         
-          this.incidenteForm.patchValue({ 
+
+          this.incidenteForm.patchValue({
             vehiculoId: vehiculo.idVehi,
-            vehiculoDisplay: `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})`
+            vehiculoDisplay: `${vehiculo.marca} ${vehiculo.modelo} (${vehiculo.patente})`,
           });
         } else {
           this.presentToast('No tienes un vehículo asignado.');
           this.incidenteForm.disable();
         }
-        this.isVehicleLoading = false; 
+        this.isVehicleLoading = false;
       },
       error: () => {
         this.presentToast('Error al cargar la información del vehículo.');
         this.incidenteForm.disable();
-        this.isVehicleLoading = false; 
-      }
+        this.isVehicleLoading = false;
+      },
     });
   }
 
@@ -79,16 +84,17 @@ export class IncidenteMovilPage implements OnInit {
     if (file) {
       this.fotoFile = file;
       const reader = new FileReader();
-      reader.onload = () => { this.imageSrc = reader.result; };
+      reader.onload = () => {
+        this.imageSrc = reader.result;
+      };
       reader.readAsDataURL(file);
     }
   }
-  
 
   clearPhoto(fileInput: any) {
     this.imageSrc = null;
     this.fotoFile = null;
-    fileInput.value = ''; 
+    fileInput.value = '';
   }
 
   async registrarIncidente() {
@@ -105,9 +111,9 @@ export class IncidenteMovilPage implements OnInit {
       this.presentToast('Error de datos. No se puede registrar el incidente.');
       return;
     }
-    
+
     formData.append('vehiculoId', formValue.vehiculoId);
-    formData.append('conductorId', usuario.idUsu.toString());
+    formData.append('conductorId', usuario.id_usu.toString());
     formData.append('fecha', formValue.fecha);
     formData.append('tipo', formValue.tipo);
     formData.append('descripcion', formValue.descripcion);
@@ -124,12 +130,16 @@ export class IncidenteMovilPage implements OnInit {
       error: async (err) => {
         await this.presentToast('Error al notificar el incidente.');
         console.error(err);
-      }
+      },
     });
   }
-  
+
   async presentToast(message: string) {
-    const toast = await this.toastController.create({ message, duration: 3000, position: 'bottom' });
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+    });
     toast.present();
   }
 }
