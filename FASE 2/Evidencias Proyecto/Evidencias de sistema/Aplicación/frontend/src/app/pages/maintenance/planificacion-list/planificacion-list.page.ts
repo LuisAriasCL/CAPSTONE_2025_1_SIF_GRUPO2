@@ -282,6 +282,27 @@ export class PlanificacionListPage
     modal.onDidDismiss().then((result: any) => {
       if (result.data && result.data.planificacionUpdated) {
         this.cargarPlanificaciones();
+
+        // Mostrar notificación adicional si se generaron OTs para vehículos nuevos
+        if (
+          result.data.otsGeneradasEnEdicion &&
+          result.data.otsCreadas &&
+          result.data.otsCreadas.length > 0
+        ) {
+          const numNuevosVehiculos = result.data.otsCreadas.length;
+          this.mostrarToast(
+            `Se ${
+              numNuevosVehiculos === 1 ? 'generó' : 'generaron'
+            } ${numNuevosVehiculos} ${
+              numNuevosVehiculos === 1 ? 'orden' : 'órdenes'
+            } de trabajo para ${
+              numNuevosVehiculos === 1
+                ? 'el vehículo nuevo'
+                : 'los vehículos nuevos'
+            }.`,
+            'success'
+          );
+        }
       }
     });
 
