@@ -34,6 +34,7 @@ import {
   PlanificacionMantenimientoResumen,
 } from '../../../services/api.service'; // Ajusta la ruta
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-planificacion-form',
@@ -77,7 +78,8 @@ export class PlanificacionFormPage implements OnInit {
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     private modalCtrl: ModalController,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {
     addIcons({
       closeOutline,
@@ -305,15 +307,36 @@ export class PlanificacionFormPage implements OnInit {
 
     console.log('Datos de la planificación a enviar:', planData);
 
+    // Si estamos en modo edición, encontrar los vehículos nuevos
+    let nuevosVehiculosIds: number[] = [];
+    if (isEditMode && this.loadedVehiculosIds) {
+      nuevosVehiculosIds =
+        planData.vehiculosIds?.filter(
+          (id) => !this.loadedVehiculosIds.includes(id)
+        ) || [];
+
+      console.log('Vehículos nuevos detectados:', nuevosVehiculosIds);
+    }
+
+    // Obtener ID del usuario actual
+    const currentUser = this.authService.getCurrentUser();
+    const idUsuario = currentUser?.idUsu || 1;
+
     const apiCall = isEditMode
-      ? this.apiService.updatePlanificacion(
-          this.planId!,
-          planData as PlanificacionMantenimientoData
-        )
+      ? nuevosVehiculosIds.length > 0
+        ? this.apiService.updatePlanificacionConOts(
+            this.planId!,
+            planData as PlanificacionMantenimientoData,
+            nuevosVehiculosIds,
+            idUsuario
+          )
+        : this.apiService.updatePlanificacion(
+            this.planId!,
+            planData as PlanificacionMantenimientoData
+          )
       : this.apiService.crearPlanificacionConOts({
           ...(planData as PlanificacionMantenimientoData),
-          // En un entorno real, esto vendría del servicio de autenticación
-          idUsuarioSolicitante: 1, // TODO: Obtener del usuario autenticado
+          idUsuarioSolicitante: idUsuario,
         });
 
     apiCall.subscribe({
@@ -323,6 +346,20 @@ export class PlanificacionFormPage implements OnInit {
         let message: string;
         if (isEditMode) {
           message = `Planificación actualizada exitosamente.`;
+
+          // Si se generaron OTs para nuevos vehículos
+          if (response.otsGeneradas) {
+            const numVehiculosNuevos = nuevosVehiculosIds.length;
+            message += ` Se ${
+              numVehiculosNuevos === 1 ? 'generó' : 'generaron'
+            } ${numVehiculosNuevos} ${
+              numVehiculosNuevos === 1 ? 'orden' : 'órdenes'
+            } de trabajo para ${
+              numVehiculosNuevos === 1
+                ? 'el vehículo nuevo'
+                : 'los vehículos nuevos'
+            }.`;
+          }
         } else {
           // Construir mensaje con información de OTs creadas
           const planificacionNombre =
@@ -344,8 +381,11 @@ export class PlanificacionFormPage implements OnInit {
             planificacionUpdated: isEditMode,
             otsCreadas: !isEditMode
               ? response.data?.ordenesTrabajo || []
-              : undefined,
+              : response.otsGeneradas
+              ? nuevosVehiculosIds
+              : [],
             planificacionNombre: !isEditMode ? planData.descPlan : undefined,
+            otsGeneradasEnEdicion: isEditMode && response.otsGeneradas,
           });
         } else {
           if (!isEditMode) {

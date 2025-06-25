@@ -6,7 +6,7 @@ import {
   HttpParams,
 } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 
 // Interfaz para la respuesta de OSRM (como definimos antes)
@@ -320,9 +320,10 @@ export class ApiService {
       .post<any>(`${this.apiUrl}/planificaciones-v2`, data)
       .pipe(catchError(this.handleError));
   }
-getCostosCombustibleMes(): Observable<{ total: number }> {
+  getCostosCombustibleMes(): Observable<{ total: number }> {
     // Puedes pasar un parámetro de timeframe si tu backend lo soporta, ej: ?timeframe=last30days
-    return this.http.get<{ total: number }>(`${this.apiUrl}/stats/costo-combustible-mes`)
+    return this.http
+      .get<{ total: number }>(`${this.apiUrl}/stats/costo-combustible-mes`)
       .pipe(catchError(this.handleError));
   }
 
@@ -332,7 +333,8 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
    */
   getCostosMantenimientoMes(): Observable<{ total: number }> {
     // Puedes pasar un parámetro de timeframe si tu backend lo soporta
-    return this.http.get<{ total: number }>(`${this.apiUrl}/stats/costo-mantenimiento-mes`)
+    return this.http
+      .get<{ total: number }>(`${this.apiUrl}/stats/costo-mantenimiento-mes`)
       .pipe(catchError(this.handleError));
   }
 
@@ -341,7 +343,10 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
    * Asume que el backend devuelve { promedio: number }.
    */
   getEficienciaCombustiblePromedio(): Observable<{ promedio: number }> {
-    return this.http.get<{ promedio: number }>(`${this.apiUrl}/stats/eficiencia-combustible-promedio`)
+    return this.http
+      .get<{ promedio: number }>(
+        `${this.apiUrl}/stats/eficiencia-combustible-promedio`
+      )
       .pipe(catchError(this.handleError));
   }
 
@@ -350,7 +355,10 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
    * Asume que el backend devuelve { cantidad: number }.
    */
   getAlertasMantenimientoPendiente(): Observable<{ cantidad: number }> {
-    return this.http.get<{ cantidad: number }>(`${this.apiUrl}/stats/alertas-mantenimiento-pendiente`)
+    return this.http
+      .get<{ cantidad: number }>(
+        `${this.apiUrl}/stats/alertas-mantenimiento-pendiente`
+      )
       .pipe(catchError(this.handleError));
   }
 
@@ -359,7 +367,10 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
    * Asume que el backend devuelve { cantidad: number }.
    */
   getAlertasSiniestrosPendientes(): Observable<{ cantidad: number }> {
-    return this.http.get<{ cantidad: number }>(`${this.apiUrl}/stats/alertas-siniestros-pendientes`)
+    return this.http
+      .get<{ cantidad: number }>(
+        `${this.apiUrl}/stats/alertas-siniestros-pendientes`
+      )
       .pipe(catchError(this.handleError));
   }
   deleteUser(id_usu: number): Observable<{ message: string }> {
@@ -453,7 +464,7 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .put<Usuario>(`${this.apiUrl}/usuarios/${id_usu}`, data)
       .pipe(catchError(this.handleError));
   }
- getSiniestros(params?: { timeframe?: string }): Observable<Siniestro[]> {
+  getSiniestros(params?: { timeframe?: string }): Observable<Siniestro[]> {
     let httpParams = new HttpParams();
     if (params?.timeframe) {
       httpParams = httpParams.set('timeframe', params.timeframe);
@@ -651,6 +662,38 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .pipe(catchError(this.handleError));
   }
 
+  // Nuevo método para actualizar planificación y generar OTs para nuevos vehículos
+  updatePlanificacionConOts(
+    id: number,
+    data: Partial<PlanificacionMantenimientoData>,
+    nuevosVehiculosIds: number[],
+    idUsuario: number
+  ): Observable<any> {
+    // Primero actualizamos la planificación
+    return this.updatePlanificacion(id, data).pipe(
+      switchMap((response) => {
+        // Si no hay nuevos vehículos, retornamos la respuesta original
+        if (!nuevosVehiculosIds || nuevosVehiculosIds.length === 0) {
+          return of(response);
+        }
+
+        // Si hay nuevos vehículos, generamos OTs para ellos
+        return this.generarOtsParaPlan(id, nuevosVehiculosIds, idUsuario).pipe(
+          map((otsResponse) => {
+            // Combinamos las respuestas
+            return {
+              ...response,
+              otsGeneradas: true,
+              otsMessage: otsResponse.message,
+              nuevosVehiculosIds,
+            };
+          })
+        );
+      }),
+      catchError(this.handleError)
+    );
+  }
+
   deletePlanificacion(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/planificaciones-v2/${id}`)
@@ -687,7 +730,7 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .pipe(catchError(this.handleError));
   }
 
- // MODIFICADO: getVehicles ahora acepta un array de EstadoVehiculo para 'estado'
+  // MODIFICADO: getVehicles ahora acepta un array de EstadoVehiculo para 'estado'
   getVehicles(params?: {
     estado?: EstadoVehiculo | EstadoVehiculo[]; // <<-- CAMBIO AQUÍ: Añade | EstadoVehiculo[]
     tipo?: string;
@@ -695,7 +738,7 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
     let httpParams = new HttpParams();
     if (params?.estado) {
       if (Array.isArray(params.estado)) {
-        params.estado.forEach(s => {
+        params.estado.forEach((s) => {
           httpParams = httpParams.append('estado[]', s); // Envía como estado[]=mantenimiento&estado[]=taller
         });
       } else {

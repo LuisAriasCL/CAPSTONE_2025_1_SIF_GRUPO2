@@ -37,6 +37,9 @@ export class OrdenTrabajoListPage
   // Filtros específicos
   private _filterStatus: string = '';
 
+  // Filtros adicionales para fecha
+  private _filterDateRange: { from?: string; to?: string } = {};
+
   constructor() {
     const baseListService = inject(BaseListService<OrdenTrabajoResumen>);
     const toastController = inject(ToastController);
@@ -78,12 +81,40 @@ export class OrdenTrabajoListPage
   }
   getFilterConfig(): FilterConfig<OrdenTrabajoResumen> {
     return {
-      searchFields: ['vehiculo.patente', 'vehiculo.modelo'] as any,
+      searchFields: ['vehiculo.patente', 'vehiculo.modelo', 'id_ot'] as any,
       customFilters: {
         estado: (item: OrdenTrabajoResumen, value: string) => {
           // Obtener el estado de forma segura
           const estado = item.estado_ot || (item as any).estadoOt;
           return !value || estado === value;
+        },
+        dateRange: (orden: OrdenTrabajoResumen) => {
+          if (!this._filterDateRange.from && !this._filterDateRange.to) {
+            return true; // Sin filtro de fecha
+          }
+
+          const fechaInicio = orden.fec_ini_ot
+            ? new Date(orden.fec_ini_ot)
+            : null;
+
+          // Si no hay fecha de inicio en la orden, no cumple filtro
+          if (!fechaInicio) return false;
+
+          // Comprobar límite inferior (from)
+          if (this._filterDateRange.from) {
+            const fromDate = new Date(this._filterDateRange.from);
+            if (fechaInicio < fromDate) return false;
+          }
+
+          // Comprobar límite superior (to)
+          if (this._filterDateRange.to) {
+            const toDate = new Date(this._filterDateRange.to);
+            // Ajustar la fecha hasta el final del día
+            toDate.setHours(23, 59, 59, 999);
+            if (fechaInicio > toDate) return false;
+          }
+
+          return true;
         },
       },
     };
@@ -92,7 +123,9 @@ export class OrdenTrabajoListPage
   async loadData(): Promise<OrdenTrabajoResumen[]> {
     return new Promise((resolve, reject) => {
       this.apiService.getOrdenesTrabajo().subscribe({
-        next: (data) => resolve(data),
+        next: (data) => {
+          resolve(data);
+        },
         error: (error) => reject(error),
       });
     });
@@ -205,5 +238,77 @@ export class OrdenTrabajoListPage
     const estado = this.getEstadoOT(orden);
     if (!estado) return 'medium';
     return this.getColorForStatus(estado);
+  }
+
+  // Filtros adicionales para fecha
+  get filterDateFrom(): string | undefined {
+    return this._filterDateRange.from;
+  }
+
+  set filterDateFrom(value: string | undefined) {
+    this._filterDateRange.from = value;
+    this.applyDateFilter();
+  }
+
+  get filterDateTo(): string | undefined {
+    return this._filterDateRange.to;
+  }
+
+  set filterDateTo(value: string | undefined) {
+    this._filterDateRange.to = value;
+    this.applyDateFilter();
+  }
+
+  // Sobrescribir el método para aplicar filtros
+  override applyFilters() {
+    super.applyFilters();
+    this.sortOrdenesTrabajo();
+  }
+
+  // Método para aplicar el filtro de fecha
+  applyDateFilter() {
+    this.setFilter('dateRange', true); // Usar el filtro definido en getFilterConfig
+    this.applyFilters();
+  }
+
+  // Sobrescribir el método para limpiar filtros e incluir fechas
+  override clearFilters() {
+    super.clearFilters();
+    this._filterDateRange = {};
+    this.sortOrdenesTrabajo();
+  }
+
+  // Ordenar órdenes de trabajo por número de OT descendente
+  sortOrdenesTrabajo() {
+    // Obtener los elementos paginados
+    const items = [...this.paginatedItems];
+
+    // Ordenar por ID de OT en orden descendente
+    items.sort((a, b) => {
+      const idA = a.id_ot || 0;
+      const idB = b.id_ot || 0;
+      return idB - idA; // Orden descendente
+    });
+
+    // Actualizar los elementos paginados con el nuevo orden
+    // Esto se hace a través del servicio base
+    this.baseListService['paginatedItemsSubject'].next(items);
+  }
+
+  // Sobrescribir loadItems para ordenar después de cargar
+  override async loadItems(event?: any) {
+    await super.loadItems(event);
+    this.sortOrdenesTrabajo();
+  }
+
+  // Sobrescribir métodos de paginación para actualizar el orden
+  override nextPage() {
+    super.nextPage();
+    this.sortOrdenesTrabajo();
+  }
+
+  override previousPage() {
+    super.previousPage();
+    this.sortOrdenesTrabajo();
   }
 }
