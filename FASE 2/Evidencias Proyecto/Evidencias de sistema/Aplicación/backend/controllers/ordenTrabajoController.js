@@ -281,18 +281,57 @@ exports.actualizarDetallesOt = async (req, res) => {
     }
 
     for (const detalle of detalles) {
+      // Obtener el detalle actual de la base de datos para comparar cambios
+      const detalleActual = await DetalleOt.findOne({
+        where: {
+          id_det: detalle.id_det,
+          ordenTrabajoIdOt: idOt,
+        },
+        transaction: t,
+      });
+
+      if (!detalleActual) {
+        throw new Error(`Detalle con ID ${detalle.id_det} no encontrado`);
+      }
+
       const dataToUpdate = {
         checklist: detalle.checklist,
-
-        ...(detalle.usuario_id_usu_tecnico && {
-          usuario_id_usu_tecnico: detalle.usuario_id_usu_tecnico,
-        }),
       };
+
+      // Si se está asignando un técnico por primera vez, establecer fecha de inicio
+      if (
+        detalle.usuario_id_usu_tecnico &&
+        !detalleActual.usuario_id_usu_tecnico
+      ) {
+        dataToUpdate.usuario_id_usu_tecnico = detalle.usuario_id_usu_tecnico;
+        dataToUpdate.fec_ini_det = new Date(); // Fecha actual cuando se asigna el técnico
+      } else if (detalle.usuario_id_usu_tecnico) {
+        // Si ya había un técnico asignado, solo actualizar el técnico
+        dataToUpdate.usuario_id_usu_tecnico = detalle.usuario_id_usu_tecnico;
+      }
+
+      // Si la tarea se marca como completada por primera vez, establecer fecha de fin y calcular duración
+      if (detalle.checklist && !detalleActual.checklist) {
+        const fechaFin = new Date();
+        dataToUpdate.fec_fin_det = fechaFin;
+
+        // Calcular duración real en minutos si hay fecha de inicio
+        if (detalleActual.fec_ini_det) {
+          const fechaInicio = new Date(detalleActual.fec_ini_det);
+          const duracionMs = fechaFin.getTime() - fechaInicio.getTime();
+          const duracionMinutos = Math.round(duracionMs / (1000 * 60)); // Convertir a minutos
+          dataToUpdate.duracion_real_det = duracionMinutos;
+        }
+      }
+      // Si se desmarca la tarea (checklist = false), limpiar fecha de fin y duración
+      else if (!detalle.checklist && detalleActual.checklist) {
+        dataToUpdate.fec_fin_det = null;
+        dataToUpdate.duracion_real_det = null;
+      }
 
       await DetalleOt.update(dataToUpdate, {
         where: {
           id_det: detalle.id_det,
-
           ordenTrabajoIdOt: idOt,
         },
         transaction: t,
@@ -316,8 +355,8 @@ exports.actualizarEstadoOt = async (req, res) => {
     const { estado_ot, usuario_id_usu_encargado } = req.body;
 
     if (!estado_ot) {
-      return res.status(400).json({ 
-        message: 'El campo estado_ot es requerido.' 
+      return res.status(400).json({
+        message: 'El campo estado_ot es requerido.',
       });
     }
 
@@ -330,9 +369,9 @@ exports.actualizarEstadoOt = async (req, res) => {
     res.status(200).json(resultado);
   } catch (error) {
     console.error('Error al actualizar el estado de la OT:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: error.message || 'Error interno del servidor',
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -343,14 +382,14 @@ exports.rechazarOrdenTrabajo = async (req, res) => {
     const { motivo_rechazo, usuario_id } = req.body;
 
     if (!motivo_rechazo || motivo_rechazo.trim().length === 0) {
-      return res.status(400).json({ 
-        message: 'El motivo del rechazo es obligatorio.' 
+      return res.status(400).json({
+        message: 'El motivo del rechazo es obligatorio.',
       });
     }
 
     if (!usuario_id) {
-      return res.status(400).json({ 
-        message: 'El ID del usuario es obligatorio.' 
+      return res.status(400).json({
+        message: 'El ID del usuario es obligatorio.',
       });
     }
 
@@ -363,9 +402,9 @@ exports.rechazarOrdenTrabajo = async (req, res) => {
     res.status(200).json(resultado);
   } catch (error) {
     console.error('Error al rechazar la OT:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: error.message || 'Error interno del servidor',
-      error: error.message 
+      error: error.message,
     });
   }
 };
