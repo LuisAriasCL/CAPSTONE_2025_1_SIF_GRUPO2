@@ -248,9 +248,8 @@ exports.createUsuario = async (req, res) => {
 
 exports.checkRutExistence = async (req, res) => {
     try {
-        const { rut, id } = req.query; 
+        const { rut, id } = req.query;
 
-      
         console.log('[BACKEND LOG - checkRutExistence] RUT recibido:', rut);
         console.log('[BACKEND LOG - checkRutExistence] ID de usuario (para edición):', id);
 
@@ -259,29 +258,23 @@ exports.checkRutExistence = async (req, res) => {
             return res.status(400).json({ message: 'El parámetro RUT es requerido.' });
         }
 
-    
-        let cleanRutForQuery = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
-       
-        console.log('[BACKEND LOG - checkRutExistence] RUT limpio para consulta (cleanRutForQuery):', cleanRutForQuery);
+        // CAMBIO CLAVE: Ya NO limpiamos el RUT aquí. Buscamos el RUT tal cual se recibe.
+        const rutForQuery = rut; // Usamos el RUT recibido directamente
+        console.log('[BACKEND LOG - checkRutExistence] RUT para consulta (directo):', rutForQuery);
 
+        let whereClause = { rutUsu: rutForQuery };
 
-        let whereClause = { rutUsu: cleanRutForQuery }; 
-
-       
         if (id) {
             whereClause.idUsu = { [Op.ne]: id };
             console.log('[BACKEND LOG - checkRutExistence] Excluyendo usuario con ID:', id);
         }
 
-        
         console.log('[BACKEND LOG - checkRutExistence] Cláusula WHERE:', whereClause);
 
         const existingUser = await Usuario.findOne({ where: whereClause });
 
-     
         console.log('[BACKEND LOG - checkRutExistence] Resultado de Usuario.findOne:', existingUser ? existingUser.toJSON() : 'No encontrado');
 
-    
         const exists = !!existingUser;
         console.log('[BACKEND LOG - checkRutExistence] Resultado final (exists):', exists);
         res.status(200).json({ exists: exists });
@@ -289,5 +282,40 @@ exports.checkRutExistence = async (req, res) => {
     } catch (error) {
         console.error('[BACKEND LOG - checkRutExistence] Error en el controlador:', error);
         res.status(500).json({ message: 'Error interno del servidor al verificar RUT.' });
+    }
+};
+
+exports.checkEmailExistence = async (req, res) => {
+    try {
+        const { email, id } = req.query; // 'id' es opcional para excluir al propio usuario en edición
+
+        console.log('[BACKEND LOG - checkEmailExistence] Email recibido:', email);
+        console.log('[BACKEND LOG - checkEmailExistence] ID de usuario (para edición):', id);
+
+        if (!email) {
+            return res.status(400).json({ message: 'El parámetro Email es requerido.' });
+        }
+
+        let whereClause = { email: email };
+
+        // Si se proporciona un ID, excluir ese usuario de la búsqueda (para ediciones)
+        if (id) {
+            whereClause.idUsu = { [Op.ne]: id };
+            console.log('[BACKEND LOG - checkEmailExistence] Excluyendo usuario con ID:', id);
+        }
+
+        console.log('[BACKEND LOG - checkEmailExistence] Cláusula WHERE:', whereClause);
+
+        const existingUser = await Usuario.findOne({ where: whereClause });
+
+        console.log('[BACKEND LOG - checkEmailExistence] Resultado de Usuario.findOne:', existingUser ? existingUser.toJSON() : 'No encontrado');
+
+        const exists = !!existingUser;
+        console.log('[BACKEND LOG - checkEmailExistence] Resultado final (exists):', exists);
+        res.status(200).json({ exists: exists });
+
+    } catch (error) {
+        console.error('[BACKEND LOG - checkEmailExistence] Error en el controlador:', error);
+        res.status(500).json({ message: 'Error interno del servidor al verificar Email.' });
     }
 };

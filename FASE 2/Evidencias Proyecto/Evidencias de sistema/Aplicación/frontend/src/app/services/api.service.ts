@@ -467,6 +467,16 @@ getCostosCombustibleMes(): Observable<{ total: number }> {
       .get<Siniestro>(`${this.apiUrl}/siniestros/${id}`)
       .pipe(catchError(this.handleError));
   }
+  checkEmailExists(email: string, userId?: number): Observable<{ exists: boolean }> {
+    let params = new HttpParams().set('email', email);
+    if (userId) {
+      params = params.set('id', userId.toString()); // Pasa el ID del usuario actual para excluirlo
+    }
+    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/usuarios/check-email`, { params })
+      .pipe(
+        catchError(this.handleError) // Puedes usar handleError o un catchError más específico si lo prefieres
+      );
+  }
   updateSiniestroStatus(id: number, estado: string): Observable<any> {
     return this.http
       .put(`${this.apiUrl}/siniestros/${id}/estado`, { estado: estado })

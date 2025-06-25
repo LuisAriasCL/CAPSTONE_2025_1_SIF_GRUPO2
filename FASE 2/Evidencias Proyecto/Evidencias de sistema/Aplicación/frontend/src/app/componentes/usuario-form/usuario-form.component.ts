@@ -14,7 +14,7 @@ import {
 } from '@angular/forms';
 import { Usuario, ApiService } from 'src/app/services/api.service'; 
 import { AlertaPersonalizadaComponent } from '../alerta-personalizada/alerta-personalizada.component';
-import { debounceTime, switchMap, map, first, catchError, distinctUntilChanged, filter } from 'rxjs/operators'; // AÑADIDO: filter
+import { debounceTime, switchMap, map, first, catchError, distinctUntilChanged, filter } from 'rxjs/operators'; 
 import { of } from 'rxjs'; 
 
 
@@ -126,9 +126,10 @@ const passwordMatchValidator: ValidatorFn = (control: AbstractControl): { [key: 
 export class UsuarioFormComponent implements OnInit {
   @Input() usuario: Usuario | null = null;
   @Input() isViewMode: boolean = false;
+  // @Input() isEditMode ya no se necesita como @Input() si se deriva de 'usuario'
+  isEditMode = false; // Se moverá a ser una propiedad de la clase, derivada en ngOnInit
 
   form!: FormGroup;
-  isEditMode = false;
   isSubmitted = false;
   roles = ['admin', 'gestor', 'conductor', 'mantenimiento', 'tecnico'];
   private fb = inject(FormBuilder);
@@ -139,52 +140,77 @@ export class UsuarioFormComponent implements OnInit {
   // Validador asíncrono para verificar unicidad de RUT
   rutExistenceValidator(): AsyncValidatorFn {
     return (control: AbstractControl) => {
-      const rut = control.value as string; // Asegura que 'rut' es un string
-      const currentUserId = this.usuario?.id_usu; // Obtener el ID del usuario actual si está en modo edición
-
-      // LOG: RUT en validador asíncrono
-      console.log('Async RUT Validator: Validando RUT:', rut);
+      const rut = control.value as string; 
+      const currentUserId = this.usuario?.id_usu; 
       
-      // No validar si el RUT está vacío o si ya falló la validación síncrona (ej. formato inválido)
       if (!rut || control.errors?.['invalidRut'] || control.errors?.['invalidRutFormat']) {
-        console.log('Async RUT Validator: RUT vacío o formato/DV inválido, saltando verificación de existencia.');
         return of(null);
       }
 
-      // Si en modo edición y el RUT no ha cambiado, no es necesario re-chequear la existencia
+      // CLAVE PARA EDICIÓN: Si está en modo edición y el RUT no ha cambiado, no re-chequear la existencia
       if (this.isEditMode && this.usuario && rut === this.usuario.rut_usu) {
-        console.log('Async RUT Validator: Modo edición y RUT sin cambios, saltando verificación de existencia.');
         return of(null);
       }
 
-      // IMPORTANTE: Asegúrate de que el pipe de `valueChanges` solo se ejecute para la validación asíncrona
-      // y no cause un ciclo infinito de re-validación al actualizar el estado del control.
-      // El 'updateOn: blur' en la definición del control ya ayuda a limitar esto.
       return control.valueChanges.pipe(
         debounceTime(500), 
         distinctUntilChanged(), 
         switchMap(value => {
           if (!value) { 
-            console.log('Async RUT Validator: Valor después de debounce es nulo, validación pasa.');
             return of(null);
           }
-          console.log('Async RUT Validator: Llamando a checkRutExists para RUT:', value);
           return this.apiService.checkRutExists(value as string, currentUserId).pipe(
             map(response => {
-              console.log('Async RUT Validator: Respuesta de API checkRutExists:', response);
               if (response.exists) {
-                console.log('Async RUT Validator: RUT EXISTE, devolviendo error rutExists.');
                 return { rutExists: true }; 
               } else {
-                console.log('Async RUT Validator: RUT NO EXISTE, devolviendo null.');
                 return null; 
               }
             }),
-            // Manejo de errores de la API: si la API falla (ej. 500), no marcamos el RUT como existente,
-            // sino como "no verificado" o simplemente no bloqueamos la UI con un error de unicidad.
             catchError((err) => {
-                console.error('Async RUT Validator: Error en la llamada a checkRutExists:', err);
-                return of(null); // No queremos bloquear el formulario por un error de servidor aquí.
+                console.error('Error en la llamada a checkRutExists:', err);
+                return of(null); 
+            })
+          );
+        }),
+        first() 
+      );
+    };
+  }
+
+  // Validador asíncrono para verificar unicidad de Email
+  emailExistenceValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      const email = control.value as string;
+      const currentUserId = this.usuario?.id_usu;
+
+      if (!email || control.errors?.['email']) {
+        return of(null);
+      }
+
+      // CLAVE PARA EDICIÓN: Si está en modo edición y el email no ha cambiado, no re-chequear la existencia
+      if (this.isEditMode && this.usuario && email === this.usuario.email) {
+        return of(null);
+      }
+
+      return control.valueChanges.pipe(
+        debounceTime(500), 
+        distinctUntilChanged(), 
+        switchMap(value => {
+          if (!value) {
+            return of(null);
+          }
+          return this.apiService.checkEmailExists(value as string, currentUserId).pipe(
+            map(response => {
+              if (response.exists) {
+                return { emailExists: true }; 
+              } else {
+                return null; 
+              }
+            }),
+            catchError((err) => {
+                console.error('Error en la llamada a checkEmailExists:', err);
+                return of(null); 
             })
           );
         }),
@@ -195,7 +221,7 @@ export class UsuarioFormComponent implements OnInit {
 
 
   ngOnInit() {
-    this.isEditMode = !!this.usuario;
+    this.isEditMode = !!this.usuario; // SE DEFINE AQUÍ si es modo edición
 
     this.form = this.fb.group({
       pri_nom_usu: [this.usuario?.pri_nom_usu || '', [Validators.required, nameValidator]],
@@ -209,12 +235,17 @@ export class UsuarioFormComponent implements OnInit {
       }],
       email: [
         this.usuario?.email || '',
-        [Validators.required, Validators.email],
+        {
+          validators: [Validators.required, Validators.email],
+          asyncValidators: [this.emailExistenceValidator()], 
+          updateOn: 'blur' 
+        }
       ],
       celular: [this.usuario?.celular || '', cellphoneValidator],
       rol: [this.usuario?.rol || null, Validators.required],
+      // CLAVE Y CONFIRMCLAVE: Condicionalmente requeridos y con validadores solo si NO es isEditMode
       clave: ['', this.isEditMode ? [] : [Validators.required, Validators.minLength(6)]], 
-      confirmClave: ['', this.isEditMode ? [] : Validators.required], // Campo para confirmar contraseña
+      confirmClave: ['', this.isEditMode ? [] : Validators.required], 
       
       fec_emi_lic: [this.usuario?.fec_emi_lic || null],
       fec_ven_lic: [this.usuario?.fec_ven_lic || null],
@@ -227,6 +258,7 @@ export class UsuarioFormComponent implements OnInit {
         ]
     }); 
 
+    // Si está en modo vista, deshabilitar todos los controles
     if (this.isViewMode) {
       this.form.disable();
     }
@@ -235,7 +267,19 @@ export class UsuarioFormComponent implements OnInit {
       this.applyConditionalValidators(rol);
     });
 
-    this.applyConditionalValidators(this.form.get('rol')?.value);
+    // IMPORTANTE: Asegurarse de que el usuario ya se haya cargado antes de aplicar validadores condicionales
+    // Esto es especialmente relevante para los campos de licencia.
+    if (this.usuario) {
+      this.applyConditionalValidators(this.form.get('rol')?.value);
+      // Formatear fechas si vienen del backend como strings de fecha
+      if (this.usuario.fec_emi_lic) {
+        this.f['fec_emi_lic'].setValue(this.usuario.fec_emi_lic.split('T')[0]);
+      }
+      if (this.usuario.fec_ven_lic) {
+        this.f['fec_ven_lic'].setValue(this.usuario.fec_ven_lic.split('T')[0]);
+      }
+    }
+
 
     if (!this.isEditMode) {
       this.form.get('clave')?.valueChanges.subscribe(() => {
@@ -317,21 +361,23 @@ export class UsuarioFormComponent implements OnInit {
     this.isSubmitted = true;
     this.form.markAllAsTouched(); 
 
-    // IMPORTE: Esperar a que la validación asíncrona del RUT se complete
-    // Usamos `statusChanges` y `filter(status => status !== 'PENDING')` para esperar que el estado ya no sea PENDING
+    // IMPORTE: Esperar a que las validaciones asíncronas se completen
     if (this.f['rut_usu'].pending) {
-        console.log('Confirm: Validando RUT asíncronamente, esperando...');
-        // Espera hasta que el validador asíncrono del RUT termine
         await this.f['rut_usu'].statusChanges.pipe(
-            filter(status => status !== 'PENDING'), // Espera que no sea 'PENDING'
-            first() // Toma la primera emisión y completa
+            filter(status => status !== 'PENDING'), 
+            first()
         ).toPromise();
-        console.log('Confirm: Validación asíncrona del RUT completada.');
+    }
+    if (this.f['email'].pending) { 
+        await this.f['email'].statusChanges.pipe(
+            filter(status => status !== 'PENDING'), 
+            first()
+        ).toPromise();
     }
     
     if (!this.form.valid) {
       const errorMessage = this.getFormValidationErrors();
-      console.log("Validation Errors:", errorMessage); 
+      console.log("Errores de validación:", errorMessage); 
 
       let alertMessage = 'Por favor, revisa los campos con errores antes de continuar.';
       let alertTitle = 'Formulario Inválido';
@@ -343,8 +389,11 @@ export class UsuarioFormComponent implements OnInit {
       } else if (this.form.errors?.['futureEmissionDate']) {
         alertMessage = 'La fecha de emisión de la licencia no puede ser futura.';
       } else if (this.f['rut_usu'].errors?.['rutExists']) { 
-        alertMessage = `El RUT "${this.f['rut_usu'].value}" ya está registrado. Si deseas editarlo, búscalo en el listado de usuarios.`;
+        alertMessage = `El RUT "${this.f['rut_usu'].value}" ya está registrado. Por favor, utiliza otro RUT o edita el usuario existente.`;
         alertTitle = 'RUT Existente'; 
+      } else if (this.f['email'].errors?.['emailExists']) { 
+        alertMessage = `El email "${this.f['email'].value}" ya está registrado por otro usuario.`;
+        alertTitle = 'Email Existente';
       }
 
 
