@@ -176,9 +176,22 @@ class OrdenTrabajoController {
     } catch (error) {
       console.error('Error al actualizar el estado de la OT:', error);
 
+      // Errores específicos de validación de vehículo
+      if (
+        error.message.includes('está actualmente en mantenimiento') ||
+        error.message.includes('está inactivo')
+      ) {
+        return res.status(409).json({
+          error: error.message,
+          tipo: 'validacion_vehiculo',
+        });
+      }
+
+      // Otros errores de validación
       if (
         error.message.includes('no válido') ||
-        error.message.includes('no encontrado')
+        error.message.includes('no encontrado') ||
+        error.message.includes('No se puede cambiar')
       ) {
         return res.status(400).json({
           error: error.message,
@@ -244,6 +257,103 @@ class OrdenTrabajoController {
     }
   }
 
+  /**
+   * @desc    Rechaza una orden de trabajo con motivo
+   * @route   PUT /api/ordenes-trabajo/:id/rechazar
+   * @access  Private
+   */
+  async rechazarOrdenTrabajo(req, res) {
+    try {
+      const { id } = req.params;
+      const { motivo_rechazo } = req.body;
+      const usuarioId = req.usuario?.id_usu; // Obtener ID del usuario desde el token
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          error: 'ID de orden de trabajo inválido.',
+        });
+      }
+
+      if (!motivo_rechazo || motivo_rechazo.trim().length === 0) {
+        return res.status(400).json({
+          error: 'El motivo del rechazo es obligatorio.',
+        });
+      }
+
+      const resultado = await ordenTrabajoService.rechazarOrdenTrabajo(
+        parseInt(id),
+        motivo_rechazo.trim(),
+        usuarioId
+      );
+
+      res.status(200).json(resultado);
+    } catch (error) {
+      console.error('Error al rechazar la orden de trabajo:', error);
+
+      if (
+        error.message.includes('no encontrada') ||
+        error.message.includes('no válido')
+      ) {
+        return res.status(400).json({
+          error: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Error interno del servidor al rechazar la orden de trabajo.',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  }
+
+  /**
+   * @desc    Actualiza los detalles de una orden de trabajo
+   * @route   PUT /api/ordenes-trabajo/:id/detalles
+   * @access  Private
+   */
+  async actualizarDetallesOt(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          error: 'ID de orden de trabajo inválido.',
+        });
+      }
+
+      const resultado = await ordenTrabajoService.actualizarDetallesOt(
+        parseInt(id),
+        req.body
+      );
+
+      res.status(200).json(resultado);
+    } catch (error) {
+      console.error('Error al actualizar detalles de la OT:', error);
+
+      if (
+        error.message.includes('no encontrada') ||
+        error.message.includes('no encontrado')
+      ) {
+        return res.status(404).json({
+          error: error.message,
+        });
+      }
+
+      if (error.message.includes('no válido')) {
+        return res.status(400).json({
+          error: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: 'Error interno del servidor al actualizar los detalles.',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  }
+
   // Métodos privados para procesamiento de datos
 
   /**
@@ -298,6 +408,12 @@ module.exports = {
     ordenTrabajoController
   ),
   getMantenimientoReport: ordenTrabajoController.getMantenimientoReport.bind(
+    ordenTrabajoController
+  ),
+  rechazarOrdenTrabajo: ordenTrabajoController.rechazarOrdenTrabajo.bind(
+    ordenTrabajoController
+  ),
+  actualizarDetallesOt: ordenTrabajoController.actualizarDetallesOt.bind(
     ordenTrabajoController
   ),
 };

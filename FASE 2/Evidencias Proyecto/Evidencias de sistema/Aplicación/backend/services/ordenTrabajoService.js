@@ -166,7 +166,7 @@ class OrdenTrabajoService {
         {
           model: Vehiculo,
           as: 'vehiculo',
-          attributes: ['patente', 'marca', 'modelo'],
+          attributes: ['id_vehi', 'patente', 'marca', 'modelo'],
         },
         {
           model: Usuario,
@@ -196,13 +196,24 @@ class OrdenTrabajoService {
       throw new Error('Orden de trabajo no encontrada');
     }
 
-    return ordenTrabajo;
+    // Agregar el vehiculo_id_vehi directamente en la respuesta para facilitar el acceso desde el frontend
+    const result = ordenTrabajo.toJSON();
+    if (result.vehiculo && result.vehiculo.id_vehi) {
+      result.vehiculo_id_vehi = result.vehiculo.id_vehi;
+    }
+
+    return result;
   }
 
   /**
    * Actualiza el estado de una orden de trabajo con validación de transiciones
    */
-  async actualizarEstadoOt(id, nuevoEstado, encargadoId = null, motivoRechazo = null) {
+  async actualizarEstadoOt(
+    id,
+    nuevoEstado,
+    encargadoId = null,
+    motivoRechazo = null
+  ) {
     // Validar que el estado sea válido
     if (!Object.values(ESTADOS_ORDEN_TRABAJO).includes(nuevoEstado)) {
       throw new Error(`Estado '${nuevoEstado}' no es válido`);
@@ -216,6 +227,11 @@ class OrdenTrabajoService {
 
     // Validar transiciones de estado permitidas
     this._validarTransicionEstado(otActual.estado_ot, nuevoEstado);
+
+    // Validar estado del vehículo si se intenta poner la OT en progreso
+    if (nuevoEstado === ESTADOS_ORDEN_TRABAJO.EN_PROGRESO) {
+      await this._validarEstadoVehiculoParaOt(otActual.vehiculoIdVehi);
+    }
 
     const updateData = { estado_ot: nuevoEstado };
 
@@ -247,11 +263,11 @@ class OrdenTrabajoService {
       throw new Error('Orden de trabajo no encontrada');
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: this._getMensajeEstado(nuevoEstado),
       estadoAnterior: otActual.estado_ot,
-      estadoNuevo: nuevoEstado
+      estadoNuevo: nuevoEstado,
     };
   }
 
@@ -264,9 +280,9 @@ class OrdenTrabajoService {
     }
 
     return await this.actualizarEstadoOt(
-      id, 
-      ESTADOS_ORDEN_TRABAJO.RECHAZADO, 
-      usuarioId, 
+      id,
+      ESTADOS_ORDEN_TRABAJO.RECHAZADO,
+      usuarioId,
       motivoRechazo
     );
   }
@@ -297,6 +313,81 @@ class OrdenTrabajoService {
       ],
       order: [['fec_ini_ot', 'DESC']],
     });
+  }
+
+  /**
+   * Actualiza los detalles de una orden de trabajo
+   */
+  async actualizarDetallesOt(id, datosActualizacion) {
+    const { km_ot, descripcion_ot, detalles } = datosActualizacion;
+
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // Verificar que la OT existe
+      const ordenTrabajo = await OrdenTrabajo.findByPk(id, { transaction });
+      if (!ordenTrabajo) {
+        throw new Error('Orden de trabajo no encontrada');
+      }
+
+      // Actualizar datos principales de la OT
+      const updateDataOt = {};
+      if (km_ot !== undefined) updateDataOt.km_ot = km_ot;
+      if (descripcion_ot !== undefined)
+        updateDataOt.descripcion_ot = descripcion_ot;
+
+      if (Object.keys(updateDataOt).length > 0) {
+        await OrdenTrabajo.update(updateDataOt, {
+          where: { id_ot: id },
+          transaction,
+        });
+      }
+
+      // Actualizar detalles si se proporcionan
+      if (detalles && Array.isArray(detalles)) {
+        for (const detalle of detalles) {
+          const { id_det, checklist, usuario_id_usu_tecnico } = detalle;
+
+          if (!id_det) continue;
+
+          const updateDataDetalle = {};
+          if (checklist !== undefined) updateDataDetalle.checklist = checklist;
+          if (detalle.desc_det !== undefined)
+            updateDataDetalle.desc_det = detalle.desc_det; // Permitir actualizar desc_det
+          if (usuario_id_usu_tecnico !== undefined) {
+            // Validar que el técnico existe si se proporciona un ID
+            if (usuario_id_usu_tecnico !== null) {
+              const tecnico = await Usuario.findByPk(usuario_id_usu_tecnico, {
+                transaction,
+              });
+              if (!tecnico) {
+                throw new Error(
+                  `Usuario técnico con ID ${usuario_id_usu_tecnico} no encontrado`
+                );
+              }
+            }
+            updateDataDetalle.usuarioIdUsuTecnico = usuario_id_usu_tecnico;
+          }
+
+          if (Object.keys(updateDataDetalle).length > 0) {
+            await DetalleOt.update(updateDataDetalle, {
+              where: { id_det: id_det },
+              transaction,
+            });
+          }
+        }
+      }
+
+      await transaction.commit();
+
+      return {
+        success: true,
+        message: 'Detalles de la orden de trabajo actualizados correctamente',
+      };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   // Métodos privados para organizar la lógica
@@ -537,11 +628,11 @@ class OrdenTrabajoService {
       [ESTADOS_ORDEN_TRABAJO.SIN_INICIAR]: [
         ESTADOS_ORDEN_TRABAJO.EN_PROGRESO,
         ESTADOS_ORDEN_TRABAJO.RECHAZADO,
-        ESTADOS_ORDEN_TRABAJO.CANCELADA
+        ESTADOS_ORDEN_TRABAJO.CANCELADA,
       ],
       [ESTADOS_ORDEN_TRABAJO.EN_PROGRESO]: [
         ESTADOS_ORDEN_TRABAJO.COMPLETADA,
-        ESTADOS_ORDEN_TRABAJO.CANCELADA
+        ESTADOS_ORDEN_TRABAJO.CANCELADA,
       ],
       [ESTADOS_ORDEN_TRABAJO.COMPLETADA]: [], // Estado final
       [ESTADOS_ORDEN_TRABAJO.RECHAZADO]: [], // Estado final
@@ -549,11 +640,11 @@ class OrdenTrabajoService {
     };
 
     const estadosPermitidos = transicionesPermitidas[estadoActual] || [];
-    
+
     if (!estadosPermitidos.includes(nuevoEstado)) {
       throw new Error(
         `No se puede cambiar de estado '${estadoActual}' a '${nuevoEstado}'. ` +
-        `Estados permitidos: ${estadosPermitidos.join(', ')}`
+          `Estados permitidos: ${estadosPermitidos.join(', ')}`
       );
     }
   }
@@ -565,12 +656,43 @@ class OrdenTrabajoService {
     const mensajes = {
       [ESTADOS_ORDEN_TRABAJO.SIN_INICIAR]: 'Orden de trabajo creada',
       [ESTADOS_ORDEN_TRABAJO.EN_PROGRESO]: 'Orden de trabajo iniciada',
-      [ESTADOS_ORDEN_TRABAJO.COMPLETADA]: 'Orden de trabajo completada exitosamente',
+      [ESTADOS_ORDEN_TRABAJO.COMPLETADA]:
+        'Orden de trabajo completada exitosamente',
       [ESTADOS_ORDEN_TRABAJO.RECHAZADO]: 'Orden de trabajo rechazada',
       [ESTADOS_ORDEN_TRABAJO.CANCELADA]: 'Orden de trabajo cancelada',
     };
 
     return mensajes[estado] || 'Estado actualizado correctamente';
+  }
+
+  /**
+   * Valida que el vehículo esté disponible para iniciar una OT
+   */
+  async _validarEstadoVehiculoParaOt(vehiculoId) {
+    if (!vehiculoId) {
+      throw new Error('ID de vehículo no proporcionado');
+    }
+
+    const vehiculo = await Vehiculo.findByPk(vehiculoId);
+    if (!vehiculo) {
+      throw new Error('Vehículo no encontrado');
+    }
+
+    if (vehiculo.estadoVehi === 'mantenimiento') {
+      throw new Error(
+        `El vehículo ${vehiculo.patente} está actualmente en mantenimiento. No se puede iniciar una nueva orden de trabajo hasta que se complete el mantenimiento actual.`
+      );
+    }
+
+    if (vehiculo.estadoVehi === 'inactivo') {
+      throw new Error(
+        `El vehículo ${vehiculo.patente} está inactivo. No se pueden realizar órdenes de trabajo en vehículos inactivos.`
+      );
+    }
+
+    console.log(
+      `✅ Vehículo ${vehiculo.patente} disponible para iniciar OT (estado: ${vehiculo.estadoVehi})`
+    );
   }
 }
 
