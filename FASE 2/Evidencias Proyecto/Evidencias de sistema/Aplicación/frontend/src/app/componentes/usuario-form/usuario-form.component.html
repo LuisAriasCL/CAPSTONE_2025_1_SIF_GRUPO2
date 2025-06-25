@@ -48,11 +48,9 @@
                 <div *ngIf="f['rut_usu'].errors?.['invalidRut']">
                   El RUT no es válido.
                 </div>
-                <!-- MENSAJE DE ERROR PARA RUT YA EXISTENTE -->
                 <div *ngIf="f['rut_usu'].errors?.['rutExists']">
                   Este RUT ya está registrado.
                 </div>
-                <!-- INDICADOR DE CARGA PARA VALIDACIÓN ASÍNCRONA -->
                 <div *ngIf="f['rut_usu'].pending">
                   Verificando RUT...
                 </div>
@@ -205,6 +203,12 @@
                 <div *ngIf="f['email'].errors?.['email']">
                   El formato del email no es válido.
                 </div>
+                <div *ngIf="f['email'].errors?.['emailExists']">
+                  Este email ya está registrado.
+                </div>
+                <div *ngIf="f['email'].pending">
+                  Verificando email...
+                </div>
               </div>
             </div>
           </div>
@@ -320,7 +324,6 @@
                   <div *ngIf="f['confirmClave'].errors?.['required']">
                     Debe confirmar la contraseña.
                   </div>
-                  <!-- MENSAJE DE ERROR PARA CONTRASEÑAS NO COINCIDENTES -->
                   <div *ngIf="form.errors?.['passwordMismatch']">
                     Las contraseñas no coinciden.
                   </div>

@@ -250,6 +250,22 @@ ion-label {
   background-color: rgba(var(--ion-color-danger-rgb), 0.1);
 }
 
+.status-solicitado {
+  color: var(--ion-color-primary);
+}
+
+.status-en-progreso {
+  color: var(--ion-color-warning);
+}
+
+.status-completado {
+  color: var(--ion-color-success);
+}
+
+.status-cancelado {
+  color: var(--ion-color-danger);
+}
+
 // --- Responsive Design ---
 
 // Tablets (768px - 1199px)

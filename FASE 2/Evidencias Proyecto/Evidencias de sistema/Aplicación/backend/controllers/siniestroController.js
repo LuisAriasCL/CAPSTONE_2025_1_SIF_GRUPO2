@@ -139,3 +139,49 @@ exports.updateSiniestroStatus = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
+exports.updateSiniestro = async (req, res) => {
+    // LOG: Confirma que la función updateSiniestro se está ejecutando
+    console.log(`[SiniestroController - updateSiniestro] Iniciando actualización para ID: ${req.params.id}`);
+    console.log('[SiniestroController - updateSiniestro] Body recibido:', req.body);
+
+    try {
+        const { id } = req.params;
+        const { descripcion, estado, ...otherUpdates } = req.body; // Puedes extraer otros campos si los quieres manejar aquí
+
+        const siniestro = await Siniestro.findByPk(id);
+        if (!siniestro) {
+            console.log(`[SiniestroController - updateSiniestro] Siniestro con ID ${id} no encontrado.`);
+            return res.status(404).json({ message: 'Siniestro no encontrado.' });
+        }
+
+        // Crear un objeto con los campos que realmente queremos actualizar
+        const dataToUpdate = {};
+        if (descripcion !== undefined) {
+            dataToUpdate.descripcion = descripcion;
+        }
+        if (estado !== undefined) { // Puedes actualizar el estado aquí también si quieres un PUT genérico
+            dataToUpdate.estado = estado;
+        }
+        // Puedes añadir otros campos si el frontend los enviara
+        Object.assign(dataToUpdate, otherUpdates); // Asegura que otros campos enviados también se actualicen
+
+        // Si no hay datos para actualizar, no hacemos nada
+        if (Object.keys(dataToUpdate).length === 0) {
+            console.log('[SiniestroController - updateSiniestro] No hay datos para actualizar.');
+            return res.status(400).json({ message: 'No hay datos para actualizar.' });
+        }
+
+        console.log('[SiniestroController - updateSiniestro] Datos a actualizar:', dataToUpdate);
+        await siniestro.update(dataToUpdate);
+        console.log('[SiniestroController - updateSiniestro] Siniestro actualizado exitosamente.');
+        res.status(200).json(siniestro);
+
+    } catch (error) {
+        console.error('[SiniestroController - updateSiniestro] Error durante la actualización:', error);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(e => e.message);
+            return res.status(400).json({ message: 'Datos inválidos', errors });
+        }
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+};

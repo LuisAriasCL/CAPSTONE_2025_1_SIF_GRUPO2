@@ -4,7 +4,7 @@ const router = express.Router();
 const usuarioController = require('../controllers/usuarioController');
 router.get('/check-rut', usuarioController.checkRutExistence); 
 
-
+router.get('/check-email', usuarioController.checkEmailExistence); 
 router.get('/', usuarioController.getUsuarios);
 
 router.get('/', usuarioController.getUsuarios);
