@@ -144,17 +144,17 @@
                 <strong>Tareas:</strong> {{ plan.tareas?.length || 0 }} |
                 <strong>Vehículos:</strong> {{ plan.vehiculosEnPlan?.length || 0
                 }}
-              <p>
+            <p>
   <ion-icon
     name="car-outline"
     color="warning"
     class="align-middle"
   ></ion-icon>
-  <strong>Patentes:</strong>
+  <strong>Vehículos:</strong>
   <ng-container *ngIf="plan.vehiculosEnPlan && plan.vehiculosEnPlan.length > 0; else sinVehiculos">
     <span *ngFor="let vehiculo of plan.vehiculosEnPlan; let i = index">
-      {{ vehiculo.patente }}
-      <span *ngIf="plan.vehiculosEnPlan && i < plan.vehiculosEnPlan.length - 1">, </span>
+      {{ vehiculo.patente }} ({{ vehiculo.marca }} {{ vehiculo.modelo }})
+      <span *ngIf="i < plan.vehiculosEnPlan.length - 1">, </span>
     </span>
   </ng-container>
   <ng-template #sinVehiculos>No asignados</ng-template>
@@ -197,19 +197,7 @@
             size-md="3"
             class="ion-text-md-end ion-text-center action-buttons"
           >
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="generarOt(plan)"
-              title="Generar Orden de Trabajo"
-              [disabled]="!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0"
-            >
-              <ion-icon
-                slot="icon-only"
-                name="settings-outline"
-                color="success"
-              ></ion-icon>
-            </ion-button>
+         
             <ion-button
               fill="clear"
               size="small"
