@@ -175,20 +175,43 @@ export class AsignacionListPage
     }
   }
 
-  async viewOrEditAsignacion(idAsig?: number) {
+  async viewOrEditAsignacion(idAsig?: number, isViewMode: boolean = false) {
     if (idAsig === undefined) return;
+
+    // Si va a editar, primero verificamos el estado de la asignación
+    if (!isViewMode) {
+      const asignacion = this.allItems.find(
+        (item) => (item.idAsig || (item as any).id_asig) === idAsig
+      );
+
+      if (asignacion) {
+        const estado = this.getEstado(asignacion);
+        if (estado === 'en_progreso' || estado === 'completado') {
+          await this.showErrorAlert(
+            'Edición no permitida',
+            `No se pueden modificar recorridos en estado "${this.getEstadoDisplay(
+              estado
+            )}".`
+          );
+          return;
+        }
+      }
+    }
+
     const modal = await this.modalCtrl.create({
       component: AsignacionFormPage,
       componentProps: {
         asignacionId: idAsig,
-        isEditMode: true,
-        isViewMode: false,
+        isEditMode: !isViewMode,
+        isViewMode: isViewMode,
       },
       cssClass: 'asignacion-form-modal',
       backdropDismiss: false,
     });
+
     await modal.present();
     const { data } = await modal.onDidDismiss();
+
     if (data?.dataChanged) {
       this.loadItems();
     }

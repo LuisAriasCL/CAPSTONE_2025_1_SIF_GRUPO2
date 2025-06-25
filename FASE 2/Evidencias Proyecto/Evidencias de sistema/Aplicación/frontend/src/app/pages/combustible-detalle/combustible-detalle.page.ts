@@ -42,7 +42,19 @@ export class CombustibleDetallePage implements OnInit {
   }
 
   cargarRegistro() {
+    console.log(
+      'Intentando cargar registro con ID:',
+      this.registroId,
+      'tipo:',
+      typeof this.registroId
+    );
+
     if (!this.registroId) {
+      console.error('ID de registro no proporcionado');
+      this.mostrarToast(
+        'No se pudo cargar el registro: ID no proporcionado',
+        'danger'
+      );
       this.closeModal();
       return;
     }
@@ -50,15 +62,30 @@ export class CombustibleDetallePage implements OnInit {
     this.isLoading = true;
     this.apiService.getCombustibleById(this.registroId).subscribe({
       next: (data) => {
+        console.log('Datos recibidos del API:', data);
+        if (!data) {
+          console.error('API devolvió datos vacíos');
+          this.mostrarToast('No se encontró el registro solicitado', 'warning');
+          this.closeModal();
+          return;
+        }
+
         this.registro = data;
         this.isLoading = false;
-        this.pageTitle = `Registro #${data.id}`;
+
+        // Usar ID de forma más flexible
+        const registroId = data.id || data.idReg || data.id_reg;
+        this.pageTitle = registroId
+          ? `Registro #${registroId}`
+          : 'Detalle de Combustible';
       },
       error: (err) => {
         console.error('Error cargando registro:', err);
         this.isLoading = false;
         this.mostrarToast(
-          'Error al cargar el registro de combustible.',
+          `Error al cargar el registro: ${err.status} - ${
+            err.message || 'Error desconocido'
+          }`,
           'danger'
         );
         this.closeModal();

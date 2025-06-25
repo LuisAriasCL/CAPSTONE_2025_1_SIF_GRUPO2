@@ -190,8 +190,26 @@ export class AsignacionFormPage implements OnInit {
       this.isLoading = false;
       return;
     }
+
     this.apiService.getAsignacionRecorrido(this.asignacionId).subscribe({
       next: (asignacion) => {
+        // Verificar si la asignación está en un estado que no permite edición
+        if (this.isEditMode && !this.isViewMode) {
+          const estado = asignacion.estadoAsig || '';
+          if (estado === 'en_progreso' || estado === 'completado') {
+            this.isLoading = false;
+            this.showErrorAlert(
+              'Edición no permitida',
+              `No se pueden modificar recorridos en estado "${this.getEstadoDisplay(
+                estado
+              )}".`
+            );
+            this.closeModal();
+            return;
+          }
+        }
+
+        // Continuar con la carga de datos si la edición es permitida
         this.asignacionForm.patchValue({
           ...asignacion,
           usuarioIdUsu: asignacion.conductor?.idUsu || null,
@@ -421,5 +439,21 @@ export class AsignacionFormPage implements OnInit {
       }
     });
     return errors;
+  }
+
+  // Método auxiliar para mostrar el estado de forma legible
+  private getEstadoDisplay(estado: string): string {
+    switch (estado) {
+      case 'en_progreso':
+        return 'En Progreso';
+      case 'completado':
+        return 'Completado';
+      case 'cancelado':
+        return 'Cancelado';
+      case 'asignado':
+        return 'Asignado';
+      default:
+        return estado.charAt(0).toUpperCase() + estado.slice(1);
+    }
   }
 }

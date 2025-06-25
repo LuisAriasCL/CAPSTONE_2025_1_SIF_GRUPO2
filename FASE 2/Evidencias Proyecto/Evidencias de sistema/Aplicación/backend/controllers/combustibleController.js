@@ -99,14 +99,7 @@ exports.getHistorialPorConductor = async (req, res) => {
 exports.getCombustibleById = async (req, res) => {
   try {
     const { id } = req.params;
-    const registro = await RegistroCombustible.findByPk(id, {
-      include: [
-        {
-          model: Usuario,
-          attributes: ['pri_nom_usu', 'pri_ape_usu'],
-        },
-      ],
-    });
+    const registro = await RegistroCombustible.findByPk(id, {});
 
     if (!registro) {
       return res
