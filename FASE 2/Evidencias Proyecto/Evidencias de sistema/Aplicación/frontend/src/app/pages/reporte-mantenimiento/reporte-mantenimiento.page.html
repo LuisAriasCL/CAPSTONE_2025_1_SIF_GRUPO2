@@ -7,7 +7,20 @@
   >
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-
+<ion-row>
+    <ion-col size="12">
+      <ion-card class="welcome-card glass-effect"> <!-- Reutilizamos las clases del dashboard -->
+        <ion-card-content class="ion-text-center">
+          <ion-text color="primary">
+            <h1 class="ion-no-margin welcome-title">Reporte de Mantenimientos</h1> <!-- Título principal -->
+          </ion-text>
+          <p class="ion-text-wrap dashboard-intro-text"> <!-- Reutilizamos la clase para la descripción -->
+            Genera y visualiza informes detallados sobre todas las órdenes de trabajo. Aplica filtros por fechas y vehículos para obtener análisis específicos.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
   <!-- Card de Filtros -->
   <ion-card class="filters-card" *ngIf="!isLoading">
     <ion-card-header>

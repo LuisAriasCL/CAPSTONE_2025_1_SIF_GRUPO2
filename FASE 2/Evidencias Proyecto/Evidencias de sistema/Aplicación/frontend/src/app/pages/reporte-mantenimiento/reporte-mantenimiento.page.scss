@@ -124,6 +124,45 @@ ion-label {
   color: var(--ion-color-medium-shade);
   letter-spacing: 0.5px;
 }
+.welcome-card {
+  margin: 20px 10px 30px; /* Margen superior e inferior para separarla */
+  padding: 10px 0; /* Padding interno para el contenido */
+  border-radius: 15px; 
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); 
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border: none;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  ion-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .welcome-title {
+    font-size: 1.7em; 
+    font-weight: 600; 
+    color: var(--ion-color-primary); 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); 
+    margin-bottom: 10px; 
+  }
+
+  .dashboard-intro-text { 
+    font-size: 1.0em; 
+    color: var(--ion-color-medium-shade); 
+    line-height: 1.6;
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 0 15px; 
+  }
+}
 
 // Preservar estilos existentes para la vista original
 .list-header {

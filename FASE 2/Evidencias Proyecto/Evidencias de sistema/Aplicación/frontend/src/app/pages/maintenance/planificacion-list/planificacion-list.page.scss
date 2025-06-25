@@ -14,7 +14,45 @@ ion-fab-button {
     color: white !important;
   }
 }
+.welcome-card {
+  margin: 20px 10px 30px; 
+  padding: 10px 0; 
+  border-radius: 15px; // Asegura que la tarjeta de bienvenida tenga el mismo border-radius
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border: none;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
 
+  ion-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .welcome-title {
+    font-size: 1.6em; 
+    font-weight: 600; 
+    color: var(--ion-color-primary); 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); 
+    margin-bottom: 10px; 
+  }
+
+  .dashboard-intro-text { // Renombrado de .page-description-text a .dashboard-intro-text para reusar estilos
+    font-size: 1.0em; 
+    color: var(--ion-color-medium-shade); 
+    line-height: 1.6;
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 0 10px; 
+  }
+}
 // Estilos para la tabla/rejilla de planificaciones
 
 .header-row {

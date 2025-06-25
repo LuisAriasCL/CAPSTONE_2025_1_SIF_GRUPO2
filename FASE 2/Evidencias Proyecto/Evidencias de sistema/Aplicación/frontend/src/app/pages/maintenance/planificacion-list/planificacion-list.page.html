@@ -8,7 +8,20 @@
     </ion-refresher-content>
   </ion-refresher>
   <ion-loading [isOpen]="isLoading" message="Cargando..."></ion-loading>
-
+<ion-row>
+    <ion-col size="12">
+      <ion-card class="welcome-card glass-effect"> <!-- Usamos ion-card para el mismo estilo que el dashboard -->
+        <ion-card-content class="ion-text-center">
+          <ion-text color="primary">
+            <h1 class="ion-no-margin welcome-title">Gestión de Planes de Mantenimiento</h1>
+          </ion-text>
+          <p class="ion-text-wrap dashboard-intro-text">
+            Administra de manera eficiente los planes de mantenimiento preventivo y correctivo de tu flota. Aquí puedes crear, editar, visualizar y generar órdenes de trabajo para cada plan.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
   <!-- Filtros -->
   <ion-card class="filters-card" *ngIf="!isLoading">
     <ion-card-header>
