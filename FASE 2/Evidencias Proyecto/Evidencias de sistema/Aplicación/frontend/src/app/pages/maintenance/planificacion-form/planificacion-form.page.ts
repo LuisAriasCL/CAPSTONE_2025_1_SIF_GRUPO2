@@ -310,18 +310,31 @@ export class PlanificacionFormPage implements OnInit {
           this.planId!,
           planData as PlanificacionMantenimientoData
         )
-      : this.apiService.crearPlanificacion(
-          planData as PlanificacionMantenimientoData
-        );
+      : this.apiService.crearPlanificacionConOts({
+          ...(planData as PlanificacionMantenimientoData),
+          // En un entorno real, esto vendría del servicio de autenticación
+          idUsuarioSolicitante: 1, // TODO: Obtener del usuario autenticado
+        });
 
     apiCall.subscribe({
       next: async (response) => {
         await loading.dismiss();
-        const message = isEditMode
-          ? `Planificación actualizada exitosamente.`
-          : `Planificación "${
-              response.planificacion?.descPlan || planData.descPlan
-            }" creada exitosamente.`;
+
+        let message: string;
+        if (isEditMode) {
+          message = `Planificación actualizada exitosamente.`;
+        } else {
+          // Construir mensaje con información de OTs creadas
+          const planificacionNombre =
+            response.data?.planificacion?.descPlan || planData.descPlan;
+          const otsCreadas = response.data?.ordenesTrabajo || [];
+
+          message = `Planificación "${planificacionNombre}" creada exitosamente.`;
+
+          if (otsCreadas.length > 0) {
+            message += ` Se generaron automáticamente ${otsCreadas.length} orden(es) de trabajo.`;
+          }
+        }
 
         this.mostrarToast(message, 'success');
 
@@ -329,6 +342,10 @@ export class PlanificacionFormPage implements OnInit {
           await this.closeModal({
             planificacionCreated: !isEditMode,
             planificacionUpdated: isEditMode,
+            otsCreadas: !isEditMode
+              ? response.data?.ordenesTrabajo || []
+              : undefined,
+            planificacionNombre: !isEditMode ? planData.descPlan : undefined,
           });
         } else {
           if (!isEditMode) {
@@ -464,8 +481,6 @@ export class PlanificacionFormPage implements OnInit {
 
         // Guardar la fecha original para la validación
         this.fechaOriginal = data.fechaActivacion ?? undefined;
-
-        console.log('Planificación cargada:', data);
       },
       error: async (error) => {
         await loading.dismiss();

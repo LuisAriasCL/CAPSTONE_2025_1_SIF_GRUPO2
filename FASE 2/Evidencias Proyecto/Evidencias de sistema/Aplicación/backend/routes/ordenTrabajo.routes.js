@@ -19,5 +19,6 @@ router.put('/:id/detalles', ordenTrabajoController.actualizarDetallesOt);
 router.post('/generar-bulk', ordenTrabajoController.generarOtsParaPlanBulk);
 
 router.put('/:id/estado', ordenTrabajoController.actualizarEstadoOt);
+router.put('/:id/rechazar', ordenTrabajoController.rechazarOrdenTrabajo);
 router.get('/tecnico/:tecnicoId', ordenTrabajoController.getOrdenesPorTecnico);
 module.exports = router;

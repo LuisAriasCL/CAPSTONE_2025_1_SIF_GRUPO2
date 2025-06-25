@@ -35,8 +35,11 @@ import {
   closeCircle,
   calendarOutline,
   checkmarkDoneOutline,
+  banOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { RechazoOtModalComponent } from '../../../components/rechazo-ot-modal/rechazo-ot-modal.component';
 
 @Component({
   selector: 'app-orden-trabajo-detalle',
@@ -82,6 +85,8 @@ export class OrdenTrabajoDetallePage implements OnInit {
       closeCircle,
       calendarOutline,
       checkmarkDoneOutline,
+      banOutline,
+      warningOutline,
     });
   }
 
@@ -236,10 +241,10 @@ export class OrdenTrabajoDetallePage implements OnInit {
         message: 'Iniciando orden de trabajo...',
       });
       await loading.present();
-  console.log('[PASO 1 - COMPONENTE] Datos que se enviarán al servicio:', {
+      console.log('[PASO 1 - COMPONENTE] Datos que se enviarán al servicio:', {
         id_ot: this.ordenTrabajo.id_ot,
         estado: 'en_progreso',
-        encargadoId: currentUser.idUsu
+        encargadoId: currentUser.idUsu,
       });
       this.apiService
         .actualizarEstadoOt(
@@ -318,97 +323,167 @@ export class OrdenTrabajoDetallePage implements OnInit {
   }
 
   async finalizarOrdenDeTrabajo() {
-    if (!this.ordenTrabajo) return;
+    if (!this.ordenTrabajo) return;
 
-    const todasCompletas = this.ordenTrabajo.detalles.every((t) => t.checklist);
+    const todasCompletas = this.ordenTrabajo.detalles.every((t) => t.checklist);
 
-    if (!todasCompletas) {
-      const warnModal = await this.modalCtrl.create({
-        component: AlertaPersonalizadaComponent,
-        componentProps: {
-          title: 'Advertencia',
-          message:
-            'Debes completar todas las tareas para poder finalizar la OT.',
-          icon: 'warning',
-          buttons: [{ text: 'Entendido', role: 'confirm' }],
-        },
-        cssClass: 'custom-alert-modal',
-      });
-      await warnModal.present();
-      return;
-    }
+    if (!todasCompletas) {
+      const warnModal = await this.modalCtrl.create({
+        component: AlertaPersonalizadaComponent,
+        componentProps: {
+          title: 'Advertencia',
+          message:
+            'Debes completar todas las tareas para poder finalizar la OT.',
+          icon: 'warning',
+          buttons: [{ text: 'Entendido', role: 'confirm' }],
+        },
+        cssClass: 'custom-alert-modal',
+      });
+      await warnModal.present();
+      return;
+    }
 
-    const confirmModal = await this.modalCtrl.create({
-      component: AlertaPersonalizadaComponent,
-      componentProps: {
-        title: 'Finalizar Orden de Trabajo',
-        message:
-          '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
-        icon: 'help',
-        buttons: [
-          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
-          {
-            text: 'Sí, Finalizar',
-            role: 'confirm',
-            cssClass: 'confirm-button',
-          },
-        ],
-      },
-      backdropDismiss: false,
-      cssClass: 'custom-alert-modal',
-    });
+    const confirmModal = await this.modalCtrl.create({
+      component: AlertaPersonalizadaComponent,
+      componentProps: {
+        title: 'Finalizar Orden de Trabajo',
+        message:
+          '¿Estás seguro de finalizar esta OT? La acción no se puede deshacer.',
+        icon: 'help',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel', cssClass: 'button-cancel' },
+          {
+            text: 'Sí, Finalizar',
+            role: 'confirm',
+            cssClass: 'confirm-button',
+          },
+        ],
+      },
+      backdropDismiss: false,
+      cssClass: 'custom-alert-modal',
+    });
 
-    await confirmModal.present();
-    const { data } = await confirmModal.onDidDismiss();
+    await confirmModal.present();
+    const { data } = await confirmModal.onDidDismiss();
 
-    if (data === 'confirm') {
-  
-      
+    if (data === 'confirm') {
       const currentUser = this.authService.getCurrentUser();
       if (!currentUser) {
-        this.presentToast('Error: No se pudo identificar al usuario actual.', 'danger');
+        this.presentToast(
+          'Error: No se pudo identificar al usuario actual.',
+          'danger'
+        );
         return;
       }
 
-      const loading = await this.loadingCtrl.create({
-        message: 'Finalizando orden de trabajo...',
-      });
-      await loading.present();
+      const loading = await this.loadingCtrl.create({
+        message: 'Finalizando orden de trabajo...',
+      });
+      await loading.present();
 
-      this.apiService
-        .actualizarEstadoOt(this.ordenTrabajo.id_ot, 'completado', currentUser.idUsu)
-        .subscribe({
-          next: async () => {
-            await loading.dismiss();
-            this.presentToast('Orden de Trabajo finalizada.', 'success');
-            this.closeModal(true);
-          },
-          error: async (err) => {
-            await loading.dismiss();
-            const errorModal = await this.modalCtrl.create({
-              component: AlertaPersonalizadaComponent,
-              componentProps: {
-                title: 'Error',
-                message: 'No se pudo finalizar la orden de trabajo.',
-                icon: 'error',
-                buttons: [{ text: 'Aceptar', role: 'confirm' }],
-              },
-              cssClass: 'custom-alert-modal',
-            });
-            await errorModal.present();
-          },
-        });
-       
-    }
-  }
+      this.apiService
+        .actualizarEstadoOt(
+          this.ordenTrabajo.id_ot,
+          'completada',
+          currentUser.idUsu
+        )
+        .subscribe({
+          next: async () => {
+            await loading.dismiss();
+            this.presentToast('Orden de Trabajo finalizada.', 'success');
+            this.closeModal(true);
+          },
+          error: async (err) => {
+            await loading.dismiss();
+            const errorModal = await this.modalCtrl.create({
+              component: AlertaPersonalizadaComponent,
+              componentProps: {
+                title: 'Error',
+                message: 'No se pudo finalizar la orden de trabajo.',
+                icon: 'error',
+                buttons: [{ text: 'Aceptar', role: 'confirm' }],
+              },
+              cssClass: 'custom-alert-modal',
+            });
+            await errorModal.present();
+          },
+        });
+    }
+  }
+
+  async rechazarOt() {
+    if (!this.ordenTrabajo) return;
+
+    // Verificar que el estado permita el rechazo
+    if (this.ordenTrabajo.estado_ot !== 'sin_iniciar') {
+      this.presentToast(
+        'Solo se pueden rechazar órdenes de trabajo que no han sido iniciadas.',
+        'warning'
+      );
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: RechazoOtModalComponent,
+      componentProps: {
+        ordenTrabajo: this.ordenTrabajo,
+      },
+      cssClass: 'desktop-fullscreen',
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+
+    if (data && data.rechazado) {
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        this.presentToast(
+          'Error: No se pudo identificar al usuario actual.',
+          'danger'
+        );
+        return;
+      }
+
+      const loading = await this.loadingCtrl.create({
+        message: 'Rechazando orden de trabajo...',
+      });
+      await loading.present();
+
+      this.apiService
+        .rechazarOrdenTrabajo(
+          this.ordenTrabajo.id_ot,
+          data.motivo,
+          currentUser.idUsu
+        )
+        .subscribe({
+          next: async (response) => {
+            await loading.dismiss();
+            this.presentToast(
+              response.message || 'Orden de trabajo rechazada correctamente.',
+              'success'
+            );
+            this.cargarDatosDePagina(); // Recargar datos para mostrar el nuevo estado
+          },
+          error: async (err) => {
+            await loading.dismiss();
+            console.error('Error al rechazar OT:', err);
+            this.presentToast(
+              err.message || 'No se pudo rechazar la orden de trabajo.',
+              'danger'
+            );
+          },
+        });
+    }
+  }
 
   getColorForStatus(estado: string | undefined): string {
     if (!estado) return 'medium';
     const colores: { [key: string]: string } = {
-      solicitado: 'primary',
+      sin_iniciar: 'primary',
       en_progreso: 'warning',
-      completado: 'success',
-      cancelado: 'danger',
+      completada: 'success',
+      cancelada: 'dark',
+      rechazado: 'danger',
     };
     return colores[estado] || 'medium';
   }
@@ -417,10 +492,11 @@ export class OrdenTrabajoDetallePage implements OnInit {
     if (!estado) return 'Sin estado';
 
     const estadosDisplay: { [key: string]: string } = {
-      solicitado: 'Solicitado',
+      sin_iniciar: 'Sin Iniciar',
       en_progreso: 'En Progreso',
-      completado: 'Completado',
-      cancelado: 'Cancelado',
+      completada: 'Completada',
+      cancelada: 'Cancelada',
+      rechazado: 'Rechazada',
     };
 
     return estadosDisplay[estado] || estado;

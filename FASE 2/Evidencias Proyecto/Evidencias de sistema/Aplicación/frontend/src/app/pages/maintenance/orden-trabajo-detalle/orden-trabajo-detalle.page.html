@@ -265,7 +265,7 @@
             </p>
 
             <!-- Mostrar estado de la tarea si está completada -->
-            <p *ngIf="ordenTrabajo.estado_ot === 'completado'">
+            <p *ngIf="ordenTrabajo.estado_ot === 'completada'">
               <ion-icon
                 [name]="tarea.checklist ? 'checkmark-circle' : 'close-circle'"
                 [color]="tarea.checklist ? 'success' : 'danger'"
@@ -280,7 +280,7 @@
 
       <!-- Mensaje de finalización solo si todas las tareas están completas -->
       <div
-        *ngIf="ordenTrabajo.estado_ot === 'completado' && todasTareasCompletas()"
+        *ngIf="ordenTrabajo.estado_ot === 'completada' && todasTareasCompletas()"
         class="ion-text-center ion-padding"
       >
         <ion-icon
@@ -294,7 +294,7 @@
 
       <!-- Mensaje si hay tareas incompletas en OT finalizada -->
       <div
-        *ngIf="ordenTrabajo.estado_ot === 'completado' && !todasTareasCompletas()"
+        *ngIf="ordenTrabajo.estado_ot === 'completada' && !todasTareasCompletas()"
         class="ion-text-center ion-padding"
       >
         <ion-icon
@@ -310,15 +310,27 @@
 </ion-content>
 
 <div class="ion-text-center" *ngIf="!isLoading && ordenTrabajo && !isViewMode">
-  <ion-button
-    *ngIf="ordenTrabajo.estado_ot === 'solicitado'"
-    (click)="iniciarOrdenDeTrabajo()"
-    expand="block"
-    style="--background: #008000; --background-hover: #006600"
-  >
-    <ion-icon name="play-circle-outline" slot="start"></ion-icon>
-    Iniciar Orden de Trabajo
-  </ion-button>
+  <div *ngIf="ordenTrabajo.estado_ot === 'sin_iniciar'" class="initial-actions">
+    <ion-button
+      (click)="iniciarOrdenDeTrabajo()"
+      expand="block"
+      style="--background: #008000; --background-hover: #006600"
+      class="ion-margin-bottom"
+    >
+      <ion-icon name="play-circle-outline" slot="start"></ion-icon>
+      Iniciar Orden de Trabajo
+    </ion-button>
+    
+    <ion-button
+      (click)="rechazarOt()"
+      expand="block"
+      color="danger"
+      fill="outline"
+    >
+      <ion-icon name="ban-outline" slot="start"></ion-icon>
+      Rechazar Orden de Trabajo
+    </ion-button>
+  </div>
 
   <div *ngIf="ordenTrabajo.estado_ot === 'en_progreso'">
     <ion-button
@@ -347,7 +359,7 @@
 
 <div
   class="ion-text-center"
-  *ngIf="!isLoading && ordenTrabajo && (isViewMode || ordenTrabajo.estado_ot === 'completado')"
+  *ngIf="!isLoading && ordenTrabajo && (isViewMode || ordenTrabajo.estado_ot === 'completada')"
 >
   <ion-button expand="block" (click)="closeModal()" color="medium">
     <ion-icon name="close-outline" slot="start"></ion-icon>

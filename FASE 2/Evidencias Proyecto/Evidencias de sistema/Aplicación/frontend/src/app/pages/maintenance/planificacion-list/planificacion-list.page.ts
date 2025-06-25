@@ -28,6 +28,7 @@ import {
   settingsOutline,
   add,
 } from 'ionicons/icons';
+import { firstValueFrom } from 'rxjs';
 
 import {
   ApiService,
@@ -42,6 +43,7 @@ import { TitleService } from '../../../services/title.service';
 import { AuthService } from '../../../services/auth.service';
 import { PlanificacionFormPage } from '../planificacion-form/planificacion-form.page';
 import { AlertaPersonalizadaComponent } from '../../../componentes/alerta-personalizada/alerta-personalizada.component';
+import { OrdenTrabajoEventsService } from '../../../services/orden-trabajo-events.service';
 
 @Component({
   selector: 'app-planificacion-list',
@@ -63,7 +65,8 @@ export class PlanificacionListPage
     private apiService: ApiService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
-    private authService: AuthService
+    private authService: AuthService,
+    private otEventsService: OrdenTrabajoEventsService
   ) {
     super(baseListService, toastCtrl, loadingCtrl, modalCtrl, titleService);
     addIcons({
@@ -108,12 +111,18 @@ export class PlanificacionListPage
     };
   }
   async loadData(): Promise<PlanificacionMantenimientoResumen[]> {
-    return new Promise((resolve, reject) => {
-      this.apiService.getPlanificaciones().subscribe({
-        next: (data) => resolve(data),
-        error: (error) => reject(error),
-      });
-    });
+    try {
+      const data = await firstValueFrom(this.apiService.getPlanificaciones());
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      console.error('Error al cargar planificaciones:', error);
+      // Si hay un error 401, podríamos redirigir al login aquí
+      if (error?.status === 401) {
+        console.warn('Token expirado o no válido. Redirigiendo al login...');
+        // Aquí podrías agregar lógica para redirigir al login
+      }
+      return []; // Retornar array vacío en caso de error
+    }
   }
 
   // Getters y setters para filtros específicos
@@ -147,7 +156,7 @@ export class PlanificacionListPage
     await this.loadItems(event);
   }
 
- async generarOt(plan: PlanificacionMantenimientoResumen) {
+  async generarOt(plan: PlanificacionMantenimientoResumen) {
     await this.closeAllSlidingItems();
 
     if (!plan.vehiculosEnPlan || plan.vehiculosEnPlan.length === 0) {
@@ -172,9 +181,10 @@ export class PlanificacionListPage
 
     // 1. Crear un mensaje dinámico para la confirmación
     const numVehiculos = plan.vehiculosEnPlan.length;
-    const message = numVehiculos === 1
-      ? `Se creará una OT para el vehículo <strong>${plan.vehiculosEnPlan[0].patente}</strong> a partir del plan "${plan.descPlan}". ¿Continuar?`
-      : `Se generarán <strong>${numVehiculos} Órdenes de Trabajo</strong>, una para cada vehículo asociado al plan "${plan.descPlan}". ¿Continuar?`;
+    const message =
+      numVehiculos === 1
+        ? `Se creará una OT para el vehículo <strong>${plan.vehiculosEnPlan[0].patente}</strong> a partir del plan "${plan.descPlan}". ¿Continuar?`
+        : `Se generarán <strong>${numVehiculos} Órdenes de Trabajo</strong>, una para cada vehículo asociado al plan "${plan.descPlan}". ¿Continuar?`;
 
     // 2. Mostrar el modal de confirmación con el nuevo mensaje
     const modal = await this.modalCtrl.create({
@@ -202,7 +212,7 @@ export class PlanificacionListPage
       await loading.present();
 
       // 3. Extraer TODOS los IDs de los vehículos
-      const vehiculosIds = plan.vehiculosEnPlan.map(v => v.idVehi);
+      const vehiculosIds = plan.vehiculosEnPlan.map((v) => v.idVehi);
 
       // 4. Llamar a un NUEVO método en el ApiService (que crearemos en el siguiente paso)
       this.apiService
@@ -237,6 +247,24 @@ export class PlanificacionListPage
     modal.onDidDismiss().then((result) => {
       if (result.data && result.data.planificacionCreated) {
         this.cargarPlanificaciones();
+
+        // Notificar a otros componentes sobre las OTs creadas
+        if (result.data.otsCreadas && result.data.otsCreadas.length > 0) {
+          this.otEventsService.notifyOtCreated({
+            otsCreadas: result.data.otsCreadas,
+            source: 'planificacion',
+            planificacionNombre: result.data.planificacionNombre,
+          });
+
+          const numOts = result.data.otsCreadas.length;
+          setTimeout(() => {
+            this.mostrarToast(
+              `✅ Se crearon ${numOts} orden(es) de trabajo automáticamente. Puedes verlas en la sección "Órdenes de Trabajo".`,
+              'success',
+              5000
+            );
+          }, 1000);
+        }
       }
     });
     return await modal.present();
