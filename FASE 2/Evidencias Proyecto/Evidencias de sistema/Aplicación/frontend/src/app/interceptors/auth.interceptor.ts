@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   HttpInterceptor,
   HttpRequest,
@@ -11,16 +11,18 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { inject } from '@angular/core';
 
-// Interceptor funcional para la nueva sintaxis de Angular
+// ===============================
+// ✅ Interceptor funcional (Angular moderno)
+// ===============================
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Agregar el token a todas las peticiones
   const token = authService.getToken();
-  if (token) {
+
+  // ✅ No agregar Authorization si la URL es de OSRM
+  if (token && !req.url.includes('router.project-osrm.org')) {
     req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
@@ -30,7 +32,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Si recibimos un error 401 (Unauthorized), el token ha expirado
       if (error.status === 401) {
         console.warn('Token expirado o no válido. Cerrando sesión...');
         authService.logout();
@@ -42,7 +43,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-// Mantener el interceptor de clase para compatibilidad si es necesario
+// ===============================
+// ✅ Interceptor clásico basado en clase
+// ===============================
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService, private router: Router) {}
@@ -51,9 +54,10 @@ export class AuthInterceptor implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    // Agregar el token a todas las peticiones
     const token = this.authService.getToken();
-    if (token) {
+
+    // ✅ No agregar Authorization si la URL es de OSRM
+    if (token && !request.url.includes('router.project-osrm.org')) {
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`,
@@ -63,7 +67,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Si recibimos un error 401 (Unauthorized), el token ha expirado
         if (error.status === 401) {
           console.warn('Token expirado o no válido. Cerrando sesión...');
           this.authService.logout();
