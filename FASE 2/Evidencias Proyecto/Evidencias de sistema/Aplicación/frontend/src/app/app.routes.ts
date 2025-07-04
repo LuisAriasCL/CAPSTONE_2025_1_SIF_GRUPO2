@@ -21,6 +21,10 @@ export const routes: Routes = [
       import('./pages/recuperar/recuperar.page').then((m) => m.RecuperarPage),
   },
   {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage),
+  },
+  {
     path: 'home-movil',
     loadComponent: () =>
       import('./pages/vista-movil/home-movil/home-movil.page').then(

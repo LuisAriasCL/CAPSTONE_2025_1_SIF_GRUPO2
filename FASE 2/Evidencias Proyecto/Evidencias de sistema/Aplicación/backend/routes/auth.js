@@ -2,8 +2,8 @@
 const express = require('express');
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer'); // Asegúrate de instalar nodemailer
 const router = express.Router();
-
 
 const { Usuario } = require('../models'); 
 
@@ -128,6 +128,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor durante el login.' });
   }
 });
+
 // GET /api/auth/users - Para listar usuarios (ej. para selectores de conductor)
 router.get('/users', async (req, res) => {
     try {
@@ -151,5 +152,70 @@ router.get('/users', async (req, res) => {
     }
 });
 
+// POST /api/auth/recover-password
+router.post('/recover-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'El correo es requerido.' });
+    }
+
+    try {
+        const user = await Usuario.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: 'El correo no está registrado.' });
+        }
+
+        // Generar un token de recuperación (válido por 1 hora)
+        const recoveryToken = jwt.sign({ id: user.idUsu }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // Configurar el transporte de correo
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER, // Configura tu correo en el archivo .env
+                pass: process.env.EMAIL_PASS, // Configura tu contraseña en el archivo .env
+            },
+        });
+
+        // Enviar el correo
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Recuperación de Contraseña',
+            text: `Haz clic en el siguiente enlace para recuperar tu contraseña: ${process.env.FRONTEND_URL}/reset-password?token=${recoveryToken}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ message: 'Se ha enviado un enlace de recuperación a tu correo.' });
+    } catch (error) {
+        console.error('Error en recuperación de contraseña:', error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await Usuario.findByPk(decoded.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.clave = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
+    } catch (error) {
+        console.error('Error al restablecer contraseña:', error);
+        res.status(400).json({ message: 'Token inválido o expirado.' });
+    }
+});
 
 module.exports = router;

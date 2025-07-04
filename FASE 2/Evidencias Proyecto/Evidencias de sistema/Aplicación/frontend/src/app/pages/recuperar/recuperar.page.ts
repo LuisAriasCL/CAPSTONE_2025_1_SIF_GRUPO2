@@ -32,7 +32,6 @@ export class RecuperarPage implements OnInit {
     const email = this.recuperarForm.value.email;
 
     if (!email) {
-      // Mostrar mensaje de error si el campo está vacío
       const toast = await this.toastController.create({
         message: 'Por favor, ingresa un correo electrónico.',
         duration: 3000,
@@ -44,10 +43,8 @@ export class RecuperarPage implements OnInit {
     }
 
     try {
-      // Enviar solicitud al backend
       await this.http.post('/api/auth/recover-password', { email }).toPromise();
 
-      // Mostrar mensaje de éxito
       const toast = await this.toastController.create({
         message: 'Se ha enviado un enlace de recuperación a tu correo.',
         duration: 3000,
@@ -56,15 +53,11 @@ export class RecuperarPage implements OnInit {
       });
       await toast.present();
 
-      // Redirigir al login
       this.router.navigate(['/login']);
-    } catch (error) {
-      let errorMessage = 'Error al enviar el correo. Intenta nuevamente.';
-      if (error && typeof error === 'object' && 'status' in error) {
-        errorMessage = error.status === 404
-          ? 'El correo no está registrado.'
-          : 'Error al enviar el correo. Intenta nuevamente.';
-      }
+    } catch (error: any) { // Usa `any` para evitar problemas de tipo
+      const errorMessage = error.status === 404
+        ? 'El correo no está registrado.'
+        : 'Error al enviar el correo. Intenta nuevamente.';
 
       const toast = await this.toastController.create({
         message: errorMessage,
