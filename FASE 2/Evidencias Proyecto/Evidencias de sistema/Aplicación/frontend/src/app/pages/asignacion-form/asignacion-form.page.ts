@@ -27,6 +27,7 @@ import {
 import { AlertaPersonalizadaComponent } from 'src/app/componentes/alerta-personalizada/alerta-personalizada.component';
 import {
   ApiService,
+    AsignacionRecorrido,
   AsignacionRecorridoData,
   Route as RutaPlantilla,
   VehiculoAsignacionInfo,
@@ -66,6 +67,7 @@ export class AsignacionFormPage implements OnInit {
   conductores: UsuarioConductorInfo[] = [];
   rutasPlantilla: RutaPlantilla[] = [];
   vehiculos: VehiculoAsignacionInfo[] = [];
+  asignacionesActivasVehiculo: AsignacionRecorrido[] = [];
 disponibilidadVehiculo = { disponible: true, mensaje: '' };
   estadosAsignacion = [
     'pendiente',
@@ -234,18 +236,41 @@ disponibilidadVehiculo = { disponible: true, mensaje: '' };
       },
     });
   }
+onVehiculoChange(event: any) {
+  const vehiculoId = event.detail.value;
 
-  onVehiculoChange(event: any) {
-    const vehiculoId = event.detail.value;
-    if (vehiculoId && !this.isEditMode) {
-      this.apiService.getVehicle(vehiculoId).subscribe({
-        next: (veh) => {
-          if (veh?.kmVehi)
-            this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi });
-        },
-      });
-    }
+  // Si el usuario deselecciona el vehículo, limpiamos la lista de asignaciones.
+  if (!vehiculoId) {
+    this.asignacionesActivasVehiculo = [];
+    return;
   }
+
+  // 1. Obtener kilometraje (tu lógica original)
+  if (!this.isEditMode) {
+    this.apiService.getVehicle(vehiculoId).subscribe({
+      next: (veh) => {
+        if (veh?.kmVehi) {
+          this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi });
+        }
+      },
+    });
+  }
+
+  // 2. Obtener asignaciones activas del vehículo (lógica nueva)
+  this.apiService.getVehiculoAsignacionesActivas(vehiculoId).subscribe({
+    next: (asignaciones) => {
+      this.asignacionesActivasVehiculo = asignaciones;
+    },
+    error: (err) => {
+      // Por si falla la llamada, mostramos un aviso y limpiamos la lista.
+      this.presentToast(
+        'No se pudieron cargar las asignaciones del vehículo.',
+        'danger'
+      );
+      this.asignacionesActivasVehiculo = [];
+    },
+  });
+}
   async submitForm() {
     if (this.isSubmitting) return;
 

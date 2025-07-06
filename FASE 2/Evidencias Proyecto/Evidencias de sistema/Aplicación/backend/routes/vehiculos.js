@@ -16,7 +16,7 @@ const Op = db.Sequelize.Op; // Importa Op desde db.Sequelize.Op
 
 // Ruta para historial (llama a vehiculoController si aún lo necesitas)
 router.get('/:id/historial', vehiculoController.getHistorialByVehiculoId);
-
+router.get('/:id/asignaciones', vehiculoController.getAsignacionesActivas);
 // GET /api/vehicles - Obtener TODOS los vehículos
 router.get('/', async (req, res) => {
     try {

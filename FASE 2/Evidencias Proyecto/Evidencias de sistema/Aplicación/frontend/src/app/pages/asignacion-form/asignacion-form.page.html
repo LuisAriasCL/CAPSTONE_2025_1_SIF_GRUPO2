@@ -11,9 +11,6 @@
 
 <ion-content class="ion-padding">
   <form [formGroup]="asignacionForm" (ngSubmit)="submitForm()" novalidate>
-    <!-- primera fila -->
-
-    <!-- Conductor -->
     <ion-row>
       <ion-col size="12" size-md="6">
         <div class="input-wrapper">
@@ -43,45 +40,63 @@
           </div>
         </div>
       </ion-col>
-      <!-- Vehículo -->
+
       <ion-col size="12" size-md="6">
-  <div class="input-wrapper">
-    <ion-label position="floating"
-      >Vehículo <ion-text color="danger">*</ion-text></ion-label
-    >
-    <ion-select
-      formControlName="vehiculoIdVehi"
-      interface="popover"
-      placeholder="Seleccione un vehículo"
-      required
-      (ionChange)="onVehiculoChange($event)"
-      [disabled]="isViewMode"
-    >
-      <ion-select-option
-        *ngFor="let vehiculo of vehiculos"
-        [value]="vehiculo.idVehi"
-        [disabled]="vehiculo.estadoVehi !== 'activo'"
-      >
-        {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{
-          vehiculo.estadoVehi | titlecase
-        }})
-      </ion-select-option>
-    </ion-select>
-  </div>
-  <div class="error-container">
-    <div
-      class="error-message"
-      [class.visible]="f['vehiculoIdVehi'].errors?.['required'] && (f['vehiculoIdVehi'].touched || isSubmitting)"
-    >
-      El vehículo es requerido.
-    </div>
-  </div>
-</ion-col>
+        <div class="input-wrapper">
+          <ion-label position="floating"
+            >Vehículo <ion-text color="danger">*</ion-text></ion-label
+          >
+          <ion-select
+            formControlName="vehiculoIdVehi"
+            interface="popover"
+            placeholder="Seleccione un vehículo"
+            required
+            (ionChange)="onVehiculoChange($event)"
+            [disabled]="isViewMode"
+          >
+            <ion-select-option
+              *ngFor="let vehiculo of vehiculos"
+              [value]="vehiculo.idVehi"
+              [disabled]="vehiculo.estadoVehi !== 'activo'"
+            >
+              {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+              ({{ vehiculo.estadoVehi | titlecase }})
+            </ion-select-option>
+          </ion-select>
+        </div>
+        <div class="error-container">
+          <div
+            class="error-message"
+            [class.visible]="f['vehiculoIdVehi'].errors?.['required'] && (f['vehiculoIdVehi'].touched || isSubmitting)"
+          >
+            El vehículo es requerido.
+          </div>
+        </div>
+      </ion-col>
     </ion-row>
 
-    <!-- segunda fila -->
+<ion-row *ngIf="asignacionesActivasVehiculo.length > 0" class="info-asignaciones">
+        <ion-col size="12">
+            <ion-item-divider color="light">
+            <ion-icon name="warning-outline" slot="start" color="warning"></ion-icon>
+            <ion-label class="ion-text-wrap" color="warning">
+                <strong>Atención:</strong> Este vehículo ya tiene las siguientes asignaciones programadas:
+            </ion-label>
+            </ion-item-divider>
+           <div class="tarjetas-container">
+  <div *ngFor="let asig of asignacionesActivasVehiculo" class="asignacion-card">
+    <div class="fecha-info">
+      <h2>Del: {{ asig.fecIniRecor | date:'dd/MM/yyyy HH:mm' }}</h2>
+      <h2>Al: {{ asig.fecFinRecor ? (asig.fecFinRecor | date:'dd/MM/yyyy HH:mm') : 'N/A' }}</h2>
+    </div>
+    <div class="estado-info">
+      {{ asig.estadoAsig | titlecase }}
+    </div>
+  </div>
+</div>
+        </ion-col>
+    </ion-row>
 
-    <!-- Ruta -->
     <div class="input-wrapper">
       <ion-label position="floating"
         >Ruta (Plantilla) <ion-text color="danger">*</ion-text></ion-label
@@ -118,7 +133,6 @@
 
     <ion-row>
       <ion-col size="12" size-md="6">
-        <!-- Fecha y Hora de Inicio -->
         <div class="input-wrapper">
           <ion-label position="floating"
             >Fecha y Hora de Inicio
@@ -156,7 +170,6 @@
       </ion-col>
 
       <ion-col size="12" size-md="6">
-        <!-- Kilometraje Inicial -->
         <div class="input-wrapper">
           <ion-label position="floating"
             >Kilometraje Inicial
@@ -190,7 +203,6 @@
 
     <ion-row>
       <ion-col size="12" size-md="6">
-        <!-- Fecha y Hora de Fin -->
         <div class="input-wrapper">
           <ion-label position="floating">Fecha y Hora de Fin</ion-label>
           <ion-datetime-button
@@ -212,7 +224,6 @@
       </ion-col>
 
       <ion-col size="12" size-md="6">
-        <!-- Kilometraje Final -->
         <div class="input-wrapper">
           <ion-label position="floating">Kilometraje Final</ion-label>
           <ion-input
@@ -234,7 +245,6 @@
 
     <ion-row>
       <ion-col size="12" size-md="6">
-        <!-- Eficiencia Combustible -->
         <div class="input-wrapper">
           <ion-label position="floating"
             >Eficiencia Combustible (km/l)</ion-label
@@ -248,7 +258,6 @@
         </div>
       </ion-col>
       <ion-col size="12" size-md="6">
-        <!-- Estado de la Asignación -->
         <div class="input-wrapper">
           <ion-label position="floating"
             >Estado de la Asignación
@@ -279,7 +288,6 @@
       </ion-col>
     </ion-row>
 
-    <!-- Notas -->
     <div class="input-wrapper">
       <ion-label position="floating">Notas Adicionales</ion-label>
       <ion-textarea
@@ -292,7 +300,6 @@
   </form>
 </ion-content>
 
-<!-- Footer con botones de acción -->
 <div class="ion-text-center" *ngIf="!isViewMode">
   <ion-button
     type="submit"

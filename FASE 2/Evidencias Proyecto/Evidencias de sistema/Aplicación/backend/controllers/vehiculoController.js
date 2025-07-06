@@ -6,9 +6,37 @@ const {
   RegistroCombustible,
   DetalleOt,
   Usuario,
-  PlanificacionMantenimiento
+  PlanificacionMantenimiento,
+  AsignacionRecorrido,
 } = require('../models');
+exports.getAsignacionesActivas = async (req, res) => {
+  try {
+    const vehiculoId = parseInt(req.params.id, 10);
+    if (isNaN(vehiculoId)) {
+      return res.status(400).json({ message: 'El ID del vehículo es inválido.' });
+    }
 
+    const asignaciones = await AsignacionRecorrido.findAll({
+      where: {
+        vehiculo_id_vehi: vehiculoId,
+        estadoAsig: {
+          [require('sequelize').Op.notIn]: ['completado', 'cancelado'],
+        },
+      },
+      order: [['fec_ini_recor', 'ASC']],
+    });
+
+    res.status(200).json(asignaciones);
+  } catch (error) {
+    console.error(
+      'Error al obtener las asignaciones activas del vehículo:',
+      error
+    );
+    res
+      .status(500)
+      .json({ message: 'Error interno del servidor.' });
+  }
+};
 exports.getHistorialByVehiculoId = async (req, res) => {
   try {
     const vehiculoId = req.params.id;
