@@ -15,9 +15,8 @@
 
   // Contenedor principal para las tarjetas
  .tarjetas-container {
-  // EXPLICACIÓN: Se añade un margen superior para separar
-  // las tarjetas del título de advertencia.
-  margin-top: 20px; // <-- AÑADE ESTA LÍNEA
+
+  margin-top: 20px; 
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
