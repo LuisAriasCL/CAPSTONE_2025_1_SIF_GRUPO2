@@ -84,6 +84,7 @@ export interface VehiculoAsignacionInfo {
   patente: string;
   modelo?: string;
   marca?: string;
+  estadoVehi?: string;
 }
 
 // Interfaz para USUARIO (conductor, simplificada)
@@ -330,7 +331,11 @@ export class ApiService {
       .get<{ total: number }>(`${this.apiUrl}/stats/costo-combustible-mes`)
       .pipe(catchError(this.handleError));
   }
-
+getVehiculoAsignacionesActivas(id: number): Observable<AsignacionRecorrido[]> {
+  return this.http
+    .get<AsignacionRecorrido[]>(`${this.apiUrl}/vehicles/${id}/asignaciones`)
+    .pipe(catchError(this.handleError));
+}
   /**
    * Obtiene el costo total de mantenimiento del último mes.
    * Asume que el backend devuelve { total: number }.
@@ -459,7 +464,25 @@ export class ApiService {
   reactivateUser(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/usuarios/reactivate/${id}`, {});
   }
+checkVehicleAvailability(
+    vehiculoId: number,
+    fechaDesde: string,
+    fechaHasta: string,
+    asignacionIdActual: number | null = null
+  ): Observable<{ disponible: boolean; mensaje: string }> {
+    let params = new HttpParams()
+      .set('vehiculoId', vehiculoId.toString())
+      .set('fechaDesde', fechaDesde)
+      .set('fechaHasta', fechaHasta);
 
+    if (asignacionIdActual) {
+      params = params.set('asignacionActualId', asignacionIdActual.toString());
+    }
+
+    // Asegúrate de que la URL base coincida con la de tus otras llamadas
+    const url = `${this.apiUrl}/asignaciones-recorrido/check-disponibilidad`;
+    return this.http.get<{ disponible: boolean; mensaje: string }>(url, { params });
+  }
   getVehiculos(): Observable<Vehiculo[]> {
     return this.http.get<Vehiculo[]>(this.apiUrl);
   }

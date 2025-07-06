@@ -45,36 +45,38 @@
       </ion-col>
       <!-- Vehículo -->
       <ion-col size="12" size-md="6">
-        <div class="input-wrapper">
-          <ion-label position="floating"
-            >Vehículo <ion-text color="danger">*</ion-text></ion-label
-          >
-          <ion-select
-            formControlName="vehiculoIdVehi"
-            interface="popover"
-            placeholder="Seleccione un vehículo"
-            required
-            (ionChange)="onVehiculoChange($event)"
-            [disabled]="isViewMode"
-          >
-            <ion-select-option
-              *ngFor="let vehiculo of vehiculos"
-              [value]="vehiculo.idVehi"
-            >
-              {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo
-              }}
-            </ion-select-option>
-          </ion-select>
-        </div>
-        <div class="error-container">
-          <div
-            class="error-message"
-            [class.visible]="f['vehiculoIdVehi'].errors?.['required'] && (f['vehiculoIdVehi'].touched || isSubmitting)"
-          >
-            El vehículo es requerido.
-          </div>
-        </div>
-      </ion-col>
+  <div class="input-wrapper">
+    <ion-label position="floating"
+      >Vehículo <ion-text color="danger">*</ion-text></ion-label
+    >
+    <ion-select
+      formControlName="vehiculoIdVehi"
+      interface="popover"
+      placeholder="Seleccione un vehículo"
+      required
+      (ionChange)="onVehiculoChange($event)"
+      [disabled]="isViewMode"
+    >
+      <ion-select-option
+        *ngFor="let vehiculo of vehiculos"
+        [value]="vehiculo.idVehi"
+        [disabled]="vehiculo.estadoVehi !== 'activo'"
+      >
+        {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{
+          vehiculo.estadoVehi | titlecase
+        }})
+      </ion-select-option>
+    </ion-select>
+  </div>
+  <div class="error-container">
+    <div
+      class="error-message"
+      [class.visible]="f['vehiculoIdVehi'].errors?.['required'] && (f['vehiculoIdVehi'].touched || isSubmitting)"
+    >
+      El vehículo es requerido.
+    </div>
+  </div>
+</ion-col>
     </ion-row>
 
     <!-- segunda fila -->

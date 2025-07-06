@@ -66,7 +66,7 @@ export class AsignacionFormPage implements OnInit {
   conductores: UsuarioConductorInfo[] = [];
   rutasPlantilla: RutaPlantilla[] = [];
   vehiculos: VehiculoAsignacionInfo[] = [];
-
+disponibilidadVehiculo = { disponible: true, mensaje: '' };
   estadosAsignacion = [
     'pendiente',
     'asignado',
@@ -150,7 +150,7 @@ export class AsignacionFormPage implements OnInit {
       rol: 'conductor',
     });
     const rutas$ = this.apiService.getRoutes();
-    const vehiculos$ = this.apiService.getVehicles({ estado: 'activo' });
+    const vehiculos$ = this.apiService.getVehicles(); // Sin filtro
     console.log(this.apiService.getUsuarios({ rol: 'conductor' }));
 
     forkJoin([conductores$, rutas$, vehiculos$]).subscribe({
@@ -162,6 +162,7 @@ export class AsignacionFormPage implements OnInit {
           patente: v.patente,
           modelo: v.modelo,
           marca: v.marca,
+          estadoVehi: v.estadoVehi,
         }));
         console.log(this.conductores);
 
