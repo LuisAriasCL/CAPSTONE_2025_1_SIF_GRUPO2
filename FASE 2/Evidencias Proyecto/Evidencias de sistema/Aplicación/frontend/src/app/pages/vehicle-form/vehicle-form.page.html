@@ -76,35 +76,36 @@
           </div>
         </ion-col>
         <ion-col size="12" size-md="6">
-          <div class="input-wrapper">
-            <ion-label>Chasis <ion-text color="danger">*</ion-text></ion-label>
-            <ion-input
-              formControlName="chasis"
-              type="text"
-              required
-              placeholder="El número debe tener 17 caracteres"
-              maxlength="17"
-              autocapitalize="characters"
-              [readonly]="isViewMode"
-            >
-            </ion-input>
-            <div class="error-container">
-              <div
-                class="error-message"
-                [class.visible]="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched || isSubmitted)"
-              >
-                <div *ngIf="f['chasis'].errors?.['required']">
-                  Chasis es requerido.
-                </div>
-                <div
-                  *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']"
-                >
-                  Chasis debe tener 17 caracteres.
-                </div>
-              </div>
-            </div>
-          </div>
-        </ion-col>
+  <div class="input-wrapper">
+    <ion-label>Chasis <ion-text color="danger">*</ion-text></ion-label>
+    <ion-input
+      formControlName="chasis"
+      type="text"
+      required
+      placeholder="El número debe tener 17 caracteres"
+      maxlength="17"
+      autocapitalize="characters"
+      [readonly]="isViewMode"
+    >
+    </ion-input>
+    <div class="error-container">
+      <div
+        class="error-message"
+        [class.visible]="f['chasis'].invalid && (f['chasis'].dirty || f['chasis'].touched || isSubmitted)"
+      >
+        <div *ngIf="f['chasis'].errors?.['required']">
+          Chasis es requerido.
+        </div>
+        <div *ngIf="f['chasis'].errors?.['minlength'] || f['chasis'].errors?.['maxlength']">
+          Chasis debe tener 17 caracteres.
+        </div>
+        <div *ngIf="f['chasis'].errors?.['pattern']">
+          Chasis solo debe contener letras y números.
+        </div>
+        </div>
+    </div>
+  </div>
+</ion-col>
       </ion-row>
 
       <!-- Marca y Modelo -->

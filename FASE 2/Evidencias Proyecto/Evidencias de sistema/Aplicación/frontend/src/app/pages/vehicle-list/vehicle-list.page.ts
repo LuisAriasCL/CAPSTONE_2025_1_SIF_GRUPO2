@@ -66,7 +66,14 @@ export class VehicleListPage implements OnInit {
   currentPage = 1;
   pageSize = 10;
   totalPages = 1;
-
+   filtroEstado: EstadoVehiculo | 'todos' = 'todos';
+  opcionesDeEstado: Array<EstadoVehiculo | 'todos'> = [
+    'todos',
+    'activo',
+    'inactivo',
+    'mantenimiento',
+    'taller',
+  ];
   tableColumns: Column[] = [
     { header: 'Patente', field: 'patente', sortable: true },
     { header: 'Marca', field: 'marca', sortable: true },
@@ -152,23 +159,20 @@ export class VehicleListPage implements OnInit {
         message: 'Cargando vehículos...',
       });
       await loadingIndicator.present();
-    } else if (showLoading && !event) {
-      showLoading = false;
     }
 
-    this.apiService.getVehicles().subscribe({
+    // Si el filtro es 'todos', no pasamos ningún parámetro de estado a la API.
+    const params = this.filtroEstado === 'todos' ? {} : { estado: this.filtroEstado };
+
+    this.apiService.getVehicles(params).subscribe({
       next: (data: Vehiculo[]) => {
         this.vehiculos = data;
-        this.applyFilters(); // Aplicar filtro al cargar
-        this.totalPages = Math.ceil(
-          this.filteredVehiculos.length / this.pageSize
-        );
+        this.applyFilters(); // Esta función ya refresca la lista, no necesita cambios.
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
       },
       error: async (error: HttpErrorResponse | Error) => {
-        console.error('Error al cargar vehículos:', error);
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
@@ -380,7 +384,10 @@ export class VehicleListPage implements OnInit {
     this.currentPage = event.pageIndex + 1; // Actualizar solo para referencia si es necesario
     this.pageSize = event.pageSize; // Actualizar solo para referencia si es necesario
   }
-
+ onFilterChange() {
+    this.currentPage = 1; // Resetea a la primera página al cambiar el filtro
+    this.loadVehicles(true);
+  }
   applyFilters() {
     const term = this.searchTerm.trim().toLowerCase();
     if (!term) {

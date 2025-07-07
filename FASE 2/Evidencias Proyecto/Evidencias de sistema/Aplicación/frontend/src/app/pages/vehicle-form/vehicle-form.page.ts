@@ -216,6 +216,8 @@ export class VehicleFormPage implements OnInit {
           Validators.required,
           Validators.minLength(17),
           Validators.maxLength(17),
+          Validators.pattern(/^[a-zA-Z0-9]{17}$/),
+          
         ],
       ], // Ya existía, se mantiene
       marca: ['', Validators.required], // Ya existía, se mantiene (agregamos required)

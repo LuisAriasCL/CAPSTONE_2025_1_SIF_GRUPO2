@@ -4,39 +4,61 @@
   </ion-refresher>
 
   <!-- Card de Filtros -->
-  <ion-card class="filters-card" *ngIf="!isLoading">
-    <ion-card-header>
-      <ion-card-title>
-        <ion-icon style="color: black" name="funnel-outline"></ion-icon>
-        Filtros
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="12" size-md="10">
-            <ion-item>
-              <ion-input
-                [(ngModel)]="searchTerm"
-                placeholder="Buscar por patente, marca o modelo..."
-                (ionInput)="applyFilters()"
-                clear-input="true"
-              >
-                <ion-icon name="search-outline" slot="start"></ion-icon>
-              </ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12" size-md="2">
-            <ion-button expand="block" fill="outline" (click)="clearFilters()">
-              <ion-icon name="refresh-outline" slot="start"></ion-icon>
-              Limpiar
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
+<ion-card class="filters-card" *ngIf="!isLoading">
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon
+        style="color: black"
+        name="funnel-outline"
+        aria-hidden="true"
+      ></ion-icon>
+      Filtros
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-grid>
+      <ion-row class="ion-align-items-center">
+        <ion-col size="12" size-md="6">
+          <ion-item>
+            <ion-icon name="search-outline" slot="start" aria-hidden="true"></ion-icon>
+            <ion-input
+              [(ngModel)]="searchTerm"
+              placeholder="Buscar por patente, marca o modelo..."
+              (ionInput)="applyFilters()"
+              [clearInput]="true"
+            >
+            </ion-input>
+          </ion-item>
+        </ion-col>
 
+        <ion-col size="12" size-md="4">
+          <ion-item>
+           
+            <ion-select
+              [(ngModel)]="filtroEstado"
+              (ionChange)="onFilterChange()"
+              interface="popover"
+              placeholder="Todos"
+            >
+              <ion-select-option
+                *ngFor="let estado of opcionesDeEstado"
+                [value]="estado"
+              >
+                {{ estado === 'todos' ? 'Todos los Estados' : (estado | titlecase) }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12" size-md="2">
+          <ion-button expand="block" fill="outline" (click)="clearFilters()">
+            <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+            Limpiar
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>
   <!-- Estado de Carga -->
   <div *ngIf="isLoading" class="ion-text-center ion-padding-top">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
