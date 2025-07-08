@@ -2,7 +2,52 @@
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-
+ <ion-grid *ngIf="!isLoading">
+    <ion-row>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="2.4">
+        <ion-card class="kpi-card ion-text-center">
+          <ion-card-header>
+            <ion-card-title>{{ statusCounts.total }}</ion-card-title>
+            <ion-card-subtitle>Total Vehículos</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="2.4">
+        <ion-card class="kpi-card ion-text-center kpi-activo">
+          <ion-card-header>
+            <ion-card-title>{{ statusCounts.activos }}</ion-card-title>
+            <ion-card-subtitle>Activos</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="2.4">
+        <ion-card class="kpi-card ion-text-center kpi-mantenimiento">
+          <ion-card-header>
+            <ion-card-title>{{ statusCounts.mantenimiento }}</ion-card-title>
+            <ion-card-subtitle>En Mantenimiento</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="2.4">
+        <ion-card class="kpi-card ion-text-center kpi-taller">
+          <ion-card-header>
+            <ion-card-title>{{ statusCounts.taller }}</ion-card-title>
+            <ion-card-subtitle>En Taller</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="2.4">
+        <ion-card class="kpi-card ion-text-center kpi-inactivo">
+          <ion-card-header>
+            <ion-card-title>{{ statusCounts.inactivos }}</ion-card-title>
+            <ion-card-subtitle>Inactivos</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-card class="filters-card" *ngIf="!isLoading">
+    </ion-card>
   <!-- Card de Filtros -->
 <ion-card class="filters-card" *ngIf="!isLoading">
   <ion-card-header>

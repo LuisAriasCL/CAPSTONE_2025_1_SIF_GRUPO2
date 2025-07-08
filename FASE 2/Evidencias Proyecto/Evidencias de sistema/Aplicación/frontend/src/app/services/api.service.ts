@@ -370,7 +370,14 @@ getVehiculoAsignacionesActivas(id: number): Observable<AsignacionRecorrido[]> {
       )
       .pipe(catchError(this.handleError));
   }
-
+checkPlanDescriptionExists(descPlan: string, excludeId?: number): Observable<{ exists: boolean }> {
+  let params = new HttpParams().set('descPlan', descPlan);
+  if (excludeId) {
+    params = params.set('excludeId', excludeId.toString());
+  }
+  // Asegúrate de que la ruta coincida con la de tu backend
+  return this.http.get<{ exists: boolean }>(`${this.apiUrl}/planificaciones-v2/check-description`, { params });
+}
   /**
    * Obtiene la cantidad de alertas de siniestros pendientes o sin resolver.
    * Asume que el backend devuelve { cantidad: number }.

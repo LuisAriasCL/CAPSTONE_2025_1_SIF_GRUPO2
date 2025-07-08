@@ -98,7 +98,13 @@ export class VehicleListPage implements OnInit {
       isAction: true,
     },
   ];
-
+ statusCounts = {
+    total: 0,
+    activos: 0,
+    mantenimiento: 0,
+    taller: 0,
+    inactivos: 0,
+  };
   actionButtons: ActionButton[] = [
     {
       icon: 'eye-outline',
@@ -167,7 +173,8 @@ export class VehicleListPage implements OnInit {
     this.apiService.getVehicles(params).subscribe({
       next: (data: Vehiculo[]) => {
         this.vehiculos = data;
-        this.applyFilters(); // Esta función ya refresca la lista, no necesita cambios.
+         this.calculateStatusCounts(); 
+      this.applyFilters(); // Esta función ya refresca la lista, no necesita cambios.
         if (showLoading && !event) this.isLoading = false;
         if (loadingIndicator) loadingIndicator.dismiss();
         event?.target.complete();
@@ -202,7 +209,15 @@ export class VehicleListPage implements OnInit {
     const estadoCapitalized = estado.charAt(0).toUpperCase() + estado.slice(1);
     return `<ion-badge color="${color}">${estadoCapitalized}</ion-badge>`;
   }
-
+ private calculateStatusCounts(): void {
+    this.statusCounts = {
+      total: this.vehiculos.length,
+      activos: this.vehiculos.filter(v => v.estadoVehi === 'activo').length,
+      mantenimiento: this.vehiculos.filter(v => v.estadoVehi === 'mantenimiento').length,
+      taller: this.vehiculos.filter(v => v.estadoVehi === 'taller').length,
+      inactivos: this.vehiculos.filter(v => v.estadoVehi === 'inactivo').length,
+    };
+  }
   handleRefresh(event: RefresherCustomEvent) {
     this.loadVehicles(false, event);
   }

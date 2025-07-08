@@ -80,6 +80,7 @@ export class PlanificacionFormPage implements OnInit {
     private modalCtrl: ModalController,
     private route: ActivatedRoute,
     private authService: AuthService
+    
   ) {
     addIcons({
       closeOutline,
