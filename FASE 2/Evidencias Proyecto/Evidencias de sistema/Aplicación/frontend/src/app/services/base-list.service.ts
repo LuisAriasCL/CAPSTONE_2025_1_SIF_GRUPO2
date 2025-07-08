@@ -10,6 +10,20 @@ export interface FilterConfig<T> {
   providedIn: 'root',
 })
 export class BaseListService<T> {
+  // Función auxiliar para obtener valores de propiedades anidadas
+  private getNestedValue(obj: any, path: string): any {
+    if (!obj || !path) return undefined;
+
+    try {
+      return path.split('.').reduce((prev, curr) => {
+        return prev ? prev[curr] : undefined;
+      }, obj);
+    } catch (error) {
+      console.warn(`Error al acceder a la propiedad anidada ${path}:`, error);
+      return undefined;
+    }
+  }
+
   private itemsSubject = new BehaviorSubject<T[]>([]);
   private filteredItemsSubject = new BehaviorSubject<T[]>([]);
   private paginatedItemsSubject = new BehaviorSubject<T[]>([]);
@@ -68,8 +82,23 @@ export class BaseListService<T> {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter((item) =>
         config.searchFields.some((field) => {
-          const value = item[field];
-          return value?.toString().toLowerCase().includes(term);
+          // Usar getNestedValue para soportar campos anidados como 'vehiculo.patente'
+          const value = this.getNestedValue(item, field as string);
+          // Protección contra valores null o undefined
+          if (value === null || value === undefined) return false;
+
+          // Convertir a string para comparar y buscar
+          try {
+            return value.toString().toLowerCase().includes(term);
+          } catch (error) {
+            console.warn(
+              `Error al convertir valor a string para búsqueda (campo: ${String(
+                field
+              )}):`,
+              error
+            );
+            return false;
+          }
         })
       );
     }

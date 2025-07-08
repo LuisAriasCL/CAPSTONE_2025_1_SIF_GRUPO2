@@ -84,7 +84,12 @@ export class OrdenTrabajoListPage
   }
   getFilterConfig(): FilterConfig<OrdenTrabajoResumen> {
     return {
-      searchFields: ['vehiculo.patente', 'vehiculo.modelo', 'id_ot'] as any,
+      searchFields: [
+        'vehiculo.patente',
+        'vehiculo.modelo',
+        'vehiculo.marca',
+        'id_ot',
+      ] as any,
       customFilters: {
         estado: (item: OrdenTrabajoResumen, value: string) => {
           // Obtener el estado de forma segura
