@@ -89,7 +89,27 @@ exports.getDashboardKpis = async (req, res) => {
     
     const totalLitrosConsumidos = await RegistroCombustible.sum('litros', { where: { fec_comb: { [Op.gte]: treintaDiasAtras } } });
     
-    const eficienciaCombustiblePromedio = totalLitrosConsumidos > 0 ? (totalKmRecorridos / totalLitrosConsumidos) : 0;
+    // Cálculo de eficiencia basado en recorridos y consumo de combustible
+    const eficienciaCombustiblePeriodo = totalLitrosConsumidos > 0 ? (totalKmRecorridos / totalLitrosConsumidos) : 0;
+    
+    // Cálculo de eficiencia promedio de todos los vehículos con eficiencia asignada
+    const vehiculosConEficiencia = await Vehiculo.findAll({
+      attributes: ['efi_comb'],
+      where: {
+        efi_comb: {
+          [Op.not]: null,
+          [Op.gt]: 0
+        }
+      },
+      raw: true
+    });
+    
+    // Calcular el promedio solo si hay vehículos con eficiencia asignada
+    let eficienciaPromedio = 0;
+    if (vehiculosConEficiencia.length > 0) {
+      const sumaEficiencias = vehiculosConEficiencia.reduce((sum, vehiculo) => sum + parseFloat(vehiculo.efi_comb), 0);
+      eficienciaPromedio = sumaEficiencias / vehiculosConEficiencia.length;
+    }
     
     const recorridosEnCurso = await AsignacionRecorrido.count({ where: { estado_asig: 'en_progreso' } });
     
@@ -104,7 +124,9 @@ exports.getDashboardKpis = async (req, res) => {
       vehiculosOperativos: estadoVehiculos.activo || 0,
       vehiculosEnTaller: (estadoVehiculos.mantenimiento || 0) + (estadoVehiculos.taller || 0),
       siniestrosMes,
-      eficienciaCombustiblePromedio: parseFloat(eficienciaCombustiblePromedio.toFixed(2)),
+      eficienciaCombustiblePromedio: parseFloat(eficienciaPromedio.toFixed(2)),
+      eficienciaCombustiblePeriodo: parseFloat(eficienciaCombustiblePeriodo.toFixed(2)),
+      vehiculosConEficiencia: vehiculosConEficiencia.length,
       recorridosEnCurso,
       alertasMantenimientoPendiente,
       alertasSiniestrosPendientes,

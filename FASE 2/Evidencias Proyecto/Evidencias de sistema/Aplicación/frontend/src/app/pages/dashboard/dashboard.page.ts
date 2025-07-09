@@ -19,16 +19,15 @@ import {
   buildOutline,
   alertCircleOutline,
   timerOutline,
-  colorFillOutline,    // Icono para combustible
-  constructOutline,   // Icono para mantenimiento
+  colorFillOutline, // Icono para combustible
+  constructOutline, // Icono para mantenimiento
   speedometerOutline, // Icono para eficiencia
-  mapOutline,         // Icono para recorridos
-  notificationsOutline // Icono para alertas
+  mapOutline, // Icono para recorridos
+  notificationsOutline, // Icono para alertas
 } from 'ionicons/icons';
 import { RouterModule } from '@angular/router';
 // Ya no necesitamos forkJoin aquí si getDashboardKpis del backend ya trae todo
-// import { forkJoin } from 'rxjs'; 
-
+// import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,7 +35,15 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
   // Asegúrate de que los pipes estén en imports si los usas en el HTML
-  imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective, CurrencyPipe, DecimalPipe, RouterModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    BaseChartDirective,
+    CurrencyPipe,
+    DecimalPipe,
+    RouterModule,
+  ],
 })
 export class DashboardPage implements OnInit {
   // Inicializa kpis con valores predeterminados para evitar errores de plantilla
@@ -45,13 +52,15 @@ export class DashboardPage implements OnInit {
     vehiculosOperativos: 0,
     vehiculosEnTaller: 0,
     siniestrosMes: 0,
-    costoCombustibleMes: 0, 
-    costoMantenimientoMes: 0, 
-    eficienciaCombustiblePromedio: 0, 
-    recorridosEnCurso: 0, 
-    alertasMantenimientoPendiente: 0, 
+    costoCombustibleMes: 0,
+    costoMantenimientoMes: 0,
+    eficienciaCombustiblePromedio: 0,
+    eficienciaCombustiblePeriodo: 0,
+    vehiculosConEficiencia: 0,
+    recorridosEnCurso: 0,
+    alertasMantenimientoPendiente: 0,
     alertasSiniestrosPendientes: 0,
-    vehiculosProximoMantenimiento: 0 // Asegúrate de incluir este si está en el backend
+    vehiculosProximoMantenimiento: 0, // Asegúrate de incluir este si está en el backend
   };
   public isKpisLoading = true;
 
@@ -159,11 +168,11 @@ export class DashboardPage implements OnInit {
       buildOutline,
       alertCircleOutline,
       timerOutline,
-      colorFillOutline,    
-      constructOutline,   
-      speedometerOutline, 
-      mapOutline,         
-      notificationsOutline 
+      colorFillOutline,
+      constructOutline,
+      speedometerOutline,
+      mapOutline,
+      notificationsOutline,
     });
   }
 
@@ -194,13 +203,18 @@ export class DashboardPage implements OnInit {
           vehiculosEnTaller: data.vehiculosEnTaller || 0,
           siniestrosMes: data.siniestrosMes || 0,
           // Mapeo para los nuevos KPIs (asegúrate de que los nombres coincidan con el backend)
-          costoCombustibleMes: data.costoCombustibleMes || 0, 
-          costoMantenimientoMes: data.costoMantenimientoMes || 0, 
-          eficienciaCombustiblePromedio: data.eficienciaCombustiblePromedio || 0, 
-          recorridosEnCurso: data.recorridosEnCurso || 0, 
-          alertasMantenimientoPendiente: data.alertasMantenimientoPendiente || 0, 
+          costoCombustibleMes: data.costoCombustibleMes || 0,
+          costoMantenimientoMes: data.costoMantenimientoMes || 0,
+          eficienciaCombustiblePromedio:
+            data.eficienciaCombustiblePromedio || 0,
+          eficienciaCombustiblePeriodo: data.eficienciaCombustiblePeriodo || 0,
+          vehiculosConEficiencia: data.vehiculosConEficiencia || 0,
+          recorridosEnCurso: data.recorridosEnCurso || 0,
+          alertasMantenimientoPendiente:
+            data.alertasMantenimientoPendiente || 0,
           alertasSiniestrosPendientes: data.alertasSiniestrosPendientes || 0,
-          vehiculosProximoMantenimiento: data.vehiculosProximoMantenimiento || 0 // Si este KPI está en el backend
+          vehiculosProximoMantenimiento:
+            data.vehiculosProximoMantenimiento || 0, // Si este KPI está en el backend
         };
         this.isKpisLoading = false;
         console.log('KPIs cargados:', this.kpis); // LOG para verificar los valores cargados
@@ -217,58 +231,66 @@ export class DashboardPage implements OnInit {
           costoCombustibleMes: 0,
           costoMantenimientoMes: 0,
           eficienciaCombustiblePromedio: 0,
+          eficienciaCombustiblePeriodo: 0,
+          vehiculosConEficiencia: 0,
           recorridosEnCurso: 0,
           alertasMantenimientoPendiente: 0,
           alertasSiniestrosPendientes: 0,
-          vehiculosProximoMantenimiento: 0
+          vehiculosProximoMantenimiento: 0,
         };
-      }
+      },
     });
   }
 
-  cargarPieChart() { 
-    this.isPieChartLoading = true; 
-    this.apiService.getStatsVehiculosPorTipo().subscribe({ 
-      next: (data) => { 
-        if (data?.labels?.length) { 
-          this.pieChartData.labels = data.labels; 
-          this.pieChartData.datasets[0].data = data.data; 
-        } 
-        this.isPieChartLoading = false; 
-      }, 
-      error: (err) => { 
-        console.error('Error al cargar datos del pie chart', err); 
-        this.isPieChartLoading = false; 
-      } 
-    }); 
-  } 
+  cargarPieChart() {
+    this.isPieChartLoading = true;
+    this.apiService.getStatsVehiculosPorTipo().subscribe({
+      next: (data) => {
+        if (data?.labels?.length) {
+          this.pieChartData.labels = data.labels;
+          this.pieChartData.datasets[0].data = data.data;
+        }
+        this.isPieChartLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar datos del pie chart', err);
+        this.isPieChartLoading = false;
+      },
+    });
+  }
 
-  cargarBarChart() { 
-    this.isBarChartLoading = true; 
-    this.apiService.getStatsMantenimientosPorEstado().subscribe({ 
-      next: (data) => { 
-        if (data?.labels?.length) { 
-          this.barChartData.labels = data.labels; 
-          this.barChartData.datasets[0].data = data.data; 
-          
-          const backgroundColors = data.labels.map((label: string) => { 
-            if (label.toLowerCase().includes('en progreso')) return 'rgba(255, 196, 9, 0.7)';
-            if (label.toLowerCase().includes('completada')) return 'rgba(45, 211, 111, 0.7)';
-            if (label.toLowerCase().includes('asignada')) return 'rgba(113, 73, 255, 0.7)'; 
-            if (label.toLowerCase().includes('pendiente')) return 'rgba(56, 128, 255, 0.7)';
-            return 'rgba(150, 150, 150, 0.7)'; 
-          }); 
+  cargarBarChart() {
+    this.isBarChartLoading = true;
+    this.apiService.getStatsMantenimientosPorEstado().subscribe({
+      next: (data) => {
+        if (data?.labels?.length) {
+          this.barChartData.labels = data.labels;
+          this.barChartData.datasets[0].data = data.data;
 
-          const borderColors = backgroundColors.map((color: string) => color.replace('0.7', '1')); 
-          this.barChartData.datasets[0].backgroundColor = backgroundColors; 
-          this.barChartData.datasets[0].borderColor = borderColors; 
-        } 
-        this.isBarChartLoading = false; 
-      }, 
-      error: (err) => { 
-        console.error('Error al cargar datos del bar chart', err); 
-        this.isBarChartLoading = false; 
-      } 
-    }); 
-  } 
+          const backgroundColors = data.labels.map((label: string) => {
+            if (label.toLowerCase().includes('en progreso'))
+              return 'rgba(255, 196, 9, 0.7)';
+            if (label.toLowerCase().includes('completada'))
+              return 'rgba(45, 211, 111, 0.7)';
+            if (label.toLowerCase().includes('asignada'))
+              return 'rgba(113, 73, 255, 0.7)';
+            if (label.toLowerCase().includes('pendiente'))
+              return 'rgba(56, 128, 255, 0.7)';
+            return 'rgba(150, 150, 150, 0.7)';
+          });
+
+          const borderColors = backgroundColors.map((color: string) =>
+            color.replace('0.7', '1')
+          );
+          this.barChartData.datasets[0].backgroundColor = backgroundColors;
+          this.barChartData.datasets[0].borderColor = borderColors;
+        }
+        this.isBarChartLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar datos del bar chart', err);
+        this.isBarChartLoading = false;
+      },
+    });
+  }
 }

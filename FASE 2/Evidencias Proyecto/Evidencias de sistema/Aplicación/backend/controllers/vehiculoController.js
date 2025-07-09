@@ -104,13 +104,11 @@ exports.getHistorialByVehiculoId = async (req, res) => {
           tipo: 'Mantenimiento',
           fecha: otData.fec_cre_ot,
           titulo: nombrePlan,
-          subtitulo: `Encargado: ${encargadoNombre} | Solicitante: ${solicitanteNombre}`,
+          subtitulo: `Estado: ${otData.estado_ot || 'Sin estado'}`,
           costo: costoTotal,
           id: otData.id_ot,
           icon: 'build-outline',
-          color: 'warning',
-          encargado: encargadoNombre,
-          solicitante: solicitanteNombre
+          color: 'warning'
         };
       })
     );

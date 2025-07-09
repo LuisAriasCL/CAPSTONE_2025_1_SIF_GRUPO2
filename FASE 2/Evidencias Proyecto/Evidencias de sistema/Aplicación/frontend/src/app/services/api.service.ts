@@ -434,9 +434,8 @@ export class ApiService {
   }
 
   getDashboardKpis(): Observable<any> {
-    // Asegúrate de que la ruta coincida con la que definiste en tus rutas del backend
     return this.http
-      .get(`${this.apiUrl}/stats/dashboard-kpis`)
+      .get<any>(`${this.apiUrl}/stats/dashboard-kpis`)
       .pipe(catchError(this.handleError));
   }
   getMantenimientoReport(filtros: any): Observable<any[]> {
