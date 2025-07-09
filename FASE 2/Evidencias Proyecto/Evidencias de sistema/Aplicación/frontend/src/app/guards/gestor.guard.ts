@@ -21,7 +21,7 @@ export class GestorGuard implements CanActivate {
     
     const currentUser = this.authService.getCurrentUser();
     
-    if (currentUser && (currentUser.rol === 'gestor' || currentUser.rol === 'admin')) {
+    if (currentUser && (currentUser.rol === 'gestor' || currentUser.rol === 'admin' || currentUser.rol === 'mantenimiento')) {
      
       return true;
     } else {

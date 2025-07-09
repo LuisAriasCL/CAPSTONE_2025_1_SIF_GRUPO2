@@ -49,7 +49,12 @@ export class SidebarComponent implements OnInit {
   public selectedIndex = 0; // Índice del elemento seleccionado
   public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'grid' },
-    { title: 'Reportes', url: '/reporte-mantenimiento', icon: 'newspaper' },
+    { 
+      title: 'Reportes', 
+      url: '/reporte-mantenimiento', 
+      icon: 'newspaper',
+      roles: ['gestor', 'admin', 'mantenimiento'] // Especificamos que este elemento es para estos roles
+    },
     { title: 'Mantenimientos', url: '/planificacion-list', icon: 'build' },
     { title: 'Vehículos', url: '/vehiculos', icon: 'car' },
     {
@@ -120,5 +125,11 @@ export class SidebarComponent implements OnInit {
   ): boolean {
     const usuario = this.authService.getCurrentUser();
     return usuario ? usuario.rol === rol : false;
+  }
+
+  puedeAcceder(roles: string[]): boolean {
+    const usuario = this.authService.getCurrentUser();
+    if (!usuario) return false;
+    return roles.includes(usuario.rol);
   }
 }
