@@ -9,13 +9,20 @@
   </ion-refresher>
   <ion-row>
     <ion-col size="12">
-      <ion-card class="welcome-card glass-effect"> <!-- Reutilizamos las clases del dashboard -->
+      <ion-card class="welcome-card glass-effect">
+        <!-- Reutilizamos las clases del dashboard -->
         <ion-card-content class="ion-text-center">
           <ion-text color="primary">
-            <h1 class="ion-no-margin welcome-title">Reporte de Mantenimientos</h1> <!-- Título principal -->
+            <h1 class="ion-no-margin welcome-title">
+              Reporte de Mantenimientos
+            </h1>
+            <!-- Título principal -->
           </ion-text>
-          <p class="ion-text-wrap dashboard-intro-text"> <!-- Reutilizamos la clase para la descripción -->
-            Genera y visualiza informes detallados sobre todas las órdenes de trabajo. Aplica filtros por fechas y vehículos para obtener análisis específicos.
+          <p class="ion-text-wrap dashboard-intro-text">
+            <!-- Reutilizamos la clase para la descripción -->
+            Genera y visualiza informes detallados sobre todas las órdenes de
+            trabajo. Aplica filtros por fechas y vehículos para obtener análisis
+            específicos.
           </p>
         </ion-card-content>
       </ion-card>
@@ -146,12 +153,30 @@
           </ion-card-header>
           <ion-card-content>
             <p><strong>ID OT:</strong> {{ reporteSeleccionado.id_ot }}</p>
-            <p><strong>Vehículo:</strong> {{ reporteSeleccionado.vehiculo?.patente || 'N/A' }}</p>
-            <p><strong>Descripción:</strong> {{ reporteSeleccionado.descripcion_ot }}</p>
-            <p><strong>Encargado:</strong> {{ reporteSeleccionado.encargado?.pri_nom_usu || 'No asignado' }}</p>
-            <p><strong>Fecha Inicio:</strong> {{ reporteSeleccionado.fec_ini_ot | date }}</p>
-            <p><strong>Fecha Fin:</strong> {{ reporteSeleccionado.fec_fin_ot | date }}</p>
-            <p><strong>Estado:</strong> {{ reporteSeleccionado.estado_ot }}</p>
+            <p>
+              <strong>Vehículo:</strong> {{
+              reporteSeleccionado.vehiculo?.patente || 'N/A' }}
+            </p>
+            <p>
+              <strong>Descripción:</strong> {{
+              reporteSeleccionado.descripcion_ot }}
+            </p>
+            <p>
+              <strong>Encargado:</strong> {{
+              reporteSeleccionado.encargado?.pri_nom_usu || 'No asignado' }}
+            </p>
+            <p>
+              <strong>Fecha Inicio:</strong> {{ reporteSeleccionado.fec_ini_ot |
+              date }}
+            </p>
+            <p>
+              <strong>Fecha Fin:</strong> {{ reporteSeleccionado.fec_fin_ot |
+              date }}
+            </p>
+            <p>
+              <strong>Estado:</strong> {{
+              formatearEstado(reporteSeleccionado.estado_ot) }}
+            </p>
           </ion-card-content>
         </ion-card>
 
@@ -179,4 +204,3 @@
     </ion-content>
   </ion-modal>
 </ion-content>
-

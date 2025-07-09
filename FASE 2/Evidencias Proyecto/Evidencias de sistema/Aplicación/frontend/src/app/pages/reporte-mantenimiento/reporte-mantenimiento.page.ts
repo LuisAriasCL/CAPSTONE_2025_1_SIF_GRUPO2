@@ -98,9 +98,9 @@ export class ReporteMantenimientoPage implements OnInit {
       sortable: true,
       width: '120px',
       cell: (data: any) =>
-        `<ion-chip class="status-${data.estado_ot}">${
-          data.estado_ot?.charAt(0).toUpperCase() + data.estado_ot?.slice(1)
-        }</ion-chip>`,
+        `<ion-chip class="status-${data.estado_ot}">${this.formatearEstado(
+          data.estado_ot
+        )}</ion-chip>`,
     },
   ];
 
@@ -237,7 +237,7 @@ export class ReporteMantenimientoPage implements OnInit {
         `"${encargado}"`,
         fechaInicio,
         fechaFin,
-        row.estado_ot,
+        this.formatearEstado(row.estado_ot),
       ];
       csvContent += fila.join(',') + '\r\n';
     });
@@ -319,9 +319,9 @@ export class ReporteMantenimientoPage implements OnInit {
           <td>${encargado}</td>
           <td>${fechaInicio}</td>
           <td>${fechaFin}</td>
-          <td><span class="status-${row.estado_ot}">${
-        row.estado_ot?.charAt(0).toUpperCase() + row.estado_ot?.slice(1)
-      }</span></td>
+          <td><span class="status-${row.estado_ot}">${this.formatearEstado(
+        row.estado_ot
+      )}</span></td>
         </tr>
       `;
     });
@@ -380,7 +380,13 @@ export class ReporteMantenimientoPage implements OnInit {
         } else {
           this.reporteSeleccionado = {
             ...reporte,
-            tareas: [{ descripcion: 'No hay tareas asociadas', estado: 'N/A', tecnico: 'N/A' }],
+            tareas: [
+              {
+                descripcion: 'No hay tareas asociadas',
+                estado: 'N/A',
+                tecnico: 'N/A',
+              },
+            ],
           };
         }
         this.isModalOpen = true;
@@ -389,7 +395,13 @@ export class ReporteMantenimientoPage implements OnInit {
         console.error('Error al cargar las tareas de la OT', err);
         this.reporteSeleccionado = {
           ...reporte,
-          tareas: [{ descripcion: 'Error al cargar tareas', estado: 'N/A', tecnico: 'N/A' }],
+          tareas: [
+            {
+              descripcion: 'Error al cargar tareas',
+              estado: 'N/A',
+              tecnico: 'N/A',
+            },
+          ],
         };
         this.isModalOpen = true;
       },
@@ -399,5 +411,25 @@ export class ReporteMantenimientoPage implements OnInit {
   cerrarModal() {
     this.isModalOpen = false;
     this.reporteSeleccionado = null;
+  }
+
+  // Método para formatear los estados de mantenimiento
+  formatearEstado(estado: string): string {
+    if (!estado) return 'N/A';
+
+    switch (estado.toLowerCase()) {
+      case 'sin_iniciar':
+        return 'Sin iniciar';
+      case 'en_progreso':
+        return 'En progreso';
+      case 'completada':
+        return 'Completada';
+      case 'cancelada':
+        return 'Cancelada';
+      case 'rechazada':
+        return 'Rechazada';
+      default:
+        return estado.charAt(0).toUpperCase() + estado.slice(1);
+    }
   }
 }
