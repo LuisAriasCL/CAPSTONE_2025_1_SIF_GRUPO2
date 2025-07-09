@@ -10,7 +10,11 @@ import {
   IonButtons,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { menuOutline, personCircleOutline } from 'ionicons/icons';
+import {
+  menuOutline,
+  personCircleOutline,
+  personOutline,
+} from 'ionicons/icons';
 import { DropdownUsuarioComponent } from '../dropdown-usuario/dropdown-usuario.component';
 import { IconoAlertaComponent } from '../icono-alerta/icono-alerta.component';
 import { AuthService, UserInfo } from 'src/app/services/auth.service';
@@ -43,7 +47,7 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private titleService: TitleService
   ) {
-    addIcons({ menuOutline, personCircleOutline });
+    addIcons({ menuOutline, personCircleOutline, personOutline });
     this.currentTitle$ = this.titleService.title$;
     this.checkScreenSize();
   }
