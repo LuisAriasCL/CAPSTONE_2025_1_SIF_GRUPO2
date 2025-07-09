@@ -12,11 +12,11 @@ module.exports = (sequelize) => {
     },
     usuario_id_usu_tecnico: {
   type: DataTypes.INTEGER,
-  allowNull: true,  // El técnico puede no estar asignado inicialmente
+  allowNull: true,  
   field: 'usuario_id_usu_tecnico',
   references: {
-    model: 'usuarios', // Asegúrate de que esto coincida con el nombre de tu tabla de usuarios
-    key: 'id_usu'      // El campo clave primaria de la tabla de usuarios
+    model: 'usuarios', 
+    key: 'id_usu'      
   },
   comment: 'ID del usuario asignado como técnico a esta tarea'
 },
