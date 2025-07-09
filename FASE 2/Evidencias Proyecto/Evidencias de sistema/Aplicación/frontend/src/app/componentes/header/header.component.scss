@@ -1,3 +1,8 @@
+/* Estilos generales */
+.d-none {
+  display: none !important;
+}
+
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -5,6 +10,22 @@
   width: 100%;
   padding: 0 10px;
   position: relative;
+}
+
+/* Estilos específicos para móvil */
+.mobile-view {
+  .header-container {
+    justify-content: space-between;
+  }
+  
+  .header-left, .header-right {
+    position: relative;
+    flex: none;
+  }
+  
+  .header-center {
+    display: none;
+  }
 }
 
 /* Mantenemos la transición si quieres la animación en el header */
@@ -37,6 +58,22 @@
   flex: 2;
 }
 
+/* Ajustes para vista móvil */
+@media (max-width: 768px) {
+  .header-center {
+    display: none;
+  }
+  
+  .header-container {
+    justify-content: space-between;
+  }
+  
+  .header-left, .header-right {
+    position: relative;
+    flex: none;
+  }
+}
+
 .header-title-center {
   font-weight: bold;
   font-size: 1.2rem;
@@ -44,6 +81,13 @@
   text-align: center;
   margin: 0;
   padding: 0;
+}
+
+/* Ocultar título en vista móvil */
+@media (max-width: 768px) {
+  .header-title-center {
+    display: none;
+  }
 }
 
 .header-right {

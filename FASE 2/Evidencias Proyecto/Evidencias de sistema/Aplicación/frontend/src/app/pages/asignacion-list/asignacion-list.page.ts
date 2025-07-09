@@ -333,13 +333,21 @@ export class AsignacionListPage
     const asignacionId = asignacion.idAsig || (asignacion as any).id_asig;
     if (asignacionId === undefined) return;
 
+    // Obtenemos el estado actual
+    const estadoActual = this.getEstado(asignacion);
+
     const modal = await this.modalCtrl.create({
       component: AlertaPersonalizadaComponent,
       componentProps: {
         title: `Confirmar ${this.getEstadoDisplay(nuevoEstado)}`,
-        message: `¿Confirmas cambiar el estado a "${this.getEstadoDisplay(
-          nuevoEstado
-        )}"?`,
+        message:
+          nuevoEstado === 'completado' &&
+          estadoActual === 'en_progreso' &&
+          asignacion.kmFinRecor == null
+            ? `¿Confirmas finalizar este recorrido? Se registrará como completado y los KM finales se calcularán automáticamente.`
+            : `¿Confirmas cambiar el estado a "${this.getEstadoDisplay(
+                nuevoEstado
+              )}"?`,
         icon: nuevoEstado === 'cancelado' ? 'warning' : 'help',
         buttons: [
           { text: 'Cancelar', role: 'cancel' },
@@ -353,7 +361,13 @@ export class AsignacionListPage
     const { data } = await modal.onDidDismiss();
     if (data !== 'confirm') return;
 
-    if (nuevoEstado === 'completado' && asignacion.kmFinRecor == null) {
+    // Si estamos completando un recorrido en progreso, no exigimos KM finales
+    // Esto permite que cualquier rol pueda marcar como completado un recorrido en progreso
+    if (
+      nuevoEstado === 'completado' &&
+      estadoActual !== 'en_progreso' &&
+      asignacion.kmFinRecor == null
+    ) {
       this.showErrorAlert(
         'Falta Información',
         'Para marcar como "Completado", edita la asignación y registra los KM finales.'
@@ -365,13 +379,33 @@ export class AsignacionListPage
       message: `Actualizando estado...`,
     });
     await loading.present();
+
+    // Preparamos los datos a enviar al backend
+    const updateData: any = { estadoAsig: nuevoEstado };
+
+    // Si estamos completando un recorrido en progreso y no hay KM finales,
+    // usamos los KM actuales del vehículo (se manejará en el backend)
+    if (
+      nuevoEstado === 'completado' &&
+      estadoActual === 'en_progreso' &&
+      asignacion.kmFinRecor == null
+    ) {
+      // Solo enviamos el cambio de estado, el backend puede manejar los KM finales
+      // o podríamos agregar una flag para indicar que debe calcular los KM finales automáticamente
+      updateData.actualizarKmAutomatico = true;
+    }
+
     this.apiService
-      .updateAsignacionRecorrido(asignacionId, { estadoAsig: nuevoEstado })
+      .updateAsignacionRecorrido(asignacionId, updateData)
       .subscribe({
         next: async (updatedAsignacion) => {
           await loading.dismiss();
           this.presentToast(
-            `Estado actualizado a "${this.getEstadoDisplay(nuevoEstado)}".`,
+            nuevoEstado === 'completado' &&
+              estadoActual === 'en_progreso' &&
+              updateData.actualizarKmAutomatico
+              ? `Recorrido finalizado exitosamente. Los KM finales se han registrado automáticamente.`
+              : `Estado actualizado a "${this.getEstadoDisplay(nuevoEstado)}".`,
             'success'
           );
           const index = this.allItems.findIndex(

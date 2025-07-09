@@ -44,7 +44,11 @@ exports.getHistorialByVehiculoId = async (req, res) => {
     // --- Consultas a la BD (Estas ya son correctas) ---
     const mantenimientos = await OrdenTrabajo.findAll({
       where: { vehiculoIdVehi: vehiculoId },
-      include: [{ model: DetalleOt, as: 'detalles' }]
+      include: [
+        { model: DetalleOt, as: 'detalles' },
+        { model: Usuario, as: 'solicitante', attributes: ['pri_nom_usu', 'pri_ape_usu'] },
+        { model: Usuario, as: 'encargado', attributes: ['pri_nom_usu', 'pri_ape_usu'] }
+      ]
     });
 
     const siniestros = await Siniestro.findAll({
@@ -68,15 +72,28 @@ exports.getHistorialByVehiculoId = async (req, res) => {
         const otData = ot.dataValues;
         let nombrePlan = 'Mantenimiento Correctivo';
         let tecnicoAsignado = 'Técnico no asignado';
+        let encargadoNombre = 'Sin encargado asignado';
+        let solicitanteNombre = 'Sin solicitante';
 
         if (otData.planificacionMantenimientoIdPlan) {
           const plan = await PlanificacionMantenimiento.findByPk(otData.planificacionMantenimientoIdPlan);
           if (plan) nombrePlan = plan.nombre_plan;
         }
 
+        // Obtener el nombre del técnico del primer detalle si existe
         if (otData.detalles && otData.detalles.length > 0 && otData.detalles[0].usuarioIdUsuTecnico) {
           const tecnico = await Usuario.findByPk(otData.detalles[0].usuarioIdUsuTecnico);
           if (tecnico) tecnicoAsignado = `${tecnico.pri_nom_usu} ${tecnico.pri_ape_usu}`;
+        }
+
+        // Obtener el nombre del encargado directamente de la relación
+        if (otData.encargado) {
+          encargadoNombre = `${otData.encargado.pri_nom_usu} ${otData.encargado.pri_ape_usu}`;
+        }
+
+        // Obtener el nombre del solicitante directamente de la relación
+        if (otData.solicitante) {
+          solicitanteNombre = `${otData.solicitante.pri_nom_usu} ${otData.solicitante.pri_ape_usu}`;
         }
 
         const costoTotal = (otData.detalles || []).reduce((acc, detalle) => {
@@ -87,11 +104,13 @@ exports.getHistorialByVehiculoId = async (req, res) => {
           tipo: 'Mantenimiento',
           fecha: otData.fec_cre_ot,
           titulo: nombrePlan,
-          subtitulo: tecnicoAsignado,
+          subtitulo: `Encargado: ${encargadoNombre} | Solicitante: ${solicitanteNombre}`,
           costo: costoTotal,
           id: otData.id_ot,
           icon: 'build-outline',
-          color: 'warning'
+          color: 'warning',
+          encargado: encargadoNombre,
+          solicitante: solicitanteNombre
         };
       })
     );

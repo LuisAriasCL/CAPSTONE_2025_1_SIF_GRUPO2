@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit {
   currentUser: UserInfo | null = null;
   currentTitle$: Observable<string>;
   notificationCount: number = 5;
+  isMobile: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -44,6 +45,16 @@ export class HeaderComponent implements OnInit {
   ) {
     addIcons({ menuOutline, personCircleOutline });
     this.currentTitle$ = this.titleService.title$;
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth <= 768;
   }
 
   ngOnInit(): void {

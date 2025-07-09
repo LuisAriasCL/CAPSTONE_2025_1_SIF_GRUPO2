@@ -38,6 +38,8 @@ export interface HistorialItem {
   descripcion?: string;
   archivoUrl?: string;
   urlComprobante?: string;
+  encargado?: string;
+  solicitante?: string;
 }
 export interface Siniestro {
   id: number;
@@ -331,11 +333,13 @@ export class ApiService {
       .get<{ total: number }>(`${this.apiUrl}/stats/costo-combustible-mes`)
       .pipe(catchError(this.handleError));
   }
-getVehiculoAsignacionesActivas(id: number): Observable<AsignacionRecorrido[]> {
-  return this.http
-    .get<AsignacionRecorrido[]>(`${this.apiUrl}/vehicles/${id}/asignaciones`)
-    .pipe(catchError(this.handleError));
-}
+  getVehiculoAsignacionesActivas(
+    id: number
+  ): Observable<AsignacionRecorrido[]> {
+    return this.http
+      .get<AsignacionRecorrido[]>(`${this.apiUrl}/vehicles/${id}/asignaciones`)
+      .pipe(catchError(this.handleError));
+  }
   /**
    * Obtiene el costo total de mantenimiento del último mes.
    * Asume que el backend devuelve { total: number }.
@@ -370,14 +374,20 @@ getVehiculoAsignacionesActivas(id: number): Observable<AsignacionRecorrido[]> {
       )
       .pipe(catchError(this.handleError));
   }
-checkPlanDescriptionExists(descPlan: string, excludeId?: number): Observable<{ exists: boolean }> {
-  let params = new HttpParams().set('descPlan', descPlan);
-  if (excludeId) {
-    params = params.set('excludeId', excludeId.toString());
+  checkPlanDescriptionExists(
+    descPlan: string,
+    excludeId?: number
+  ): Observable<{ exists: boolean }> {
+    let params = new HttpParams().set('descPlan', descPlan);
+    if (excludeId) {
+      params = params.set('excludeId', excludeId.toString());
+    }
+    // Asegúrate de que la ruta coincida con la de tu backend
+    return this.http.get<{ exists: boolean }>(
+      `${this.apiUrl}/planificaciones-v2/check-description`,
+      { params }
+    );
   }
-  // Asegúrate de que la ruta coincida con la de tu backend
-  return this.http.get<{ exists: boolean }>(`${this.apiUrl}/planificaciones-v2/check-description`, { params });
-}
   /**
    * Obtiene la cantidad de alertas de siniestros pendientes o sin resolver.
    * Asume que el backend devuelve { cantidad: number }.
@@ -471,7 +481,7 @@ checkPlanDescriptionExists(descPlan: string, excludeId?: number): Observable<{ e
   reactivateUser(id: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/usuarios/reactivate/${id}`, {});
   }
-checkVehicleAvailability(
+  checkVehicleAvailability(
     vehiculoId: number,
     fechaDesde: string,
     fechaHasta: string,
@@ -488,7 +498,9 @@ checkVehicleAvailability(
 
     // Asegúrate de que la URL base coincida con la de tus otras llamadas
     const url = `${this.apiUrl}/asignaciones-recorrido/check-disponibilidad`;
-    return this.http.get<{ disponible: boolean; mensaje: string }>(url, { params });
+    return this.http.get<{ disponible: boolean; mensaje: string }>(url, {
+      params,
+    });
   }
   getVehiculos(): Observable<Vehiculo[]> {
     return this.http.get<Vehiculo[]>(this.apiUrl);

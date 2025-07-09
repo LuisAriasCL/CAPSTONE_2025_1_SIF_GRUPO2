@@ -1,4 +1,4 @@
-<ion-header class="header">
+<ion-header class="header" [ngClass]="{ 'mobile-view': isMobile }">
   <ion-toolbar class="transparent-toolbar">
     <div class="header-container">
       <div class="header-left">
@@ -13,7 +13,7 @@
           class="header-logo"
         />
       </div>
-      <div class="header-center">
+      <div class="header-center" [ngClass]="{ 'd-none': isMobile }">
         <ion-title class="header-title-center">{{
           currentTitle$ | async
         }}</ion-title>

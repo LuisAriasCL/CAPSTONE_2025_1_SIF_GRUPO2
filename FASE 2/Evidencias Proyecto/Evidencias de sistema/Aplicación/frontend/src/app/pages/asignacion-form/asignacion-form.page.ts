@@ -27,7 +27,7 @@ import {
 import { AlertaPersonalizadaComponent } from 'src/app/componentes/alerta-personalizada/alerta-personalizada.component';
 import {
   ApiService,
-    AsignacionRecorrido,
+  AsignacionRecorrido,
   AsignacionRecorridoData,
   Route as RutaPlantilla,
   VehiculoAsignacionInfo,
@@ -68,7 +68,7 @@ export class AsignacionFormPage implements OnInit {
   rutasPlantilla: RutaPlantilla[] = [];
   vehiculos: VehiculoAsignacionInfo[] = [];
   asignacionesActivasVehiculo: AsignacionRecorrido[] = [];
-disponibilidadVehiculo = { disponible: true, mensaje: '' };
+  disponibilidadVehiculo = { disponible: true, mensaje: '' };
   estadosAsignacion = [
     'pendiente',
     'asignado',
@@ -236,41 +236,76 @@ disponibilidadVehiculo = { disponible: true, mensaje: '' };
       },
     });
   }
-onVehiculoChange(event: any) {
-  const vehiculoId = event.detail.value;
+  onVehiculoChange(event: any) {
+    const vehiculoId = event.detail.value;
 
-  // Si el usuario deselecciona el vehículo, limpiamos la lista de asignaciones.
-  if (!vehiculoId) {
-    this.asignacionesActivasVehiculo = [];
-    return;
-  }
+    // Si el usuario deselecciona el vehículo, limpiamos la lista de asignaciones.
+    if (!vehiculoId) {
+      this.asignacionesActivasVehiculo = [];
+      return;
+    }
 
-  // 1. Obtener kilometraje (tu lógica original)
-  if (!this.isEditMode) {
-    this.apiService.getVehicle(vehiculoId).subscribe({
-      next: (veh) => {
-        if (veh?.kmVehi) {
-          this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi });
-        }
+    // 1. Obtener kilometraje y eficiencia de combustible
+    if (!this.isEditMode) {
+      this.apiService.getVehicle(vehiculoId).subscribe({
+        next: (veh) => {
+          if (veh?.kmVehi) {
+            this.asignacionForm.patchValue({ kmIniRecor: veh.kmVehi });
+
+            // Establecer la eficiencia de combustible del vehículo o el valor por defecto de 5
+            const eficiencia = veh.efiComb || 5;
+            this.asignacionForm.patchValue({ efiCombRecor: eficiencia });
+
+            // Actualizar kilometraje final si ya se seleccionó una ruta
+            this.calcularKilometrajeFinal();
+          }
+        },
+      });
+    }
+
+    // 2. Obtener asignaciones activas del vehículo (lógica nueva)
+    this.apiService.getVehiculoAsignacionesActivas(vehiculoId).subscribe({
+      next: (asignaciones) => {
+        this.asignacionesActivasVehiculo = asignaciones;
+      },
+      error: (err) => {
+        // Por si falla la llamada, mostramos un aviso y limpiamos la lista.
+        this.presentToast(
+          'No se pudieron cargar las asignaciones del vehículo.',
+          'danger'
+        );
+        this.asignacionesActivasVehiculo = [];
       },
     });
   }
 
-  // 2. Obtener asignaciones activas del vehículo (lógica nueva)
-  this.apiService.getVehiculoAsignacionesActivas(vehiculoId).subscribe({
-    next: (asignaciones) => {
-      this.asignacionesActivasVehiculo = asignaciones;
-    },
-    error: (err) => {
-      // Por si falla la llamada, mostramos un aviso y limpiamos la lista.
-      this.presentToast(
-        'No se pudieron cargar las asignaciones del vehículo.',
-        'danger'
+  // Nuevo método para calcular el kilometraje final
+  private calcularKilometrajeFinal() {
+    const kmInicial = this.asignacionForm.get('kmIniRecor')?.value;
+    const rutaId = this.asignacionForm.get('rutaIdRuta')?.value;
+
+    if (kmInicial && rutaId) {
+      // Buscar la ruta seleccionada
+      const rutaSeleccionada = this.rutasPlantilla.find(
+        (ruta) => ruta.idRuta === rutaId
       );
-      this.asignacionesActivasVehiculo = [];
-    },
-  });
-}
+
+      if (rutaSeleccionada && rutaSeleccionada.kilometrosRuta) {
+        // Calcular el km final sumando el inicial más los km de la ruta
+        const kmFinal =
+          Number(kmInicial) + Number(rutaSeleccionada.kilometrosRuta);
+        this.asignacionForm.patchValue({
+          kmFinRecor: Number(kmFinal.toFixed(1)),
+        });
+      }
+    }
+  }
+
+  // Método para cuando cambia la ruta seleccionada
+  onRutaChange(event: any) {
+    this.calcularKilometrajeFinal();
+  }
+
   async submitForm() {
     if (this.isSubmitting) return;
 
@@ -383,9 +418,9 @@ onVehiculoChange(event: any) {
     if (kmFinRecorNum !== null) {
       if (isNaN(kmFinRecorNum))
         throw new Error('El kilometraje final no es válido.');
-      if (kmFinRecorNum <= kmIniRecorNum)
-        throw new Error('El kilometraje final debe ser mayor al inicial.');
-    } else if (formData.estadoAsig === 'completado') {
+      // Eliminada la validación que exige que el KM final sea mayor al inicial
+    } else if (formData.estadoAsig === 'completado' && !this.isEditMode) {
+      // Solo validamos esto en creación, no en edición, permitiendo completar sin KM finales
       throw new Error(
         'El kilometraje final es requerido para completar la asignación.'
       );

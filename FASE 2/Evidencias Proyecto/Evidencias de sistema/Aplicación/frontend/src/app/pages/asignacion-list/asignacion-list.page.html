@@ -164,14 +164,6 @@
                 <strong>Dist. Estimada:</strong> {{
                 asignacion.rutaPlantilla?.kilometrosRuta | number:'1.1-2' }} km
               </p>
-              <p *ngIf="asignacion.kmFinRecor && asignacion.kmIniRecor">
-                <ion-icon
-                  name="speedometer-outline"
-                  class="align-middle"
-                ></ion-icon>
-                <strong>Dist. Real:</strong> {{ (asignacion.kmFinRecor -
-                asignacion.kmIniRecor) | number:'1.1-2' }} km
-              </p>
             </ion-label>
           </ion-col>
 
@@ -233,6 +225,20 @@
                 size="small"
                 (click)="viewOrEditAsignacion(asignacion.idAsig)"
                 title="Registrar Fin de Recorrido (Editar)"
+              >
+                <ion-icon
+                  slot="icon-only"
+                  name="create-outline"
+                  color="primary"
+                ></ion-icon>
+              </ion-button>
+              <!-- Nuevo botón para marcar directamente como completado -->
+              <ion-button
+                *ngSwitchCase="'en_progreso'"
+                fill="clear"
+                size="small"
+                (click)="cambiarEstadoAsignacion(asignacion, 'completado')"
+                title="Marcar como Completado"
               >
                 <ion-icon
                   slot="icon-only"
