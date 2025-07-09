@@ -23,6 +23,7 @@ import {
 } from 'src/app/services/api.service';
 import { OrdenTrabajoDetallePage } from '../maintenance/orden-trabajo-detalle/orden-trabajo-detalle.page';
 import { CombustibleDetallePage } from '../combustible-detalle/combustible-detalle.page';
+import { SiniestroDetallePage } from '../siniestro-detalle/siniestro-detalle.page';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -88,6 +89,8 @@ export class VerImagenModal {
     TitleCasePipe,
     VerImagenModal,
     OrdenTrabajoDetallePage,
+    CombustibleDetallePage,
+    SiniestroDetallePage,
   ],
 })
 export class HistorialVehiculoPage implements OnInit {
@@ -204,8 +207,13 @@ export class HistorialVehiculoPage implements OnInit {
         break;
 
       case 'Siniestro':
-        this.router.navigate(['/siniestro-detalle', item.id]);
-        break; // CAMBIO: Ahora abre modal de detalle de combustible
+        const modalSiniestro = await this.modalController.create({
+          component: SiniestroDetallePage,
+          componentProps: { siniestroId: item.id },
+          cssClass: 'siniestro-detalle-modal',
+        });
+        await modalSiniestro.present();
+        break;
       case 'Combustible':
         const modalCombustible = await this.modalController.create({
           component: CombustibleDetallePage,
