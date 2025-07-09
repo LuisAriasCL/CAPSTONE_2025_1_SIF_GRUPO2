@@ -294,7 +294,19 @@ io.on('connection', socket => {
     }
   });
 });
+const cron = require('node-cron');
+const { verificarYGenerarOts } = require('./services/maintenanceScheduler');
 
+// EXPLICACIÓN: Se configura una tarea para que se ejecute todos los días a las 03:00 AM.
+// Puedes cambiar el '0 3 * * *' para ajustar la frecuencia.
+console.log('🕒 Programando la tarea de verificación de mantenimientos...');
+cron.schedule('0 3 * * *', () => {
+  console.log('⏰ Ejecutando tarea programada: Verificación de Mantenimientos.');
+  verificarYGenerarOts();
+}, {
+  scheduled: true,
+  timezone: "America/Santiago" // Ajusta a tu zona horaria
+});
 const PORT = process.env.PORT || 8101;
 server.listen(PORT, () => {
   console.log(
