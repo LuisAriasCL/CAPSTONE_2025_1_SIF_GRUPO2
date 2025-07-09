@@ -91,6 +91,28 @@
           >
         </ion-col>
       </ion-row>
+
+      <!-- Descripción Original de la Orden de Trabajo -->
+      <ion-row *ngIf="ordenTrabajo.descripcion_ot">
+        <ion-col size="12">
+          <div class="input-wrapper">
+            <ion-label>Descripción de la Orden de Trabajo</ion-label>
+            <ion-item lines="none" class="description-item">
+              <ion-icon
+                name="document-text-outline"
+                slot="start"
+                color="primary"
+              ></ion-icon>
+              <ion-label class="ion-text-wrap">
+                <p style="white-space: pre-line">
+                  {{ ordenTrabajo.descripcion_ot }}
+                </p>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
+
       <ion-row class="ion-margin-top ion-margin-bottom">
         <ion-col size="12">
           <div
@@ -198,6 +220,8 @@
         </ion-col>
       </ion-row>
 
+      <!-- Descripción Original de la Orden de Trabajo ya está arriba -->
+
       <ion-row>
         <ion-col size="12" size-md="6">
           <div class="input-wrapper">
@@ -248,7 +272,7 @@
       <ion-row>
         <ion-col size="12">
           <div class="input-wrapper">
-            <ion-label>Descripción del Trabajo Realizado</ion-label>
+            <ion-label>Descripción de la Orden de Trabajo</ion-label>
             <ion-textarea
               placeholder="Describa el trabajo efectuado..."
               [(ngModel)]="ordenTrabajo.descripcion_ot"

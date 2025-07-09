@@ -106,17 +106,37 @@ export class ServiciosTecnicoPage implements ViewWillEnter {
   // Método para obtener el color del estado
   getEstadoColor(estado: string): string {
     console.log('Estado recibido:', estado); // Verifica el valor del estado
-    switch (
-      estado.toLowerCase().trim() // Asegúrate de que esté en minúsculas y sin espacios
-    ) {
-      case 'completado':
-        return 'success'; // Verde
-      case 'en progreso':
-        return 'warning'; // Naranjo
-      case 'pendiente':
-        return 'medium'; // Gris
-      default:
+    switch (estado) {
+      case 'sin_iniciar':
         return 'primary'; // Azul
+      case 'en_progreso':
+        return 'warning'; // Amarillo
+      case 'completada':
+        return 'success'; // Verde
+      case 'rechazado':
+        return 'danger'; // Rojo
+      default:
+        return 'medium'; // Gris
+    }
+  }
+
+  // Método para formatear el texto del estado
+  formatEstado(estado: string): string {
+    if (!estado) return 'Desconocido';
+
+    switch (estado) {
+      case 'sin_iniciar':
+        return 'Sin Iniciar';
+      case 'en_progreso':
+        return 'En Progreso';
+      case 'completada':
+        return 'Completada';
+      case 'rechazado':
+        return 'Deshabilitada';
+      default:
+        return estado
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase());
     }
   }
 

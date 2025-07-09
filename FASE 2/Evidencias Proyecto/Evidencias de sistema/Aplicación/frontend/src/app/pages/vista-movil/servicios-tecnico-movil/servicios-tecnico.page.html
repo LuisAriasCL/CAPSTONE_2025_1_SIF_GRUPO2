@@ -99,7 +99,17 @@
                   name="alert-circle-outline"
                   *ngIf="getEstadoColor(ot.estado_ot) === 'medium'"
                 ></ion-icon>
-                {{ ot.estado_ot | titlecase }}
+                <ion-icon
+                  slot="start"
+                  name="play-outline"
+                  *ngIf="getEstadoColor(ot.estado_ot) === 'primary'"
+                ></ion-icon>
+                <ion-icon
+                  slot="start"
+                  name="ban-outline"
+                  *ngIf="getEstadoColor(ot.estado_ot) === 'danger'"
+                ></ion-icon>
+                {{ formatEstado(ot.estado_ot) }}
               </ion-chip>
             </ion-label>
           </ion-item>
